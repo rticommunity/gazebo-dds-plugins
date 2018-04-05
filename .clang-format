@@ -83,7 +83,7 @@ AllowShortFunctionsOnASingleLine: false
 BraceWrapping:
     AfterControlStatement: false
     AfterEnum: false
-    AfterExternBlock: false
+    # AfterExternBlock: false
     AfterFunction: true     # CFR3-02: Function definition
     AfterNamespace: false   # CFR2-03: C classes
     AfterStruct: false

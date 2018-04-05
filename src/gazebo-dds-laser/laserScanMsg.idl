@@ -1,0 +1,114 @@
+/*****************************************************************************/
+/*         (c) Copyright, Real-Time Innovations, All rights reserved.        */
+/*                                                                           */
+/*         Permission to modify and use for internal purposes granted.       */
+/* This software is provided "as is", without warranty, express or implied.  */
+/*                                                                           */
+/*****************************************************************************/
+
+/* --- Time type: ------------------------------------------------------- */
+
+/*
+ * This is the Time type.
+ *
+ * Description < >
+ *
+ */
+struct Time {
+        /*
+         * Description < >
+         */
+        unsigned long sec;
+
+        /*
+         * Description < >
+         */
+        unsigned long nsec;
+};
+
+/* --- Header type: ------------------------------------------------------- */
+
+/*
+ * This is the Header type.
+ *
+ * Description < >
+ *
+ */
+struct Header {
+        /*
+         * Description < >
+         */
+         unsigned long seq;
+
+        /*
+         * Description < >
+         */
+        Time stamp;
+
+        /*
+         * Description < >
+         */
+        string frame_id;
+
+};
+
+
+/* --- laser_Scan_msg type: ------------------------------------------------------- */
+
+/*
+ * This is the laser_Scan_msg type.
+ *
+ * Description < >
+ *
+ */
+struct laser_Scan_msg {
+         /*
+         * Description < >
+         */
+        Header   header;
+
+        /*
+         * Description < >
+         */
+        float   angle_min;
+
+        /*
+         * Description < >
+         */
+        float   angle_max;
+
+        /*
+         * Description < >
+         */
+        float   angle_increment;
+
+        /*
+         * Description < >
+         */
+        float   time_increment;
+
+        /*
+         * Description < >
+         */
+        float   scan_time;
+
+        /*
+         * Description < >
+         */
+        float   range_min;
+
+        /*
+         * Description < >
+         */
+        float   range_max;
+
+        /*
+         * Description < >
+         */
+        sequence<float>   ranges;
+
+        /*
+         * Description < >
+         */
+        sequence<float>   intensities;
+};

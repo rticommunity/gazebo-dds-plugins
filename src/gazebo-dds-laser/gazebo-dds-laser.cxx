@@ -26,8 +26,17 @@ public:
     GazeboDDSLaser()
             : participant(226),
               topic(participant, "laserScan"),
-              writer(dds::pub::Publisher(participant), topic)
+              writer(dds::core::null)
     {
+        rti::core::policy::Property::Entry value(
+                { "dds.data_writer.history.memory_manager.fast_pool.pool_"
+                  "buffer_max_size",
+                  "4096" });
+        rti::core::policy::Property property;
+        property.set(value);
+        data_writer_qos_ << property;
+        writer = dds::pub::DataWriter<laser_Scan_msg>(
+                dds::pub::Publisher(participant), topic, data_writer_qos_);
     }
 
 public:
@@ -45,6 +54,7 @@ public:
         sensor = _parent;
 
         std::cout << "It was loaded" << std::endl;
+        // std::cout << _sdf->Get<std::string>("link") << std::endl;
 
         this->gazeboNode
                 = gazebo::transport::NodePtr(new gazebo::transport::Node());
@@ -57,7 +67,6 @@ public:
 public:
     void OnScan(ConstLaserScanStampedPtr &msg)
     {
-        std::cout << "It was updated :" << msg->scan().angle_max() << std::endl;
         laser_Scan_msg sample;
 
         Time time;
@@ -76,13 +85,18 @@ public:
         sample.scan_time(0);
         sample.range_min(msg->scan().range_min());
         sample.range_max(msg->scan().range_max());
-        
+
         sample.ranges().resize(msg->scan().ranges_size());
-        int i = 0;
-        for(auto & range : msg->scan().ranges()){
-            sample.ranges().at(i)=range;
-            i++;
-        }
+        std::copy(
+                msg->scan().ranges().begin(),
+                msg->scan().ranges().end(),
+                sample.ranges().begin());
+
+        sample.intensities().resize(msg->scan().intensities_size());
+        std::copy(
+                msg->scan().intensities().begin(),
+                msg->scan().intensities().end(),
+                sample.intensities().begin());
 
         writer.write(sample);
     }
@@ -104,6 +118,8 @@ private:
 
 private:
     dds::topic::Topic<laser_Scan_msg> topic;
+
+    dds::pub::qos::DataWriterQos data_writer_qos_;
 
 private:
     dds::pub::DataWriter<laser_Scan_msg> writer;

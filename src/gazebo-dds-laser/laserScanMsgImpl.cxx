@@ -256,7 +256,7 @@ DDS_TypeCode* Header_c_get_typecode()
 {
     static RTIBool is_initialized = RTI_FALSE;
 
-    static DDS_TypeCode Header_c_g_tc_frame_id_string = DDS_INITIALIZE_STRING_TYPECODE((255));
+    static DDS_TypeCode Header_c_g_tc_frame_id_string = DDS_INITIALIZE_STRING_TYPECODE(RTI_INT32_MAX);
     static DDS_TypeCode_Member Header_c_g_tc_members[3]=
     {
 
@@ -383,7 +383,7 @@ RTIBool Header_c_initialize_w_params(
         return RTI_FALSE;
     }
     if (allocParams->allocate_memory){
-        sample->frame_id= DDS_String_alloc ((255));
+        sample->frame_id= DDS_String_alloc ((0));
         if (sample->frame_id == NULL) {
             return RTI_FALSE;
         }
@@ -479,7 +479,7 @@ RTIBool Header_c_copy(
     } 
     if (!RTICdrType_copyStringEx (
         &dst->frame_id, src->frame_id, 
-        (255) + 1,RTI_TRUE)){
+        (RTI_INT32_MAX-1) + 1,RTI_TRUE)){
         return RTI_FALSE;
     }
 
@@ -523,8 +523,8 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
 {
     static RTIBool is_initialized = RTI_FALSE;
 
-    static DDS_TypeCode laser_Scan_msg_c_g_tc_ranges_sequence = DDS_INITIALIZE_SEQUENCE_TYPECODE((100),NULL);
-    static DDS_TypeCode laser_Scan_msg_c_g_tc_intensities_sequence = DDS_INITIALIZE_SEQUENCE_TYPECODE((100),NULL);
+    static DDS_TypeCode laser_Scan_msg_c_g_tc_ranges_sequence = DDS_INITIALIZE_SEQUENCE_TYPECODE(RTI_INT32_MAX,NULL);
+    static DDS_TypeCode laser_Scan_msg_c_g_tc_intensities_sequence = DDS_INITIALIZE_SEQUENCE_TYPECODE(RTI_INT32_MAX,NULL);
     static DDS_TypeCode_Member laser_Scan_msg_c_g_tc_members[10]=
     {
 
@@ -816,8 +816,8 @@ RTIBool laser_Scan_msg_c_initialize_w_params(
 
     if (allocParams->allocate_memory) {
         DDS_FloatSeq_initialize(&sample->ranges  );
-        DDS_FloatSeq_set_absolute_maximum(&sample->ranges , (100));
-        if (!DDS_FloatSeq_set_maximum(&sample->ranges , (100))) {
+        DDS_FloatSeq_set_absolute_maximum(&sample->ranges , RTI_INT32_MAX);
+        if (!DDS_FloatSeq_set_maximum(&sample->ranges , (0))) {
             return RTI_FALSE;
         }
     } else { 
@@ -825,8 +825,8 @@ RTIBool laser_Scan_msg_c_initialize_w_params(
     }
     if (allocParams->allocate_memory) {
         DDS_FloatSeq_initialize(&sample->intensities  );
-        DDS_FloatSeq_set_absolute_maximum(&sample->intensities , (100));
-        if (!DDS_FloatSeq_set_maximum(&sample->intensities , (100))) {
+        DDS_FloatSeq_set_absolute_maximum(&sample->intensities , RTI_INT32_MAX);
+        if (!DDS_FloatSeq_set_maximum(&sample->intensities , (0))) {
             return RTI_FALSE;
         }
     } else { 

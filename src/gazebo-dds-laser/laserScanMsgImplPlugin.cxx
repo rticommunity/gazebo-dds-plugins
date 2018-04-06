@@ -1393,7 +1393,7 @@ Header_cPlugin_serialize(
         }
 
         if (!RTICdrStream_serializeString(
-            stream, sample->frame_id, (255) + 1)) {
+            stream, sample->frame_id, (RTI_INT32_MAX-1) + 1)) {
             return RTI_FALSE;
         }
 
@@ -1447,7 +1447,7 @@ Header_cPlugin_deserialize_sample(
             goto fin; 
         }
         if (!RTICdrStream_deserializeStringEx(
-            stream,&sample->frame_id, (255) + 1,RTI_TRUE)) {
+            stream,&sample->frame_id, (RTI_INT32_MAX-1) + 1,RTI_TRUE)) {
             goto fin; 
         }
     }
@@ -1688,7 +1688,7 @@ RTIBool Header_cPlugin_skip(
             endpoint_plugin_qos)) {
             goto fin; 
         }
-        if (!RTICdrStream_skipString (stream, (255)+1)) {
+        if (!RTICdrStream_skipString (stream, (RTI_INT32_MAX-1)+1)) {
             goto fin; 
         }
     }
@@ -1716,34 +1716,17 @@ Header_cPlugin_get_serialized_sample_max_size_ex(
     unsigned int current_alignment)
 {
 
-    unsigned int initial_alignment = current_alignment;
+    if (endpoint_data) {} /* To avoid warnings */
+    if (include_encapsulation) {}
+    if (encapsulation_id) {}
+    if (current_alignment) {}
 
-    unsigned int encapsulation_size = current_alignment;
-
-    if (include_encapsulation) {
-
-        if (!RTICdrEncapsulation_validEncapsulationId(encapsulation_id)) {
-            return 1;
-        }
-        RTICdrStream_getEncapsulationSize(encapsulation_size);
-        encapsulation_size -= current_alignment;
-        current_alignment = 0;
-        initial_alignment = 0;
+    if (overflow != NULL) {
+        *overflow = RTI_TRUE;
     }
 
-    current_alignment +=RTICdrType_getUnsignedLongMaxSizeSerialized(
-        current_alignment);
+    return RTI_CDR_MAX_SERIALIZED_SIZE;
 
-    current_alignment +=Time_cPlugin_get_serialized_sample_max_size_ex(
-        endpoint_data, overflow, RTI_FALSE,encapsulation_id,current_alignment);
-
-    current_alignment +=RTICdrType_getStringMaxSizeSerialized(
-        current_alignment, (255)+1);
-
-    if (include_encapsulation) {
-        current_alignment += encapsulation_size;
-    }
-    return  current_alignment - initial_alignment;
 }
 
 unsigned int 
@@ -2560,7 +2543,7 @@ laser_Scan_msg_cPlugin_serialize(
                 stream,
                 DDS_FloatSeq_get_contiguous_bufferI(&sample->ranges),
                 DDS_FloatSeq_get_length(&sample->ranges),
-                (100),
+                (RTI_INT32_MAX-1),
                 RTI_CDR_FLOAT_TYPE)) {
                 return RTI_FALSE;
             } 
@@ -2569,7 +2552,7 @@ laser_Scan_msg_cPlugin_serialize(
                 stream,
                 (const void **) DDS_FloatSeq_get_discontiguous_bufferI(&sample->ranges),
                 DDS_FloatSeq_get_length(&sample->ranges),
-                (100), 
+                (RTI_INT32_MAX-1), 
                 RTI_CDR_FLOAT_TYPE)) {
                 return RTI_FALSE;
             } 
@@ -2580,7 +2563,7 @@ laser_Scan_msg_cPlugin_serialize(
                 stream,
                 DDS_FloatSeq_get_contiguous_bufferI(&sample->intensities),
                 DDS_FloatSeq_get_length(&sample->intensities),
-                (100),
+                (RTI_INT32_MAX-1),
                 RTI_CDR_FLOAT_TYPE)) {
                 return RTI_FALSE;
             } 
@@ -2589,7 +2572,7 @@ laser_Scan_msg_cPlugin_serialize(
                 stream,
                 (const void **) DDS_FloatSeq_get_discontiguous_bufferI(&sample->intensities),
                 DDS_FloatSeq_get_length(&sample->intensities),
-                (100), 
+                (RTI_INT32_MAX-1), 
                 RTI_CDR_FLOAT_TYPE)) {
                 return RTI_FALSE;
             } 
@@ -2670,6 +2653,12 @@ laser_Scan_msg_cPlugin_deserialize_sample(
         }
         {
             RTICdrUnsignedLong sequence_length;
+            if (!RTICdrStream_lookUnsignedLong(stream,&sequence_length)) {
+                goto fin; 
+            }
+            if (!DDS_FloatSeq_set_maximum(&sample->ranges,sequence_length)) {
+                return RTI_FALSE;
+            }
             if (DDS_FloatSeq_get_contiguous_bufferI(&sample->ranges) != NULL) {
                 if (!RTICdrStream_deserializePrimitiveSequence(
                     stream,
@@ -2696,6 +2685,12 @@ laser_Scan_msg_cPlugin_deserialize_sample(
         }
         {
             RTICdrUnsignedLong sequence_length;
+            if (!RTICdrStream_lookUnsignedLong(stream,&sequence_length)) {
+                goto fin; 
+            }
+            if (!DDS_FloatSeq_set_maximum(&sample->intensities,sequence_length)) {
+                return RTI_FALSE;
+            }
             if (DDS_FloatSeq_get_contiguous_bufferI(&sample->intensities) != NULL) {
                 if (!RTICdrStream_deserializePrimitiveSequence(
                     stream,
@@ -3019,55 +3014,17 @@ laser_Scan_msg_cPlugin_get_serialized_sample_max_size_ex(
     unsigned int current_alignment)
 {
 
-    unsigned int initial_alignment = current_alignment;
+    if (endpoint_data) {} /* To avoid warnings */
+    if (include_encapsulation) {}
+    if (encapsulation_id) {}
+    if (current_alignment) {}
 
-    unsigned int encapsulation_size = current_alignment;
-
-    if (include_encapsulation) {
-
-        if (!RTICdrEncapsulation_validEncapsulationId(encapsulation_id)) {
-            return 1;
-        }
-        RTICdrStream_getEncapsulationSize(encapsulation_size);
-        encapsulation_size -= current_alignment;
-        current_alignment = 0;
-        initial_alignment = 0;
+    if (overflow != NULL) {
+        *overflow = RTI_TRUE;
     }
 
-    current_alignment +=Header_cPlugin_get_serialized_sample_max_size_ex(
-        endpoint_data, overflow, RTI_FALSE,encapsulation_id,current_alignment);
+    return RTI_CDR_MAX_SERIALIZED_SIZE;
 
-    current_alignment +=RTICdrType_getFloatMaxSizeSerialized(
-        current_alignment);
-
-    current_alignment +=RTICdrType_getFloatMaxSizeSerialized(
-        current_alignment);
-
-    current_alignment +=RTICdrType_getFloatMaxSizeSerialized(
-        current_alignment);
-
-    current_alignment +=RTICdrType_getFloatMaxSizeSerialized(
-        current_alignment);
-
-    current_alignment +=RTICdrType_getFloatMaxSizeSerialized(
-        current_alignment);
-
-    current_alignment +=RTICdrType_getFloatMaxSizeSerialized(
-        current_alignment);
-
-    current_alignment +=RTICdrType_getFloatMaxSizeSerialized(
-        current_alignment);
-
-    current_alignment +=RTICdrType_getPrimitiveSequenceMaxSizeSerialized(
-        current_alignment,(100),RTI_CDR_FLOAT_TYPE) ;
-
-    current_alignment +=RTICdrType_getPrimitiveSequenceMaxSizeSerialized(
-        current_alignment,(100),RTI_CDR_FLOAT_TYPE) ;
-
-    if (include_encapsulation) {
-        current_alignment += encapsulation_size;
-    }
-    return  current_alignment - initial_alignment;
 }
 
 unsigned int 

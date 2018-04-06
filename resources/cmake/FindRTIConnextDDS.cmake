@@ -1,4 +1,10 @@
 #.rst:
+# (c) 2017 Copyright, Real-Time Innovations, Inc. All rights reserved.
+# RTI grants Licensee a license to use, modify, compile, and create derivative
+# works of this file solely for use with RTI Connext DDS.  Licensee may
+# redistribute copies of this file provided that all such copies are subject
+# to this license.
+#
 # FindRTIConnextDDS
 # -----------------
 #
@@ -136,7 +142,7 @@
 #   project (example)
 #   set(CMAKE_MODULE_PATH
 #       ${CMAKE_MODULE_PATH}
-#       "/home/rti/rti_connext_dds-5.3.0/resource/cmake/modules")
+#       "/home/rti/rti_connext_dds-5.3.0/resource/cmake")
 #
 #   find_package(RTIConnextDDS EXACT "5.3.0" REQUIRED)
 #   add_definitions("${CONNEXTDDS_DEFINITIONS}")
@@ -160,7 +166,7 @@
 #   project (example)
 #   set(CMAKE_MODULE_PATH
 #       ${CMAKE_MODULE_PATH}
-#       "/home/rti/rti_connext_dds-5.3.0/resource/cmake/modules")
+#       "/home/rti/rti_connext_dds-5.3.0/resource/cmake")
 #
 #   find_package(RTIConnextDDS EXACT "5.3.0" REQUIRED COMPONENTS routing_service)
 #   add_definitions("${CONNEXTDDS_DEFINITIONS}")
@@ -284,7 +290,10 @@ function(connextdds_check_component_field_version field_name rti_versions_file)
     set(field_section_regex "<${field_name}>.*</${field_name}>")
     string(REGEX MATCH ${field_section_regex} field_xml "${rti_versions_file}")
 
-    foreach(architecture java ${CONNEXTDDS_ARCH} ${CONNEXTDDS_HOST_ARCH})
+    foreach(architecture "java" ${CONNEXTDDS_ARCH} ${CONNEXTDDS_HOST_ARCH})
+        if(architecture STREQUAL "java" AND field_name STREQUAL "routing_service_host")
+            continue()
+        endif()
         string(CONCAT
             field_arch_regex
             "<installation>[\n\r\t ]*"
@@ -302,7 +311,8 @@ function(connextdds_check_component_field_version field_name rti_versions_file)
             error
             "${field_name} is not installed for ${CONNEXTDDS_ARCH} "
             "under ${CONNEXTDDS_DIR}")
-        message(FATAL_ERROR ${error})
+        message(WARNING ${error})
+        set(RTIVERSION_ERROR TRUE PARENT_SCOPE)
     endif()
 
     # Get the <version> tag from a field in CONNEXTDDS_DIR/rti_versions.xml
@@ -310,12 +320,30 @@ function(connextdds_check_component_field_version field_name rti_versions_file)
         "<version>[0-9]+\\.[0-9]+\\.[0-9]+(\\.[0-9]+)?</version>")
     string(REGEX MATCH ${field_version_regex} field_version "${field_arch}")
 
+    if(NOT field_version)
+        set(RTIVERSION_ERROR TRUE PARENT_SCOPE)
+        string(CONCAT
+            error
+            "The version tag was not extracted from ${field_name} and "
+            "${CONNEXTDDS_ARCH} under ${CONNEXTDDS_DIR}")
+        return()
+    endif()
+
     # Extract the version string from the tag
     set(field_version_number_regex "[0-9]+\\.[0-9]+\\.[0-9]+(\\.[0-9]+)?")
     string(REGEX MATCH
         ${field_version_number_regex}
         field_version_number
         ${field_version})
+
+    if(NOT field_version_number)
+        set(RTIVERSION_ERROR TRUE PARENT_SCOPE)
+        string(CONCAT
+            error
+            "The version number was not extracted from ${field_name} and "
+            "${CONNEXTDDS_ARCH} under ${CONNEXTDDS_DIR}")
+        return()
+    endif()
 
     if(NOT DEFINED RTICONNEXTDDS_VERSION)
         # If the variable version RTICONNEXTDDS_VERSION has not been set, we
@@ -330,7 +358,8 @@ function(connextdds_check_component_field_version field_name rti_versions_file)
             "The version of ${field} is ${field_version_number}, which "
             "is incosistent with the expected version... "
             "${RTICONNEXTDDS_VERSION}")
-        message(FATAL_ERROR ${error})
+        message(WARNING ${error})
+        set(RTIVERSION_ERROR TRUE PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -405,7 +434,14 @@ elseif(CONNEXTDDS_ARCH MATCHES "Darwin")
         "-DRTI_64BIT "
         "-Wno-return-type-c-linkage")
 
-    set(CONNEXTDDS_HOST_ARCH "darwin")
+    # CONNEXTDDS_HOST_ARCH is usually a prefix of the CONNEXTDDS_ARCH (e.g.,
+    # "x64Linux" is a prefix  of "x64Linux3gcc5.4.0"). However, in the case
+    # of Darwin, CONNEXTDDS_HOST_ARCH is simply "darwin".
+    # To be able to match the CONNEXTDDS_ARCH in some parts of the script,
+    # we need to be able to consider CONNEXTDDS_HOST_ARCH with both names
+    # "darwin" and the more natural "x64Darwin". Consequently, we assign a
+    # list of names to CONNEXT_HOST_ARCH in the case of darwin.
+    set(CONNEXTDDS_HOST_ARCH "darwin" "x64Darwin")
 else()
     message(FATAL_ERROR
         "${CONNEXTDDS_ARCH} architecture is unsupported by this module")
@@ -590,6 +626,10 @@ set(DISTRIBUTED_LOGGER_CPP_LIBRARIES_DEBUG_STATIC
     ${librtidlcpp_debug_static})
 set(DISTRIBUTED_LOGGER_CPP_LIBRARIES_DEBUG_SHARED
     ${librtidlcpp_debug_shared})
+
+if (CMAKE_SYSTEM_NAME MATCHES "Linux")
+    set(CONNEXTDDS_EXTERNAL_LIBS "-Wl,--no-as-needed  ${CONNEXTDDS_EXTERNAL_LIBS}")
+endif()
 endif()
 
 #####################################################################
@@ -598,7 +638,11 @@ endif()
 if(routing_service IN_LIST RTIConnextDDS_FIND_COMPONENTS)
     # Add fields associated with the routing_service component
     list(APPEND
-        RTI_VERSIONS_FIELD_NAMES)
+        RTI_VERSIONS_FIELD_NAMES
+        "routing_service_host"
+        "routing_service"
+        "routing_service_sdk"
+        "routing_service_sdk_jars")
 
     # Find all flavors of librtiroutingservice
     find_library(librtiroutingservice_release_static
@@ -825,7 +869,11 @@ foreach(field IN LISTS RTI_VERSIONS_FIELD_NAMES)
     connextdds_check_component_field_version(${field} ${xml_file})
 endforeach()
 
+if(NOT RTIVERSION_ERROR)
+    set(RTICONNEXTDDS_VERSION_OK TRUE)
+endif()
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(RTIConnextDDS
-    REQUIRED_VARS CONNEXTDDS_DIR RTICONNEXTDDS_VERSION
+    REQUIRED_VARS CONNEXTDDS_DIR RTICONNEXTDDS_VERSION RTICONNEXTDDS_VERSION_OK
     VERSION_VAR RTICONNEXTDDS_VERSION)

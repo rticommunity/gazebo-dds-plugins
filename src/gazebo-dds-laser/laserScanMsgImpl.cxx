@@ -257,11 +257,11 @@ DDS_TypeCode* Header_c_get_typecode()
     static RTIBool is_initialized = RTI_FALSE;
 
     static DDS_TypeCode Header_c_g_tc_frame_id_string = DDS_INITIALIZE_STRING_TYPECODE(RTI_INT32_MAX);
-    static DDS_TypeCode_Member Header_c_g_tc_members[3]=
+    static DDS_TypeCode_Member Header_c_g_tc_members[2]=
     {
 
         {
-            (char *)"seq",/* Member name */
+            (char *)"stamp",/* Member name */
             {
                 0,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -278,26 +278,9 @@ DDS_TypeCode* Header_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"stamp",/* Member name */
-            {
-                1,/* Representation ID */          
-                DDS_BOOLEAN_FALSE,/* Is a pointer? */
-                -1, /* Bitfield bits */
-                NULL/* Member type code is assigned later */
-            },
-            0, /* Ignored */
-            0, /* Ignored */
-            0, /* Ignored */
-            NULL, /* Ignored */
-            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
-            DDS_PUBLIC_MEMBER,/* Member visibility */
-            1,
-            NULL/* Ignored */
-        }, 
-        {
             (char *)"frame_id",/* Member name */
             {
-                2,/* Representation ID */          
+                1,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
                 -1, /* Bitfield bits */
                 NULL/* Member type code is assigned later */
@@ -323,7 +306,7 @@ DDS_TypeCode* Header_c_get_typecode()
             0, /* Ignored */
             0, /* Ignored */
             NULL, /* Ignored */
-            3, /* Number of members */
+            2, /* Number of members */
             Header_c_g_tc_members, /* Members */
             DDS_VM_NONE  /* Ignored */         
         }}; /* Type code for Header_c*/
@@ -332,11 +315,9 @@ DDS_TypeCode* Header_c_get_typecode()
         return &Header_c_g_tc;
     }
 
-    Header_c_g_tc_members[0]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_ulong;
+    Header_c_g_tc_members[0]._representation._typeCode = (RTICdrTypeCode *)Time_c_get_typecode();
 
-    Header_c_g_tc_members[1]._representation._typeCode = (RTICdrTypeCode *)Time_c_get_typecode();
-
-    Header_c_g_tc_members[2]._representation._typeCode = (RTICdrTypeCode *)&Header_c_g_tc_frame_id_string;
+    Header_c_g_tc_members[1]._representation._typeCode = (RTICdrTypeCode *)&Header_c_g_tc_frame_id_string;
 
     is_initialized = RTI_TRUE;
 
@@ -371,10 +352,6 @@ RTIBool Header_c_initialize_w_params(
         return RTI_FALSE;
     }
     if (allocParams == NULL) {
-        return RTI_FALSE;
-    }
-
-    if (!RTICdrType_initUnsignedLong(&sample->seq)) {
         return RTI_FALSE;
     }
 
@@ -469,10 +446,6 @@ RTIBool Header_c_copy(
         return RTI_FALSE;
     }
 
-    if (!RTICdrType_copyUnsignedLong (
-        &dst->seq, &src->seq)) { 
-        return RTI_FALSE;
-    }
     if (!Time_c_copy(
         &dst->stamp,(const Time_c*)&src->stamp)) {
         return RTI_FALSE;
@@ -517,6 +490,759 @@ RTIBool Header_c_copy(
 #undef T
 
 /* ========================================================================= */
+const char *Position_cTYPENAME = "Position";
+
+DDS_TypeCode* Position_c_get_typecode()
+{
+    static RTIBool is_initialized = RTI_FALSE;
+
+    static DDS_TypeCode_Member Position_c_g_tc_members[3]=
+    {
+
+        {
+            (char *)"x",/* Member name */
+            {
+                0,/* Representation ID */          
+                DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                -1, /* Bitfield bits */
+                NULL/* Member type code is assigned later */
+            },
+            0, /* Ignored */
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+            DDS_PUBLIC_MEMBER,/* Member visibility */
+            1,
+            NULL/* Ignored */
+        }, 
+        {
+            (char *)"y",/* Member name */
+            {
+                1,/* Representation ID */          
+                DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                -1, /* Bitfield bits */
+                NULL/* Member type code is assigned later */
+            },
+            0, /* Ignored */
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+            DDS_PUBLIC_MEMBER,/* Member visibility */
+            1,
+            NULL/* Ignored */
+        }, 
+        {
+            (char *)"z",/* Member name */
+            {
+                2,/* Representation ID */          
+                DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                -1, /* Bitfield bits */
+                NULL/* Member type code is assigned later */
+            },
+            0, /* Ignored */
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+            DDS_PUBLIC_MEMBER,/* Member visibility */
+            1,
+            NULL/* Ignored */
+        }
+    };
+
+    static DDS_TypeCode Position_c_g_tc =
+    {{
+            DDS_TK_STRUCT,/* Kind */
+            DDS_BOOLEAN_FALSE, /* Ignored */
+            -1, /*Ignored*/
+            (char *)"Position", /* Name */
+            NULL, /* Ignored */      
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            3, /* Number of members */
+            Position_c_g_tc_members, /* Members */
+            DDS_VM_NONE  /* Ignored */         
+        }}; /* Type code for Position_c*/
+
+    if (is_initialized) {
+        return &Position_c_g_tc;
+    }
+
+    Position_c_g_tc_members[0]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+
+    Position_c_g_tc_members[1]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+
+    Position_c_g_tc_members[2]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+
+    is_initialized = RTI_TRUE;
+
+    return &Position_c_g_tc;
+}
+
+RTIBool Position_c_initialize(
+    Position_c* sample) {
+    return Position_c_initialize_ex(sample,RTI_TRUE,RTI_TRUE);
+}
+
+RTIBool Position_c_initialize_ex(
+    Position_c* sample,RTIBool allocatePointers, RTIBool allocateMemory)
+{
+
+    struct DDS_TypeAllocationParams_t allocParams =
+    DDS_TYPE_ALLOCATION_PARAMS_DEFAULT;
+
+    allocParams.allocate_pointers =  (DDS_Boolean)allocatePointers;
+    allocParams.allocate_memory = (DDS_Boolean)allocateMemory;
+
+    return Position_c_initialize_w_params(
+        sample,&allocParams);
+
+}
+
+RTIBool Position_c_initialize_w_params(
+    Position_c* sample, const struct DDS_TypeAllocationParams_t * allocParams)
+{
+
+    if (sample == NULL) {
+        return RTI_FALSE;
+    }
+    if (allocParams == NULL) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrType_initFloat(&sample->x)) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrType_initFloat(&sample->y)) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrType_initFloat(&sample->z)) {
+        return RTI_FALSE;
+    }
+
+    return RTI_TRUE;
+}
+
+void Position_c_finalize(
+    Position_c* sample)
+{
+
+    Position_c_finalize_ex(sample,RTI_TRUE);
+}
+
+void Position_c_finalize_ex(
+    Position_c* sample,RTIBool deletePointers)
+{
+    struct DDS_TypeDeallocationParams_t deallocParams =
+    DDS_TYPE_DEALLOCATION_PARAMS_DEFAULT;
+
+    if (sample==NULL) {
+        return;
+    } 
+
+    deallocParams.delete_pointers = (DDS_Boolean)deletePointers;
+
+    Position_c_finalize_w_params(
+        sample,&deallocParams);
+}
+
+void Position_c_finalize_w_params(
+    Position_c* sample,const struct DDS_TypeDeallocationParams_t * deallocParams)
+{
+
+    if (sample==NULL) {
+        return;
+    }
+
+    if (deallocParams == NULL) {
+        return;
+    }
+
+}
+
+void Position_c_finalize_optional_members(
+    Position_c* sample, RTIBool deletePointers)
+{
+    struct DDS_TypeDeallocationParams_t deallocParamsTmp =
+    DDS_TYPE_DEALLOCATION_PARAMS_DEFAULT;
+    struct DDS_TypeDeallocationParams_t * deallocParams =
+    &deallocParamsTmp;
+
+    if (sample==NULL) {
+        return;
+    } 
+    if (deallocParams) {} /* To avoid warnings */
+
+    deallocParamsTmp.delete_pointers = (DDS_Boolean)deletePointers;
+    deallocParamsTmp.delete_optional_members = DDS_BOOLEAN_TRUE;
+
+}
+
+RTIBool Position_c_copy(
+    Position_c* dst,
+    const Position_c* src)
+{
+
+    if (dst == NULL || src == NULL) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrType_copyFloat (
+        &dst->x, &src->x)) { 
+        return RTI_FALSE;
+    }
+    if (!RTICdrType_copyFloat (
+        &dst->y, &src->y)) { 
+        return RTI_FALSE;
+    }
+    if (!RTICdrType_copyFloat (
+        &dst->z, &src->z)) { 
+        return RTI_FALSE;
+    }
+
+    return RTI_TRUE;
+
+}
+
+/**
+* <<IMPLEMENTATION>>
+*
+* Defines:  TSeq, T
+*
+* Configure and implement 'Position_c' sequence class.
+*/
+#define T Position_c
+#define TSeq Position_cSeq
+
+#define T_initialize_w_params Position_c_initialize_w_params
+
+#define T_finalize_w_params   Position_c_finalize_w_params
+#define T_copy       Position_c_copy
+
+#ifndef NDDS_STANDALONE_TYPE
+#include "dds_c/generic/dds_c_sequence_TSeq.gen"
+#else
+#include "dds_c_sequence_TSeq.gen"
+#endif
+
+#undef T_copy
+#undef T_finalize_w_params
+
+#undef T_initialize_w_params
+
+#undef TSeq
+#undef T
+
+/* ========================================================================= */
+const char *Orientation_cTYPENAME = "Orientation";
+
+DDS_TypeCode* Orientation_c_get_typecode()
+{
+    static RTIBool is_initialized = RTI_FALSE;
+
+    static DDS_TypeCode_Member Orientation_c_g_tc_members[4]=
+    {
+
+        {
+            (char *)"x",/* Member name */
+            {
+                0,/* Representation ID */          
+                DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                -1, /* Bitfield bits */
+                NULL/* Member type code is assigned later */
+            },
+            0, /* Ignored */
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+            DDS_PUBLIC_MEMBER,/* Member visibility */
+            1,
+            NULL/* Ignored */
+        }, 
+        {
+            (char *)"y",/* Member name */
+            {
+                1,/* Representation ID */          
+                DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                -1, /* Bitfield bits */
+                NULL/* Member type code is assigned later */
+            },
+            0, /* Ignored */
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+            DDS_PUBLIC_MEMBER,/* Member visibility */
+            1,
+            NULL/* Ignored */
+        }, 
+        {
+            (char *)"z",/* Member name */
+            {
+                2,/* Representation ID */          
+                DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                -1, /* Bitfield bits */
+                NULL/* Member type code is assigned later */
+            },
+            0, /* Ignored */
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+            DDS_PUBLIC_MEMBER,/* Member visibility */
+            1,
+            NULL/* Ignored */
+        }, 
+        {
+            (char *)"w",/* Member name */
+            {
+                3,/* Representation ID */          
+                DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                -1, /* Bitfield bits */
+                NULL/* Member type code is assigned later */
+            },
+            0, /* Ignored */
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+            DDS_PUBLIC_MEMBER,/* Member visibility */
+            1,
+            NULL/* Ignored */
+        }
+    };
+
+    static DDS_TypeCode Orientation_c_g_tc =
+    {{
+            DDS_TK_STRUCT,/* Kind */
+            DDS_BOOLEAN_FALSE, /* Ignored */
+            -1, /*Ignored*/
+            (char *)"Orientation", /* Name */
+            NULL, /* Ignored */      
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            4, /* Number of members */
+            Orientation_c_g_tc_members, /* Members */
+            DDS_VM_NONE  /* Ignored */         
+        }}; /* Type code for Orientation_c*/
+
+    if (is_initialized) {
+        return &Orientation_c_g_tc;
+    }
+
+    Orientation_c_g_tc_members[0]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+
+    Orientation_c_g_tc_members[1]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+
+    Orientation_c_g_tc_members[2]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+
+    Orientation_c_g_tc_members[3]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+
+    is_initialized = RTI_TRUE;
+
+    return &Orientation_c_g_tc;
+}
+
+RTIBool Orientation_c_initialize(
+    Orientation_c* sample) {
+    return Orientation_c_initialize_ex(sample,RTI_TRUE,RTI_TRUE);
+}
+
+RTIBool Orientation_c_initialize_ex(
+    Orientation_c* sample,RTIBool allocatePointers, RTIBool allocateMemory)
+{
+
+    struct DDS_TypeAllocationParams_t allocParams =
+    DDS_TYPE_ALLOCATION_PARAMS_DEFAULT;
+
+    allocParams.allocate_pointers =  (DDS_Boolean)allocatePointers;
+    allocParams.allocate_memory = (DDS_Boolean)allocateMemory;
+
+    return Orientation_c_initialize_w_params(
+        sample,&allocParams);
+
+}
+
+RTIBool Orientation_c_initialize_w_params(
+    Orientation_c* sample, const struct DDS_TypeAllocationParams_t * allocParams)
+{
+
+    if (sample == NULL) {
+        return RTI_FALSE;
+    }
+    if (allocParams == NULL) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrType_initFloat(&sample->x)) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrType_initFloat(&sample->y)) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrType_initFloat(&sample->z)) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrType_initFloat(&sample->w)) {
+        return RTI_FALSE;
+    }
+
+    return RTI_TRUE;
+}
+
+void Orientation_c_finalize(
+    Orientation_c* sample)
+{
+
+    Orientation_c_finalize_ex(sample,RTI_TRUE);
+}
+
+void Orientation_c_finalize_ex(
+    Orientation_c* sample,RTIBool deletePointers)
+{
+    struct DDS_TypeDeallocationParams_t deallocParams =
+    DDS_TYPE_DEALLOCATION_PARAMS_DEFAULT;
+
+    if (sample==NULL) {
+        return;
+    } 
+
+    deallocParams.delete_pointers = (DDS_Boolean)deletePointers;
+
+    Orientation_c_finalize_w_params(
+        sample,&deallocParams);
+}
+
+void Orientation_c_finalize_w_params(
+    Orientation_c* sample,const struct DDS_TypeDeallocationParams_t * deallocParams)
+{
+
+    if (sample==NULL) {
+        return;
+    }
+
+    if (deallocParams == NULL) {
+        return;
+    }
+
+}
+
+void Orientation_c_finalize_optional_members(
+    Orientation_c* sample, RTIBool deletePointers)
+{
+    struct DDS_TypeDeallocationParams_t deallocParamsTmp =
+    DDS_TYPE_DEALLOCATION_PARAMS_DEFAULT;
+    struct DDS_TypeDeallocationParams_t * deallocParams =
+    &deallocParamsTmp;
+
+    if (sample==NULL) {
+        return;
+    } 
+    if (deallocParams) {} /* To avoid warnings */
+
+    deallocParamsTmp.delete_pointers = (DDS_Boolean)deletePointers;
+    deallocParamsTmp.delete_optional_members = DDS_BOOLEAN_TRUE;
+
+}
+
+RTIBool Orientation_c_copy(
+    Orientation_c* dst,
+    const Orientation_c* src)
+{
+
+    if (dst == NULL || src == NULL) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrType_copyFloat (
+        &dst->x, &src->x)) { 
+        return RTI_FALSE;
+    }
+    if (!RTICdrType_copyFloat (
+        &dst->y, &src->y)) { 
+        return RTI_FALSE;
+    }
+    if (!RTICdrType_copyFloat (
+        &dst->z, &src->z)) { 
+        return RTI_FALSE;
+    }
+    if (!RTICdrType_copyFloat (
+        &dst->w, &src->w)) { 
+        return RTI_FALSE;
+    }
+
+    return RTI_TRUE;
+
+}
+
+/**
+* <<IMPLEMENTATION>>
+*
+* Defines:  TSeq, T
+*
+* Configure and implement 'Orientation_c' sequence class.
+*/
+#define T Orientation_c
+#define TSeq Orientation_cSeq
+
+#define T_initialize_w_params Orientation_c_initialize_w_params
+
+#define T_finalize_w_params   Orientation_c_finalize_w_params
+#define T_copy       Orientation_c_copy
+
+#ifndef NDDS_STANDALONE_TYPE
+#include "dds_c/generic/dds_c_sequence_TSeq.gen"
+#else
+#include "dds_c_sequence_TSeq.gen"
+#endif
+
+#undef T_copy
+#undef T_finalize_w_params
+
+#undef T_initialize_w_params
+
+#undef TSeq
+#undef T
+
+/* ========================================================================= */
+const char *World_Pose_cTYPENAME = "World_Pose";
+
+DDS_TypeCode* World_Pose_c_get_typecode()
+{
+    static RTIBool is_initialized = RTI_FALSE;
+
+    static DDS_TypeCode_Member World_Pose_c_g_tc_members[2]=
+    {
+
+        {
+            (char *)"position",/* Member name */
+            {
+                0,/* Representation ID */          
+                DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                -1, /* Bitfield bits */
+                NULL/* Member type code is assigned later */
+            },
+            0, /* Ignored */
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+            DDS_PUBLIC_MEMBER,/* Member visibility */
+            1,
+            NULL/* Ignored */
+        }, 
+        {
+            (char *)"orientation",/* Member name */
+            {
+                1,/* Representation ID */          
+                DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                -1, /* Bitfield bits */
+                NULL/* Member type code is assigned later */
+            },
+            0, /* Ignored */
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+            DDS_PUBLIC_MEMBER,/* Member visibility */
+            1,
+            NULL/* Ignored */
+        }
+    };
+
+    static DDS_TypeCode World_Pose_c_g_tc =
+    {{
+            DDS_TK_STRUCT,/* Kind */
+            DDS_BOOLEAN_FALSE, /* Ignored */
+            -1, /*Ignored*/
+            (char *)"World_Pose", /* Name */
+            NULL, /* Ignored */      
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            2, /* Number of members */
+            World_Pose_c_g_tc_members, /* Members */
+            DDS_VM_NONE  /* Ignored */         
+        }}; /* Type code for World_Pose_c*/
+
+    if (is_initialized) {
+        return &World_Pose_c_g_tc;
+    }
+
+    World_Pose_c_g_tc_members[0]._representation._typeCode = (RTICdrTypeCode *)Position_c_get_typecode();
+
+    World_Pose_c_g_tc_members[1]._representation._typeCode = (RTICdrTypeCode *)Orientation_c_get_typecode();
+
+    is_initialized = RTI_TRUE;
+
+    return &World_Pose_c_g_tc;
+}
+
+RTIBool World_Pose_c_initialize(
+    World_Pose_c* sample) {
+    return World_Pose_c_initialize_ex(sample,RTI_TRUE,RTI_TRUE);
+}
+
+RTIBool World_Pose_c_initialize_ex(
+    World_Pose_c* sample,RTIBool allocatePointers, RTIBool allocateMemory)
+{
+
+    struct DDS_TypeAllocationParams_t allocParams =
+    DDS_TYPE_ALLOCATION_PARAMS_DEFAULT;
+
+    allocParams.allocate_pointers =  (DDS_Boolean)allocatePointers;
+    allocParams.allocate_memory = (DDS_Boolean)allocateMemory;
+
+    return World_Pose_c_initialize_w_params(
+        sample,&allocParams);
+
+}
+
+RTIBool World_Pose_c_initialize_w_params(
+    World_Pose_c* sample, const struct DDS_TypeAllocationParams_t * allocParams)
+{
+
+    if (sample == NULL) {
+        return RTI_FALSE;
+    }
+    if (allocParams == NULL) {
+        return RTI_FALSE;
+    }
+
+    if (!Position_c_initialize_w_params(&sample->position,
+    allocParams)) {
+        return RTI_FALSE;
+    }
+    if (!Orientation_c_initialize_w_params(&sample->orientation,
+    allocParams)) {
+        return RTI_FALSE;
+    }
+    return RTI_TRUE;
+}
+
+void World_Pose_c_finalize(
+    World_Pose_c* sample)
+{
+
+    World_Pose_c_finalize_ex(sample,RTI_TRUE);
+}
+
+void World_Pose_c_finalize_ex(
+    World_Pose_c* sample,RTIBool deletePointers)
+{
+    struct DDS_TypeDeallocationParams_t deallocParams =
+    DDS_TYPE_DEALLOCATION_PARAMS_DEFAULT;
+
+    if (sample==NULL) {
+        return;
+    } 
+
+    deallocParams.delete_pointers = (DDS_Boolean)deletePointers;
+
+    World_Pose_c_finalize_w_params(
+        sample,&deallocParams);
+}
+
+void World_Pose_c_finalize_w_params(
+    World_Pose_c* sample,const struct DDS_TypeDeallocationParams_t * deallocParams)
+{
+
+    if (sample==NULL) {
+        return;
+    }
+
+    if (deallocParams == NULL) {
+        return;
+    }
+
+    Position_c_finalize_w_params(&sample->position,deallocParams);
+
+    Orientation_c_finalize_w_params(&sample->orientation,deallocParams);
+
+}
+
+void World_Pose_c_finalize_optional_members(
+    World_Pose_c* sample, RTIBool deletePointers)
+{
+    struct DDS_TypeDeallocationParams_t deallocParamsTmp =
+    DDS_TYPE_DEALLOCATION_PARAMS_DEFAULT;
+    struct DDS_TypeDeallocationParams_t * deallocParams =
+    &deallocParamsTmp;
+
+    if (sample==NULL) {
+        return;
+    } 
+    if (deallocParams) {} /* To avoid warnings */
+
+    deallocParamsTmp.delete_pointers = (DDS_Boolean)deletePointers;
+    deallocParamsTmp.delete_optional_members = DDS_BOOLEAN_TRUE;
+
+    Position_c_finalize_optional_members(&sample->position, deallocParams->delete_pointers);
+    Orientation_c_finalize_optional_members(&sample->orientation, deallocParams->delete_pointers);
+}
+
+RTIBool World_Pose_c_copy(
+    World_Pose_c* dst,
+    const World_Pose_c* src)
+{
+
+    if (dst == NULL || src == NULL) {
+        return RTI_FALSE;
+    }
+
+    if (!Position_c_copy(
+        &dst->position,(const Position_c*)&src->position)) {
+        return RTI_FALSE;
+    } 
+    if (!Orientation_c_copy(
+        &dst->orientation,(const Orientation_c*)&src->orientation)) {
+        return RTI_FALSE;
+    } 
+
+    return RTI_TRUE;
+
+}
+
+/**
+* <<IMPLEMENTATION>>
+*
+* Defines:  TSeq, T
+*
+* Configure and implement 'World_Pose_c' sequence class.
+*/
+#define T World_Pose_c
+#define TSeq World_Pose_cSeq
+
+#define T_initialize_w_params World_Pose_c_initialize_w_params
+
+#define T_finalize_w_params   World_Pose_c_finalize_w_params
+#define T_copy       World_Pose_c_copy
+
+#ifndef NDDS_STANDALONE_TYPE
+#include "dds_c/generic/dds_c_sequence_TSeq.gen"
+#else
+#include "dds_c_sequence_TSeq.gen"
+#endif
+
+#undef T_copy
+#undef T_finalize_w_params
+
+#undef T_initialize_w_params
+
+#undef TSeq
+#undef T
+
+/* ========================================================================= */
 const char *laser_Scan_msg_cTYPENAME = "laser_Scan_msg";
 
 DDS_TypeCode* laser_Scan_msg_c_get_typecode()
@@ -525,7 +1251,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
 
     static DDS_TypeCode laser_Scan_msg_c_g_tc_ranges_sequence = DDS_INITIALIZE_SEQUENCE_TYPECODE(RTI_INT32_MAX,NULL);
     static DDS_TypeCode laser_Scan_msg_c_g_tc_intensities_sequence = DDS_INITIALIZE_SEQUENCE_TYPECODE(RTI_INT32_MAX,NULL);
-    static DDS_TypeCode_Member laser_Scan_msg_c_g_tc_members[10]=
+    static DDS_TypeCode_Member laser_Scan_msg_c_g_tc_members[14]=
     {
 
         {
@@ -546,7 +1272,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"angle_min",/* Member name */
+            (char *)"world_pose",/* Member name */
             {
                 1,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -563,7 +1289,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"angle_max",/* Member name */
+            (char *)"angle_min",/* Member name */
             {
                 2,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -580,7 +1306,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"angle_increment",/* Member name */
+            (char *)"angle_max",/* Member name */
             {
                 3,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -597,7 +1323,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"time_increment",/* Member name */
+            (char *)"angle_step",/* Member name */
             {
                 4,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -614,7 +1340,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"scan_time",/* Member name */
+            (char *)"range_min",/* Member name */
             {
                 5,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -631,7 +1357,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"range_min",/* Member name */
+            (char *)"range_max",/* Member name */
             {
                 6,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -648,7 +1374,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"range_max",/* Member name */
+            (char *)"count",/* Member name */
             {
                 7,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -665,7 +1391,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"ranges",/* Member name */
+            (char *)"vertical_angle_min",/* Member name */
             {
                 8,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -682,9 +1408,77 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"intensities",/* Member name */
+            (char *)"vertical_angle_max",/* Member name */
             {
                 9,/* Representation ID */          
+                DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                -1, /* Bitfield bits */
+                NULL/* Member type code is assigned later */
+            },
+            0, /* Ignored */
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+            DDS_PUBLIC_MEMBER,/* Member visibility */
+            1,
+            NULL/* Ignored */
+        }, 
+        {
+            (char *)"vertical_angle_step",/* Member name */
+            {
+                10,/* Representation ID */          
+                DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                -1, /* Bitfield bits */
+                NULL/* Member type code is assigned later */
+            },
+            0, /* Ignored */
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+            DDS_PUBLIC_MEMBER,/* Member visibility */
+            1,
+            NULL/* Ignored */
+        }, 
+        {
+            (char *)"vertical_count",/* Member name */
+            {
+                11,/* Representation ID */          
+                DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                -1, /* Bitfield bits */
+                NULL/* Member type code is assigned later */
+            },
+            0, /* Ignored */
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+            DDS_PUBLIC_MEMBER,/* Member visibility */
+            1,
+            NULL/* Ignored */
+        }, 
+        {
+            (char *)"ranges",/* Member name */
+            {
+                12,/* Representation ID */          
+                DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                -1, /* Bitfield bits */
+                NULL/* Member type code is assigned later */
+            },
+            0, /* Ignored */
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+            DDS_PUBLIC_MEMBER,/* Member visibility */
+            1,
+            NULL/* Ignored */
+        }, 
+        {
+            (char *)"intensities",/* Member name */
+            {
+                13,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
                 -1, /* Bitfield bits */
                 NULL/* Member type code is assigned later */
@@ -710,7 +1504,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             0, /* Ignored */
             0, /* Ignored */
             NULL, /* Ignored */
-            10, /* Number of members */
+            14, /* Number of members */
             laser_Scan_msg_c_g_tc_members, /* Members */
             DDS_VM_NONE  /* Ignored */         
         }}; /* Type code for laser_Scan_msg_c*/
@@ -725,7 +1519,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
 
     laser_Scan_msg_c_g_tc_members[0]._representation._typeCode = (RTICdrTypeCode *)Header_c_get_typecode();
 
-    laser_Scan_msg_c_g_tc_members[1]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+    laser_Scan_msg_c_g_tc_members[1]._representation._typeCode = (RTICdrTypeCode *)World_Pose_c_get_typecode();
 
     laser_Scan_msg_c_g_tc_members[2]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
 
@@ -737,10 +1531,18 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
 
     laser_Scan_msg_c_g_tc_members[6]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
 
-    laser_Scan_msg_c_g_tc_members[7]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+    laser_Scan_msg_c_g_tc_members[7]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_long;
 
-    laser_Scan_msg_c_g_tc_members[8]._representation._typeCode = (RTICdrTypeCode *)& laser_Scan_msg_c_g_tc_ranges_sequence;
-    laser_Scan_msg_c_g_tc_members[9]._representation._typeCode = (RTICdrTypeCode *)& laser_Scan_msg_c_g_tc_intensities_sequence;
+    laser_Scan_msg_c_g_tc_members[8]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+
+    laser_Scan_msg_c_g_tc_members[9]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+
+    laser_Scan_msg_c_g_tc_members[10]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+
+    laser_Scan_msg_c_g_tc_members[11]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+
+    laser_Scan_msg_c_g_tc_members[12]._representation._typeCode = (RTICdrTypeCode *)& laser_Scan_msg_c_g_tc_ranges_sequence;
+    laser_Scan_msg_c_g_tc_members[13]._representation._typeCode = (RTICdrTypeCode *)& laser_Scan_msg_c_g_tc_intensities_sequence;
 
     is_initialized = RTI_TRUE;
 
@@ -785,6 +1587,10 @@ RTIBool laser_Scan_msg_c_initialize_w_params(
     allocParams)) {
         return RTI_FALSE;
     }
+    if (!World_Pose_c_initialize_w_params(&sample->world_pose,
+    allocParams)) {
+        return RTI_FALSE;
+    }
 
     if (!RTICdrType_initFloat(&sample->angle_min)) {
         return RTI_FALSE;
@@ -794,15 +1600,7 @@ RTIBool laser_Scan_msg_c_initialize_w_params(
         return RTI_FALSE;
     }
 
-    if (!RTICdrType_initFloat(&sample->angle_increment)) {
-        return RTI_FALSE;
-    }
-
-    if (!RTICdrType_initFloat(&sample->time_increment)) {
-        return RTI_FALSE;
-    }
-
-    if (!RTICdrType_initFloat(&sample->scan_time)) {
+    if (!RTICdrType_initFloat(&sample->angle_step)) {
         return RTI_FALSE;
     }
 
@@ -811,6 +1609,26 @@ RTIBool laser_Scan_msg_c_initialize_w_params(
     }
 
     if (!RTICdrType_initFloat(&sample->range_max)) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrType_initLong(&sample->count)) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrType_initFloat(&sample->vertical_angle_min)) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrType_initFloat(&sample->vertical_angle_max)) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrType_initFloat(&sample->vertical_angle_step)) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrType_initFloat(&sample->vertical_count)) {
         return RTI_FALSE;
     }
 
@@ -872,6 +1690,8 @@ void laser_Scan_msg_c_finalize_w_params(
 
     Header_c_finalize_w_params(&sample->header,deallocParams);
 
+    World_Pose_c_finalize_w_params(&sample->world_pose,deallocParams);
+
     DDS_FloatSeq_finalize(&sample->ranges);
 
     DDS_FloatSeq_finalize(&sample->intensities);
@@ -895,6 +1715,7 @@ void laser_Scan_msg_c_finalize_optional_members(
     deallocParamsTmp.delete_optional_members = DDS_BOOLEAN_TRUE;
 
     Header_c_finalize_optional_members(&sample->header, deallocParams->delete_pointers);
+    World_Pose_c_finalize_optional_members(&sample->world_pose, deallocParams->delete_pointers);
 }
 
 RTIBool laser_Scan_msg_c_copy(
@@ -910,6 +1731,10 @@ RTIBool laser_Scan_msg_c_copy(
         &dst->header,(const Header_c*)&src->header)) {
         return RTI_FALSE;
     } 
+    if (!World_Pose_c_copy(
+        &dst->world_pose,(const World_Pose_c*)&src->world_pose)) {
+        return RTI_FALSE;
+    } 
     if (!RTICdrType_copyFloat (
         &dst->angle_min, &src->angle_min)) { 
         return RTI_FALSE;
@@ -919,15 +1744,7 @@ RTIBool laser_Scan_msg_c_copy(
         return RTI_FALSE;
     }
     if (!RTICdrType_copyFloat (
-        &dst->angle_increment, &src->angle_increment)) { 
-        return RTI_FALSE;
-    }
-    if (!RTICdrType_copyFloat (
-        &dst->time_increment, &src->time_increment)) { 
-        return RTI_FALSE;
-    }
-    if (!RTICdrType_copyFloat (
-        &dst->scan_time, &src->scan_time)) { 
+        &dst->angle_step, &src->angle_step)) { 
         return RTI_FALSE;
     }
     if (!RTICdrType_copyFloat (
@@ -936,6 +1753,26 @@ RTIBool laser_Scan_msg_c_copy(
     }
     if (!RTICdrType_copyFloat (
         &dst->range_max, &src->range_max)) { 
+        return RTI_FALSE;
+    }
+    if (!RTICdrType_copyLong (
+        &dst->count, &src->count)) { 
+        return RTI_FALSE;
+    }
+    if (!RTICdrType_copyFloat (
+        &dst->vertical_angle_min, &src->vertical_angle_min)) { 
+        return RTI_FALSE;
+    }
+    if (!RTICdrType_copyFloat (
+        &dst->vertical_angle_max, &src->vertical_angle_max)) { 
+        return RTI_FALSE;
+    }
+    if (!RTICdrType_copyFloat (
+        &dst->vertical_angle_step, &src->vertical_angle_step)) { 
+        return RTI_FALSE;
+    }
+    if (!RTICdrType_copyFloat (
+        &dst->vertical_count, &src->vertical_count)) { 
         return RTI_FALSE;
     }
     if (!DDS_FloatSeq_copy(&dst->ranges ,

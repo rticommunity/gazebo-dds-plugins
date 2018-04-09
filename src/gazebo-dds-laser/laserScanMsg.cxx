@@ -95,24 +95,19 @@ std::ostream& operator << (std::ostream& o,const Time& sample)
 
 // ---- Header: 
 
-Header::Header() :
-    m_seq_ (0u) {
+Header::Header() {
 }   
 
 Header::Header (
-    uint32_t seq_param,
     const Time& stamp_param,
     const dds::core::string& frame_id_param)
     :
-        m_seq_( seq_param ),
         m_stamp_( stamp_param ),
         m_frame_id_( frame_id_param ) {
 }
 #ifdef RTI_CXX11_RVALUE_REFERENCES
 #ifdef RTI_CXX11_NO_IMPLICIT_MOVE_OPERATIONS
-Header::Header(Header&& other_) OMG_NOEXCEPT  :m_seq_ (std::move(other_.m_seq_))
-,
-m_stamp_ (std::move(other_.m_stamp_))
+Header::Header(Header&& other_) OMG_NOEXCEPT  :m_stamp_ (std::move(other_.m_stamp_))
 ,
 m_frame_id_ (std::move(other_.m_frame_id_))
 {
@@ -129,15 +124,11 @@ Header& Header::operator=(Header&&  other_) OMG_NOEXCEPT {
 void Header::swap(Header& other_)  OMG_NOEXCEPT 
 {
     using std::swap;
-    swap(m_seq_, other_.m_seq_);
     swap(m_stamp_, other_.m_stamp_);
     swap(m_frame_id_, other_.m_frame_id_);
 }  
 
 bool Header::operator == (const Header& other_) const {
-    if (m_seq_ != other_.m_seq_) {
-        return false;
-    }
     if (m_stamp_ != other_.m_stamp_) {
         return false;
     }
@@ -151,14 +142,6 @@ bool Header::operator != (const Header& other_) const {
 }
 
 // --- Getters and Setters: -------------------------------------------------
-uint32_t Header::seq() const OMG_NOEXCEPT{
-    return m_seq_;
-}
-
-void Header::seq(uint32_t value) {
-    m_seq_ = value;
-}
-
 Time& Header::stamp() OMG_NOEXCEPT {
     return m_stamp_;
 }
@@ -187,9 +170,299 @@ std::ostream& operator << (std::ostream& o,const Header& sample)
 {
     rti::util::StreamFlagSaver flag_saver (o);
     o <<"[";
-    o << "seq: " << sample.seq()<<", ";
     o << "stamp: " << sample.stamp()<<", ";
     o << "frame_id: " << sample.frame_id() ;
+    o <<"]";
+    return o;
+}
+
+// ---- Position: 
+
+Position::Position() :
+    m_x_ (0.0f) ,
+    m_y_ (0.0f) ,
+    m_z_ (0.0f) {
+}   
+
+Position::Position (
+    float x_param,
+    float y_param,
+    float z_param)
+    :
+        m_x_( x_param ),
+        m_y_( y_param ),
+        m_z_( z_param ) {
+}
+#ifdef RTI_CXX11_RVALUE_REFERENCES
+#ifdef RTI_CXX11_NO_IMPLICIT_MOVE_OPERATIONS
+Position::Position(Position&& other_) OMG_NOEXCEPT  :m_x_ (std::move(other_.m_x_))
+,
+m_y_ (std::move(other_.m_y_))
+,
+m_z_ (std::move(other_.m_z_))
+{
+} 
+
+Position& Position::operator=(Position&&  other_) OMG_NOEXCEPT {
+    Position tmp(std::move(other_));
+    swap(tmp); 
+    return *this;
+}
+#endif
+#endif   
+
+void Position::swap(Position& other_)  OMG_NOEXCEPT 
+{
+    using std::swap;
+    swap(m_x_, other_.m_x_);
+    swap(m_y_, other_.m_y_);
+    swap(m_z_, other_.m_z_);
+}  
+
+bool Position::operator == (const Position& other_) const {
+    if (m_x_ != other_.m_x_) {
+        return false;
+    }
+    if (m_y_ != other_.m_y_) {
+        return false;
+    }
+    if (m_z_ != other_.m_z_) {
+        return false;
+    }
+    return true;
+}
+bool Position::operator != (const Position& other_) const {
+    return !this->operator ==(other_);
+}
+
+// --- Getters and Setters: -------------------------------------------------
+float Position::x() const OMG_NOEXCEPT{
+    return m_x_;
+}
+
+void Position::x(float value) {
+    m_x_ = value;
+}
+
+float Position::y() const OMG_NOEXCEPT{
+    return m_y_;
+}
+
+void Position::y(float value) {
+    m_y_ = value;
+}
+
+float Position::z() const OMG_NOEXCEPT{
+    return m_z_;
+}
+
+void Position::z(float value) {
+    m_z_ = value;
+}
+
+std::ostream& operator << (std::ostream& o,const Position& sample)
+{
+    rti::util::StreamFlagSaver flag_saver (o);
+    o <<"[";
+    o << "x: " << std::setprecision(9) <<sample.x()<<", ";
+    o << "y: " << std::setprecision(9) <<sample.y()<<", ";
+    o << "z: " << std::setprecision(9) <<sample.z() ;
+    o <<"]";
+    return o;
+}
+
+// ---- Orientation: 
+
+Orientation::Orientation() :
+    m_x_ (0.0f) ,
+    m_y_ (0.0f) ,
+    m_z_ (0.0f) ,
+    m_w_ (0.0f) {
+}   
+
+Orientation::Orientation (
+    float x_param,
+    float y_param,
+    float z_param,
+    float w_param)
+    :
+        m_x_( x_param ),
+        m_y_( y_param ),
+        m_z_( z_param ),
+        m_w_( w_param ) {
+}
+#ifdef RTI_CXX11_RVALUE_REFERENCES
+#ifdef RTI_CXX11_NO_IMPLICIT_MOVE_OPERATIONS
+Orientation::Orientation(Orientation&& other_) OMG_NOEXCEPT  :m_x_ (std::move(other_.m_x_))
+,
+m_y_ (std::move(other_.m_y_))
+,
+m_z_ (std::move(other_.m_z_))
+,
+m_w_ (std::move(other_.m_w_))
+{
+} 
+
+Orientation& Orientation::operator=(Orientation&&  other_) OMG_NOEXCEPT {
+    Orientation tmp(std::move(other_));
+    swap(tmp); 
+    return *this;
+}
+#endif
+#endif   
+
+void Orientation::swap(Orientation& other_)  OMG_NOEXCEPT 
+{
+    using std::swap;
+    swap(m_x_, other_.m_x_);
+    swap(m_y_, other_.m_y_);
+    swap(m_z_, other_.m_z_);
+    swap(m_w_, other_.m_w_);
+}  
+
+bool Orientation::operator == (const Orientation& other_) const {
+    if (m_x_ != other_.m_x_) {
+        return false;
+    }
+    if (m_y_ != other_.m_y_) {
+        return false;
+    }
+    if (m_z_ != other_.m_z_) {
+        return false;
+    }
+    if (m_w_ != other_.m_w_) {
+        return false;
+    }
+    return true;
+}
+bool Orientation::operator != (const Orientation& other_) const {
+    return !this->operator ==(other_);
+}
+
+// --- Getters and Setters: -------------------------------------------------
+float Orientation::x() const OMG_NOEXCEPT{
+    return m_x_;
+}
+
+void Orientation::x(float value) {
+    m_x_ = value;
+}
+
+float Orientation::y() const OMG_NOEXCEPT{
+    return m_y_;
+}
+
+void Orientation::y(float value) {
+    m_y_ = value;
+}
+
+float Orientation::z() const OMG_NOEXCEPT{
+    return m_z_;
+}
+
+void Orientation::z(float value) {
+    m_z_ = value;
+}
+
+float Orientation::w() const OMG_NOEXCEPT{
+    return m_w_;
+}
+
+void Orientation::w(float value) {
+    m_w_ = value;
+}
+
+std::ostream& operator << (std::ostream& o,const Orientation& sample)
+{
+    rti::util::StreamFlagSaver flag_saver (o);
+    o <<"[";
+    o << "x: " << std::setprecision(9) <<sample.x()<<", ";
+    o << "y: " << std::setprecision(9) <<sample.y()<<", ";
+    o << "z: " << std::setprecision(9) <<sample.z()<<", ";
+    o << "w: " << std::setprecision(9) <<sample.w() ;
+    o <<"]";
+    return o;
+}
+
+// ---- World_Pose: 
+
+World_Pose::World_Pose() {
+}   
+
+World_Pose::World_Pose (
+    const Position& position_param,
+    const Orientation& orientation_param)
+    :
+        m_position_( position_param ),
+        m_orientation_( orientation_param ) {
+}
+#ifdef RTI_CXX11_RVALUE_REFERENCES
+#ifdef RTI_CXX11_NO_IMPLICIT_MOVE_OPERATIONS
+World_Pose::World_Pose(World_Pose&& other_) OMG_NOEXCEPT  :m_position_ (std::move(other_.m_position_))
+,
+m_orientation_ (std::move(other_.m_orientation_))
+{
+} 
+
+World_Pose& World_Pose::operator=(World_Pose&&  other_) OMG_NOEXCEPT {
+    World_Pose tmp(std::move(other_));
+    swap(tmp); 
+    return *this;
+}
+#endif
+#endif   
+
+void World_Pose::swap(World_Pose& other_)  OMG_NOEXCEPT 
+{
+    using std::swap;
+    swap(m_position_, other_.m_position_);
+    swap(m_orientation_, other_.m_orientation_);
+}  
+
+bool World_Pose::operator == (const World_Pose& other_) const {
+    if (m_position_ != other_.m_position_) {
+        return false;
+    }
+    if (m_orientation_ != other_.m_orientation_) {
+        return false;
+    }
+    return true;
+}
+bool World_Pose::operator != (const World_Pose& other_) const {
+    return !this->operator ==(other_);
+}
+
+// --- Getters and Setters: -------------------------------------------------
+Position& World_Pose::position() OMG_NOEXCEPT {
+    return m_position_;
+}
+
+const Position& World_Pose::position() const OMG_NOEXCEPT {
+    return m_position_;
+}
+
+void World_Pose::position(const Position& value) {
+    m_position_ = value;
+}
+
+Orientation& World_Pose::orientation() OMG_NOEXCEPT {
+    return m_orientation_;
+}
+
+const Orientation& World_Pose::orientation() const OMG_NOEXCEPT {
+    return m_orientation_;
+}
+
+void World_Pose::orientation(const Orientation& value) {
+    m_orientation_ = value;
+}
+
+std::ostream& operator << (std::ostream& o,const World_Pose& sample)
+{
+    rti::util::StreamFlagSaver flag_saver (o);
+    o <<"[";
+    o << "position: " << sample.position()<<", ";
+    o << "orientation: " << sample.orientation() ;
     o <<"]";
     return o;
 }
@@ -199,33 +472,44 @@ std::ostream& operator << (std::ostream& o,const Header& sample)
 laser_Scan_msg::laser_Scan_msg() :
     m_angle_min_ (0.0f) ,
     m_angle_max_ (0.0f) ,
-    m_angle_increment_ (0.0f) ,
-    m_time_increment_ (0.0f) ,
-    m_scan_time_ (0.0f) ,
+    m_angle_step_ (0.0f) ,
     m_range_min_ (0.0f) ,
-    m_range_max_ (0.0f) {
+    m_range_max_ (0.0f) ,
+    m_count_ (0) ,
+    m_vertical_angle_min_ (0.0f) ,
+    m_vertical_angle_max_ (0.0f) ,
+    m_vertical_angle_step_ (0.0f) ,
+    m_vertical_count_ (0.0f) {
 }   
 
 laser_Scan_msg::laser_Scan_msg (
     const Header& header_param,
+    const World_Pose& world_pose_param,
     float angle_min_param,
     float angle_max_param,
-    float angle_increment_param,
-    float time_increment_param,
-    float scan_time_param,
+    float angle_step_param,
     float range_min_param,
     float range_max_param,
+    int32_t count_param,
+    float vertical_angle_min_param,
+    float vertical_angle_max_param,
+    float vertical_angle_step_param,
+    float vertical_count_param,
     const dds::core::vector<float>& ranges_param,
     const dds::core::vector<float>& intensities_param)
     :
         m_header_( header_param ),
+        m_world_pose_( world_pose_param ),
         m_angle_min_( angle_min_param ),
         m_angle_max_( angle_max_param ),
-        m_angle_increment_( angle_increment_param ),
-        m_time_increment_( time_increment_param ),
-        m_scan_time_( scan_time_param ),
+        m_angle_step_( angle_step_param ),
         m_range_min_( range_min_param ),
         m_range_max_( range_max_param ),
+        m_count_( count_param ),
+        m_vertical_angle_min_( vertical_angle_min_param ),
+        m_vertical_angle_max_( vertical_angle_max_param ),
+        m_vertical_angle_step_( vertical_angle_step_param ),
+        m_vertical_count_( vertical_count_param ),
         m_ranges_( ranges_param ),
         m_intensities_( intensities_param ) {
 }
@@ -233,19 +517,27 @@ laser_Scan_msg::laser_Scan_msg (
 #ifdef RTI_CXX11_NO_IMPLICIT_MOVE_OPERATIONS
 laser_Scan_msg::laser_Scan_msg(laser_Scan_msg&& other_) OMG_NOEXCEPT  :m_header_ (std::move(other_.m_header_))
 ,
+m_world_pose_ (std::move(other_.m_world_pose_))
+,
 m_angle_min_ (std::move(other_.m_angle_min_))
 ,
 m_angle_max_ (std::move(other_.m_angle_max_))
 ,
-m_angle_increment_ (std::move(other_.m_angle_increment_))
-,
-m_time_increment_ (std::move(other_.m_time_increment_))
-,
-m_scan_time_ (std::move(other_.m_scan_time_))
+m_angle_step_ (std::move(other_.m_angle_step_))
 ,
 m_range_min_ (std::move(other_.m_range_min_))
 ,
 m_range_max_ (std::move(other_.m_range_max_))
+,
+m_count_ (std::move(other_.m_count_))
+,
+m_vertical_angle_min_ (std::move(other_.m_vertical_angle_min_))
+,
+m_vertical_angle_max_ (std::move(other_.m_vertical_angle_max_))
+,
+m_vertical_angle_step_ (std::move(other_.m_vertical_angle_step_))
+,
+m_vertical_count_ (std::move(other_.m_vertical_count_))
 ,
 m_ranges_ (std::move(other_.m_ranges_))
 ,
@@ -265,13 +557,17 @@ void laser_Scan_msg::swap(laser_Scan_msg& other_)  OMG_NOEXCEPT
 {
     using std::swap;
     swap(m_header_, other_.m_header_);
+    swap(m_world_pose_, other_.m_world_pose_);
     swap(m_angle_min_, other_.m_angle_min_);
     swap(m_angle_max_, other_.m_angle_max_);
-    swap(m_angle_increment_, other_.m_angle_increment_);
-    swap(m_time_increment_, other_.m_time_increment_);
-    swap(m_scan_time_, other_.m_scan_time_);
+    swap(m_angle_step_, other_.m_angle_step_);
     swap(m_range_min_, other_.m_range_min_);
     swap(m_range_max_, other_.m_range_max_);
+    swap(m_count_, other_.m_count_);
+    swap(m_vertical_angle_min_, other_.m_vertical_angle_min_);
+    swap(m_vertical_angle_max_, other_.m_vertical_angle_max_);
+    swap(m_vertical_angle_step_, other_.m_vertical_angle_step_);
+    swap(m_vertical_count_, other_.m_vertical_count_);
     swap(m_ranges_, other_.m_ranges_);
     swap(m_intensities_, other_.m_intensities_);
 }  
@@ -280,25 +576,37 @@ bool laser_Scan_msg::operator == (const laser_Scan_msg& other_) const {
     if (m_header_ != other_.m_header_) {
         return false;
     }
+    if (m_world_pose_ != other_.m_world_pose_) {
+        return false;
+    }
     if (m_angle_min_ != other_.m_angle_min_) {
         return false;
     }
     if (m_angle_max_ != other_.m_angle_max_) {
         return false;
     }
-    if (m_angle_increment_ != other_.m_angle_increment_) {
-        return false;
-    }
-    if (m_time_increment_ != other_.m_time_increment_) {
-        return false;
-    }
-    if (m_scan_time_ != other_.m_scan_time_) {
+    if (m_angle_step_ != other_.m_angle_step_) {
         return false;
     }
     if (m_range_min_ != other_.m_range_min_) {
         return false;
     }
     if (m_range_max_ != other_.m_range_max_) {
+        return false;
+    }
+    if (m_count_ != other_.m_count_) {
+        return false;
+    }
+    if (m_vertical_angle_min_ != other_.m_vertical_angle_min_) {
+        return false;
+    }
+    if (m_vertical_angle_max_ != other_.m_vertical_angle_max_) {
+        return false;
+    }
+    if (m_vertical_angle_step_ != other_.m_vertical_angle_step_) {
+        return false;
+    }
+    if (m_vertical_count_ != other_.m_vertical_count_) {
         return false;
     }
     if (m_ranges_ != other_.m_ranges_) {
@@ -326,6 +634,18 @@ void laser_Scan_msg::header(const Header& value) {
     m_header_ = value;
 }
 
+World_Pose& laser_Scan_msg::world_pose() OMG_NOEXCEPT {
+    return m_world_pose_;
+}
+
+const World_Pose& laser_Scan_msg::world_pose() const OMG_NOEXCEPT {
+    return m_world_pose_;
+}
+
+void laser_Scan_msg::world_pose(const World_Pose& value) {
+    m_world_pose_ = value;
+}
+
 float laser_Scan_msg::angle_min() const OMG_NOEXCEPT{
     return m_angle_min_;
 }
@@ -342,28 +662,12 @@ void laser_Scan_msg::angle_max(float value) {
     m_angle_max_ = value;
 }
 
-float laser_Scan_msg::angle_increment() const OMG_NOEXCEPT{
-    return m_angle_increment_;
+float laser_Scan_msg::angle_step() const OMG_NOEXCEPT{
+    return m_angle_step_;
 }
 
-void laser_Scan_msg::angle_increment(float value) {
-    m_angle_increment_ = value;
-}
-
-float laser_Scan_msg::time_increment() const OMG_NOEXCEPT{
-    return m_time_increment_;
-}
-
-void laser_Scan_msg::time_increment(float value) {
-    m_time_increment_ = value;
-}
-
-float laser_Scan_msg::scan_time() const OMG_NOEXCEPT{
-    return m_scan_time_;
-}
-
-void laser_Scan_msg::scan_time(float value) {
-    m_scan_time_ = value;
+void laser_Scan_msg::angle_step(float value) {
+    m_angle_step_ = value;
 }
 
 float laser_Scan_msg::range_min() const OMG_NOEXCEPT{
@@ -380,6 +684,46 @@ float laser_Scan_msg::range_max() const OMG_NOEXCEPT{
 
 void laser_Scan_msg::range_max(float value) {
     m_range_max_ = value;
+}
+
+int32_t laser_Scan_msg::count() const OMG_NOEXCEPT{
+    return m_count_;
+}
+
+void laser_Scan_msg::count(int32_t value) {
+    m_count_ = value;
+}
+
+float laser_Scan_msg::vertical_angle_min() const OMG_NOEXCEPT{
+    return m_vertical_angle_min_;
+}
+
+void laser_Scan_msg::vertical_angle_min(float value) {
+    m_vertical_angle_min_ = value;
+}
+
+float laser_Scan_msg::vertical_angle_max() const OMG_NOEXCEPT{
+    return m_vertical_angle_max_;
+}
+
+void laser_Scan_msg::vertical_angle_max(float value) {
+    m_vertical_angle_max_ = value;
+}
+
+float laser_Scan_msg::vertical_angle_step() const OMG_NOEXCEPT{
+    return m_vertical_angle_step_;
+}
+
+void laser_Scan_msg::vertical_angle_step(float value) {
+    m_vertical_angle_step_ = value;
+}
+
+float laser_Scan_msg::vertical_count() const OMG_NOEXCEPT{
+    return m_vertical_count_;
+}
+
+void laser_Scan_msg::vertical_count(float value) {
+    m_vertical_count_ = value;
 }
 
 dds::core::vector<float>& laser_Scan_msg::ranges() OMG_NOEXCEPT {
@@ -411,13 +755,17 @@ std::ostream& operator << (std::ostream& o,const laser_Scan_msg& sample)
     rti::util::StreamFlagSaver flag_saver (o);
     o <<"[";
     o << "header: " << sample.header()<<", ";
+    o << "world_pose: " << sample.world_pose()<<", ";
     o << "angle_min: " << std::setprecision(9) <<sample.angle_min()<<", ";
     o << "angle_max: " << std::setprecision(9) <<sample.angle_max()<<", ";
-    o << "angle_increment: " << std::setprecision(9) <<sample.angle_increment()<<", ";
-    o << "time_increment: " << std::setprecision(9) <<sample.time_increment()<<", ";
-    o << "scan_time: " << std::setprecision(9) <<sample.scan_time()<<", ";
+    o << "angle_step: " << std::setprecision(9) <<sample.angle_step()<<", ";
     o << "range_min: " << std::setprecision(9) <<sample.range_min()<<", ";
     o << "range_max: " << std::setprecision(9) <<sample.range_max()<<", ";
+    o << "count: " << sample.count()<<", ";
+    o << "vertical_angle_min: " << std::setprecision(9) <<sample.vertical_angle_min()<<", ";
+    o << "vertical_angle_max: " << std::setprecision(9) <<sample.vertical_angle_max()<<", ";
+    o << "vertical_angle_step: " << std::setprecision(9) <<sample.vertical_angle_step()<<", ";
+    o << "vertical_count: " << std::setprecision(9) <<sample.vertical_count()<<", ";
     o << "ranges: " << sample.ranges()<<", ";
     o << "intensities: " << sample.intensities() ;
     o <<"]";
@@ -441,6 +789,27 @@ namespace rti {
             return static_cast<const dds::core::xtypes::StructType&>(
                 rti::core::native_conversions::cast_from_native<dds::core::xtypes::DynamicType>(
                     *(Header_c_get_typecode())));
+        }
+
+        const dds::core::xtypes::StructType& dynamic_type<Position>::get()
+        {
+            return static_cast<const dds::core::xtypes::StructType&>(
+                rti::core::native_conversions::cast_from_native<dds::core::xtypes::DynamicType>(
+                    *(Position_c_get_typecode())));
+        }
+
+        const dds::core::xtypes::StructType& dynamic_type<Orientation>::get()
+        {
+            return static_cast<const dds::core::xtypes::StructType&>(
+                rti::core::native_conversions::cast_from_native<dds::core::xtypes::DynamicType>(
+                    *(Orientation_c_get_typecode())));
+        }
+
+        const dds::core::xtypes::StructType& dynamic_type<World_Pose>::get()
+        {
+            return static_cast<const dds::core::xtypes::StructType&>(
+                rti::core::native_conversions::cast_from_native<dds::core::xtypes::DynamicType>(
+                    *(World_Pose_c_get_typecode())));
         }
 
         const dds::core::xtypes::StructType& dynamic_type<laser_Scan_msg>::get()
@@ -575,6 +944,189 @@ namespace dds {
             rti::core::check_return_code(
                 ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
                 "Failed to create Header from cdr buffer");
+        }
+
+        void topic_type_support<Position>:: register_type(
+            dds::domain::DomainParticipant& participant,
+            const std::string& type_name){
+
+            rti::domain::register_type_plugin(
+                participant,
+                type_name,
+                Position_cPlugin_new,
+                Position_cPlugin_delete);
+        }
+
+        void topic_type_support<Position>::initialize_sample(Position& sample){
+
+            Position_c* native_sample=reinterpret_cast<Position_c*> (&sample);
+
+            struct DDS_TypeDeallocationParams_t deAllocParams = {RTI_FALSE, RTI_FALSE};
+            Position_c_finalize_w_params(native_sample,&deAllocParams);
+
+            struct DDS_TypeAllocationParams_t allocParams = {RTI_FALSE, RTI_FALSE, RTI_TRUE}; 
+            RTIBool ok=Position_c_initialize_w_params(native_sample,&allocParams);
+            rti::core::check_return_code(
+                ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
+                "Failed to initialize_w_params");
+
+        } 
+
+        std::vector<char>& topic_type_support<Position>::to_cdr_buffer(
+            std::vector<char>& buffer, const Position& sample)
+        {
+            // First get the length of the buffer
+            unsigned int length = 0;
+            RTIBool ok = Position_cPlugin_serialize_to_cdr_buffer(
+                NULL, &length,reinterpret_cast<const Position_c*>(&sample));
+            rti::core::check_return_code(
+                ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
+                "Failed to calculate cdr buffer size");
+
+            // Create a vector with that size and copy the cdr buffer into it
+            buffer.resize(length);
+            ok = Position_cPlugin_serialize_to_cdr_buffer(
+                &buffer[0], &length, reinterpret_cast<const Position_c*>(&sample));
+            rti::core::check_return_code(
+                ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
+                "Failed to copy cdr buffer");
+
+            return buffer;
+
+        }
+
+        void topic_type_support<Position>::from_cdr_buffer(Position& sample, 
+        const std::vector<char>& buffer)
+        {
+
+            RTIBool ok  = Position_cPlugin_deserialize_from_cdr_buffer(
+                reinterpret_cast<Position_c*> (&sample), &buffer[0], 
+                static_cast<unsigned int>(buffer.size()));
+            rti::core::check_return_code(
+                ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
+                "Failed to create Position from cdr buffer");
+        }
+
+        void topic_type_support<Orientation>:: register_type(
+            dds::domain::DomainParticipant& participant,
+            const std::string& type_name){
+
+            rti::domain::register_type_plugin(
+                participant,
+                type_name,
+                Orientation_cPlugin_new,
+                Orientation_cPlugin_delete);
+        }
+
+        void topic_type_support<Orientation>::initialize_sample(Orientation& sample){
+
+            Orientation_c* native_sample=reinterpret_cast<Orientation_c*> (&sample);
+
+            struct DDS_TypeDeallocationParams_t deAllocParams = {RTI_FALSE, RTI_FALSE};
+            Orientation_c_finalize_w_params(native_sample,&deAllocParams);
+
+            struct DDS_TypeAllocationParams_t allocParams = {RTI_FALSE, RTI_FALSE, RTI_TRUE}; 
+            RTIBool ok=Orientation_c_initialize_w_params(native_sample,&allocParams);
+            rti::core::check_return_code(
+                ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
+                "Failed to initialize_w_params");
+
+        } 
+
+        std::vector<char>& topic_type_support<Orientation>::to_cdr_buffer(
+            std::vector<char>& buffer, const Orientation& sample)
+        {
+            // First get the length of the buffer
+            unsigned int length = 0;
+            RTIBool ok = Orientation_cPlugin_serialize_to_cdr_buffer(
+                NULL, &length,reinterpret_cast<const Orientation_c*>(&sample));
+            rti::core::check_return_code(
+                ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
+                "Failed to calculate cdr buffer size");
+
+            // Create a vector with that size and copy the cdr buffer into it
+            buffer.resize(length);
+            ok = Orientation_cPlugin_serialize_to_cdr_buffer(
+                &buffer[0], &length, reinterpret_cast<const Orientation_c*>(&sample));
+            rti::core::check_return_code(
+                ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
+                "Failed to copy cdr buffer");
+
+            return buffer;
+
+        }
+
+        void topic_type_support<Orientation>::from_cdr_buffer(Orientation& sample, 
+        const std::vector<char>& buffer)
+        {
+
+            RTIBool ok  = Orientation_cPlugin_deserialize_from_cdr_buffer(
+                reinterpret_cast<Orientation_c*> (&sample), &buffer[0], 
+                static_cast<unsigned int>(buffer.size()));
+            rti::core::check_return_code(
+                ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
+                "Failed to create Orientation from cdr buffer");
+        }
+
+        void topic_type_support<World_Pose>:: register_type(
+            dds::domain::DomainParticipant& participant,
+            const std::string& type_name){
+
+            rti::domain::register_type_plugin(
+                participant,
+                type_name,
+                World_Pose_cPlugin_new,
+                World_Pose_cPlugin_delete);
+        }
+
+        void topic_type_support<World_Pose>::initialize_sample(World_Pose& sample){
+
+            World_Pose_c* native_sample=reinterpret_cast<World_Pose_c*> (&sample);
+
+            struct DDS_TypeDeallocationParams_t deAllocParams = {RTI_FALSE, RTI_FALSE};
+            World_Pose_c_finalize_w_params(native_sample,&deAllocParams);
+
+            struct DDS_TypeAllocationParams_t allocParams = {RTI_FALSE, RTI_FALSE, RTI_TRUE}; 
+            RTIBool ok=World_Pose_c_initialize_w_params(native_sample,&allocParams);
+            rti::core::check_return_code(
+                ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
+                "Failed to initialize_w_params");
+
+        } 
+
+        std::vector<char>& topic_type_support<World_Pose>::to_cdr_buffer(
+            std::vector<char>& buffer, const World_Pose& sample)
+        {
+            // First get the length of the buffer
+            unsigned int length = 0;
+            RTIBool ok = World_Pose_cPlugin_serialize_to_cdr_buffer(
+                NULL, &length,reinterpret_cast<const World_Pose_c*>(&sample));
+            rti::core::check_return_code(
+                ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
+                "Failed to calculate cdr buffer size");
+
+            // Create a vector with that size and copy the cdr buffer into it
+            buffer.resize(length);
+            ok = World_Pose_cPlugin_serialize_to_cdr_buffer(
+                &buffer[0], &length, reinterpret_cast<const World_Pose_c*>(&sample));
+            rti::core::check_return_code(
+                ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
+                "Failed to copy cdr buffer");
+
+            return buffer;
+
+        }
+
+        void topic_type_support<World_Pose>::from_cdr_buffer(World_Pose& sample, 
+        const std::vector<char>& buffer)
+        {
+
+            RTIBool ok  = World_Pose_cPlugin_deserialize_from_cdr_buffer(
+                reinterpret_cast<World_Pose_c*> (&sample), &buffer[0], 
+                static_cast<unsigned int>(buffer.size()));
+            rti::core::check_return_code(
+                ok ? DDS_RETCODE_OK : DDS_RETCODE_ERROR,
+                "Failed to create World_Pose from cdr buffer");
         }
 
         void topic_type_support<laser_Scan_msg>:: register_type(

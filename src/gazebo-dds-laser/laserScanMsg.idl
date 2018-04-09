@@ -38,11 +38,6 @@ struct Header {
         /*
          * Description < >
          */
-         unsigned long seq;
-
-        /*
-         * Description < >
-         */
         Time stamp;
 
         /*
@@ -51,6 +46,85 @@ struct Header {
         string frame_id;
 
 };
+
+/* --- position type: ------------------------------------------------------- */
+
+/*
+ * This is the Position type.
+ *
+ * Description < >
+ *
+ */
+struct Position {
+        /*
+         * Description < >
+         */
+         float x;
+
+        /*
+         * Description < >
+         */
+        float y;
+
+        /*
+         * Description < >
+         */
+        float z;
+
+};
+
+/* --- Orientation type: ------------------------------------------------------- */
+
+/*
+ * This is the Orientation type.
+ *
+ * Description < >
+ *
+ */
+struct Orientation {
+        /*
+         * Description < >
+         */
+         float x;
+
+        /*
+         * Description < >
+         */
+        float y;
+
+        /*
+         * Description < >
+         */
+        float z;
+
+        /*
+         * Description < >
+         */
+        float w;
+
+};
+
+/* --- World_Pose type: ------------------------------------------------------- */
+
+/*
+ * This is the World_Pose type.
+ *
+ * Description < >
+ *
+ */
+struct World_Pose {
+        /*
+         * Description < >
+         */
+        Position position;
+
+        /*
+         * Description < >
+         */
+        Orientation orientation;
+
+};
+
 
 
 /* --- laser_Scan_msg type: ------------------------------------------------------- */
@@ -62,10 +136,15 @@ struct Header {
  *
  */
 struct laser_Scan_msg {
-         /*
+        /*
          * Description < >
          */
         Header   header;
+
+        /*
+         * Description < >
+         */
+        World_Pose   world_pose;
 
         /*
          * Description < >
@@ -80,17 +159,7 @@ struct laser_Scan_msg {
         /*
          * Description < >
          */
-        float   angle_increment;
-
-        /*
-         * Description < >
-         */
-        float   time_increment;
-
-        /*
-         * Description < >
-         */
-        float   scan_time;
+        float   angle_step;
 
         /*
          * Description < >
@@ -101,6 +170,31 @@ struct laser_Scan_msg {
          * Description < >
          */
         float   range_max;
+
+        /*
+         * Description < >
+         */
+        long   count;
+
+                /*
+         * Description < >
+         */
+        float   vertical_angle_min;
+
+        /*
+         * Description < >
+         */
+        float   vertical_angle_max;
+
+        /*
+         * Description < >
+         */
+        float   vertical_angle_step;
+
+        /*
+         * Description < >
+         */
+        float   vertical_count;
 
         /*
          * Description < >

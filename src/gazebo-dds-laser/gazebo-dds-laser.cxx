@@ -24,9 +24,9 @@ namespace gazebo {
 class GazeboDDSLaser : public RayPlugin {
 public:
     GazeboDDSLaser()
-            : participant(226),
-              topic(participant, "laserScan"),
-              writer(dds::core::null)
+            : participant_(226),
+              topic_(participant_, "laserScan"),
+              writer_(dds::core::null)
     {
         rti::core::policy::Property::Entry value(
                 { "dds.data_writer.history.memory_manager.fast_pool.pool_"
@@ -35,8 +35,8 @@ public:
         rti::core::policy::Property property;
         property.set(value);
         data_writer_qos_ << property;
-        writer = dds::pub::DataWriter<laser_Scan_msg>(
-                dds::pub::Publisher(participant), topic, data_writer_qos_);
+        writer_ = dds::pub::DataWriter<laser_Scan_msg>(
+                dds::pub::Publisher(participant_), topic_, data_writer_qos_);
     }
 
 public:
@@ -45,23 +45,24 @@ public:
     }
 
 public:
-    void Load(sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
+    void Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     {
         // load plugin
-        RayPlugin::Load(_parent, _sdf);
+        RayPlugin::Load(parent, sdf);
 
         // Store the pointer to the sensor
-        sensor = _parent;
+        sensor_ = parent;
 
-        std::cout << "It was loaded" << std::endl;
-        // std::cout << _sdf->Get<std::string>("link") << std::endl;
+        std::cout << "Laser plugin loaded" << std::endl;
+        sensor_id_= sensor_->Id();
+        std::cout << "ID:"<< sensor_id_ << std::endl;
 
-        this->gazeboNode
+        this->gazeboNode_
                 = gazebo::transport::NodePtr(new gazebo::transport::Node());
-        this->gazeboNode->Init(_parent->WorldName());
+        this->gazeboNode_->Init(parent->WorldName());
 
-        this->laserSubscriber = this->gazeboNode->Subscribe(
-                this->sensor->Topic(), &GazeboDDSLaser::OnScan, this);
+        this->laserSubscriber_ = this->gazeboNode_->Subscribe(
+                this->sensor_->Topic(), &GazeboDDSLaser::OnScan, this);
     }
 
 public:
@@ -69,22 +70,32 @@ public:
     {
         laser_Scan_msg sample;
 
-        Time time;
-        time.nsec(msg->time().sec());
-        time.sec(msg->time().nsec());
+        Position position(
+                msg->scan().world_pose().position().x(),
+                msg->scan().world_pose().position().y(),
+                msg->scan().world_pose().position().z());
 
-        Header header;
-        header.stamp(time);
-        // header.frame_id();???
+        Orientation orientation(
+                msg->scan().world_pose().orientation().x(),
+                msg->scan().world_pose().orientation().y(),
+                msg->scan().world_pose().orientation().z(),
+                msg->scan().world_pose().orientation().w());
 
-        sample.header(header);
+        sample.header(
+                Header(Time(msg->time().sec(), msg->time().nsec()),
+                       sensor_->ParentName()));
+
+        sample.world_pose(World_Pose(position, orientation));
         sample.angle_min(msg->scan().angle_min());
         sample.angle_max(msg->scan().angle_max());
-        sample.angle_increment(msg->scan().angle_step());
-        sample.time_increment(0);
-        sample.scan_time(0);
+        sample.angle_step(msg->scan().angle_step());
         sample.range_min(msg->scan().range_min());
         sample.range_max(msg->scan().range_max());
+        sample.count(msg->scan().count());
+        sample.vertical_angle_min(msg->scan().vertical_angle_min());
+        sample.vertical_angle_max(msg->scan().vertical_angle_max());
+        sample.vertical_angle_step(msg->scan().vertical_angle_step());
+        sample.vertical_count(msg->scan().vertical_count());
 
         sample.ranges().resize(msg->scan().ranges_size());
         std::copy(
@@ -98,40 +109,30 @@ public:
                 msg->scan().intensities().end(),
                 sample.intensities().begin());
 
-        writer.write(sample);
+        writer_.write(sample);
     }
 
-    // Pointer to the world
+    
 private:
-    physics::WorldPtr world;
+    // Pointer to the world
+    physics::WorldPtr world_;
 
     // Pointer to the sensor
-private:
-    sensors::SensorPtr sensor;
+    sensors::SensorPtr sensor_;
 
-    // Pointer to the update event connection
-private:
-    event::ConnectionPtr updateConnection;
+    dds::domain::DomainParticipant participant_;
 
-private:
-    dds::domain::DomainParticipant participant;
-
-private:
-    dds::topic::Topic<laser_Scan_msg> topic;
+    dds::topic::Topic<laser_Scan_msg> topic_;
 
     dds::pub::qos::DataWriterQos data_writer_qos_;
 
-private:
-    dds::pub::DataWriter<laser_Scan_msg> writer;
+    dds::pub::DataWriter<laser_Scan_msg> writer_;
 
-private:
-    gazebo::transport::NodePtr gazeboNode;
+    gazebo::transport::NodePtr gazeboNode_;
 
-private:
-    gazebo::transport::SubscriberPtr laserSubscriber;
+    gazebo::transport::SubscriberPtr laserSubscriber_;
 
-private:
-    std::string frameName;
+    unsigned int sensor_id_;
 };
 
 // Register this plugin with the simulator

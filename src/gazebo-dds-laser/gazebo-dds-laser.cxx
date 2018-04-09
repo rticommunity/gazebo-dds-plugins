@@ -53,10 +53,6 @@ public:
         // Store the pointer to the sensor
         sensor_ = parent;
 
-        std::cout << "Laser plugin loaded" << std::endl;
-        sensor_id_= sensor_->Id();
-        std::cout << "ID:"<< sensor_id_ << std::endl;
-
         this->gazeboNode_
                 = gazebo::transport::NodePtr(new gazebo::transport::Node());
         this->gazeboNode_->Init(parent->WorldName());
@@ -81,6 +77,8 @@ public:
                 msg->scan().world_pose().orientation().z(),
                 msg->scan().world_pose().orientation().w());
 
+
+        sample.laser_id(sensor_->Id());
         sample.header(
                 Header(Time(msg->time().sec(), msg->time().nsec()),
                        sensor_->ParentName()));
@@ -112,7 +110,7 @@ public:
         writer_.write(sample);
     }
 
-    
+
 private:
     // Pointer to the world
     physics::WorldPtr world_;
@@ -131,8 +129,6 @@ private:
     gazebo::transport::NodePtr gazeboNode_;
 
     gazebo::transport::SubscriberPtr laserSubscriber_;
-
-    unsigned int sensor_id_;
 };
 
 // Register this plugin with the simulator

@@ -1251,11 +1251,11 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
 
     static DDS_TypeCode laser_Scan_msg_c_g_tc_ranges_sequence = DDS_INITIALIZE_SEQUENCE_TYPECODE(RTI_INT32_MAX,NULL);
     static DDS_TypeCode laser_Scan_msg_c_g_tc_intensities_sequence = DDS_INITIALIZE_SEQUENCE_TYPECODE(RTI_INT32_MAX,NULL);
-    static DDS_TypeCode_Member laser_Scan_msg_c_g_tc_members[14]=
+    static DDS_TypeCode_Member laser_Scan_msg_c_g_tc_members[15]=
     {
 
         {
-            (char *)"header",/* Member name */
+            (char *)"laser_id",/* Member name */
             {
                 0,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -1266,13 +1266,13 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             0, /* Ignored */
             0, /* Ignored */
             NULL, /* Ignored */
-            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+            RTI_CDR_KEY_MEMBER , /* Is a key? */
             DDS_PUBLIC_MEMBER,/* Member visibility */
             1,
             NULL/* Ignored */
         }, 
         {
-            (char *)"world_pose",/* Member name */
+            (char *)"header",/* Member name */
             {
                 1,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -1289,7 +1289,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"angle_min",/* Member name */
+            (char *)"world_pose",/* Member name */
             {
                 2,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -1306,7 +1306,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"angle_max",/* Member name */
+            (char *)"angle_min",/* Member name */
             {
                 3,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -1323,7 +1323,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"angle_step",/* Member name */
+            (char *)"angle_max",/* Member name */
             {
                 4,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -1340,7 +1340,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"range_min",/* Member name */
+            (char *)"angle_step",/* Member name */
             {
                 5,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -1357,7 +1357,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"range_max",/* Member name */
+            (char *)"range_min",/* Member name */
             {
                 6,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -1374,7 +1374,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"count",/* Member name */
+            (char *)"range_max",/* Member name */
             {
                 7,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -1391,7 +1391,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"vertical_angle_min",/* Member name */
+            (char *)"count",/* Member name */
             {
                 8,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -1408,7 +1408,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"vertical_angle_max",/* Member name */
+            (char *)"vertical_angle_min",/* Member name */
             {
                 9,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -1425,7 +1425,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"vertical_angle_step",/* Member name */
+            (char *)"vertical_angle_max",/* Member name */
             {
                 10,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -1442,7 +1442,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"vertical_count",/* Member name */
+            (char *)"vertical_angle_step",/* Member name */
             {
                 11,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -1459,7 +1459,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"ranges",/* Member name */
+            (char *)"vertical_count",/* Member name */
             {
                 12,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
@@ -1476,9 +1476,26 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             NULL/* Ignored */
         }, 
         {
-            (char *)"intensities",/* Member name */
+            (char *)"ranges",/* Member name */
             {
                 13,/* Representation ID */          
+                DDS_BOOLEAN_FALSE,/* Is a pointer? */
+                -1, /* Bitfield bits */
+                NULL/* Member type code is assigned later */
+            },
+            0, /* Ignored */
+            0, /* Ignored */
+            0, /* Ignored */
+            NULL, /* Ignored */
+            RTI_CDR_REQUIRED_MEMBER, /* Is a key? */
+            DDS_PUBLIC_MEMBER,/* Member visibility */
+            1,
+            NULL/* Ignored */
+        }, 
+        {
+            (char *)"intensities",/* Member name */
+            {
+                14,/* Representation ID */          
                 DDS_BOOLEAN_FALSE,/* Is a pointer? */
                 -1, /* Bitfield bits */
                 NULL/* Member type code is assigned later */
@@ -1504,7 +1521,7 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
             0, /* Ignored */
             0, /* Ignored */
             NULL, /* Ignored */
-            14, /* Number of members */
+            15, /* Number of members */
             laser_Scan_msg_c_g_tc_members, /* Members */
             DDS_VM_NONE  /* Ignored */         
         }}; /* Type code for laser_Scan_msg_c*/
@@ -1517,11 +1534,11 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
 
     laser_Scan_msg_c_g_tc_intensities_sequence._data._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
 
-    laser_Scan_msg_c_g_tc_members[0]._representation._typeCode = (RTICdrTypeCode *)Header_c_get_typecode();
+    laser_Scan_msg_c_g_tc_members[0]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_long;
 
-    laser_Scan_msg_c_g_tc_members[1]._representation._typeCode = (RTICdrTypeCode *)World_Pose_c_get_typecode();
+    laser_Scan_msg_c_g_tc_members[1]._representation._typeCode = (RTICdrTypeCode *)Header_c_get_typecode();
 
-    laser_Scan_msg_c_g_tc_members[2]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+    laser_Scan_msg_c_g_tc_members[2]._representation._typeCode = (RTICdrTypeCode *)World_Pose_c_get_typecode();
 
     laser_Scan_msg_c_g_tc_members[3]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
 
@@ -1531,9 +1548,9 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
 
     laser_Scan_msg_c_g_tc_members[6]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
 
-    laser_Scan_msg_c_g_tc_members[7]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_long;
+    laser_Scan_msg_c_g_tc_members[7]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
 
-    laser_Scan_msg_c_g_tc_members[8]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+    laser_Scan_msg_c_g_tc_members[8]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_long;
 
     laser_Scan_msg_c_g_tc_members[9]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
 
@@ -1541,8 +1558,10 @@ DDS_TypeCode* laser_Scan_msg_c_get_typecode()
 
     laser_Scan_msg_c_g_tc_members[11]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
 
-    laser_Scan_msg_c_g_tc_members[12]._representation._typeCode = (RTICdrTypeCode *)& laser_Scan_msg_c_g_tc_ranges_sequence;
-    laser_Scan_msg_c_g_tc_members[13]._representation._typeCode = (RTICdrTypeCode *)& laser_Scan_msg_c_g_tc_intensities_sequence;
+    laser_Scan_msg_c_g_tc_members[12]._representation._typeCode = (RTICdrTypeCode *)&DDS_g_tc_float;
+
+    laser_Scan_msg_c_g_tc_members[13]._representation._typeCode = (RTICdrTypeCode *)& laser_Scan_msg_c_g_tc_ranges_sequence;
+    laser_Scan_msg_c_g_tc_members[14]._representation._typeCode = (RTICdrTypeCode *)& laser_Scan_msg_c_g_tc_intensities_sequence;
 
     is_initialized = RTI_TRUE;
 
@@ -1580,6 +1599,10 @@ RTIBool laser_Scan_msg_c_initialize_w_params(
         return RTI_FALSE;
     }
     if (allocParams == NULL) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrType_initLong(&sample->laser_id)) {
         return RTI_FALSE;
     }
 
@@ -1727,6 +1750,10 @@ RTIBool laser_Scan_msg_c_copy(
         return RTI_FALSE;
     }
 
+    if (!RTICdrType_copyLong (
+        &dst->laser_id, &src->laser_id)) { 
+        return RTI_FALSE;
+    }
     if (!Header_c_copy(
         &dst->header,(const Header_c*)&src->header)) {
         return RTI_FALSE;

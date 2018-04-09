@@ -5527,6 +5527,9 @@ laser_Scan_msg_cPluginSupport_print_data(
         return;
     }
 
+    RTICdrType_printLong(
+        &sample->laser_id, "laser_id", indent_level + 1);    
+
     Header_cPluginSupport_print_data(
         (const Header_c*) &sample->header, "header", indent_level + 1);
 
@@ -5594,6 +5597,41 @@ laser_Scan_msg_cPluginSupport_print_data(
     }
 
 }
+laser_Scan_msg_c *
+laser_Scan_msg_cPluginSupport_create_key_ex(RTIBool allocate_pointers){
+    laser_Scan_msg_c *key = NULL;
+
+    RTIOsapiHeap_allocateStructure(&(key),laser_Scan_msg_cKeyHolder);
+
+    laser_Scan_msg_c_initialize_ex(key,allocate_pointers, RTI_TRUE);
+
+    return key;
+}
+
+laser_Scan_msg_c *
+laser_Scan_msg_cPluginSupport_create_key(void)
+{
+    return  laser_Scan_msg_cPluginSupport_create_key_ex(RTI_TRUE);
+}
+
+void 
+laser_Scan_msg_cPluginSupport_destroy_key_ex(
+    laser_Scan_msg_cKeyHolder *key,RTIBool deallocate_pointers)
+{
+    laser_Scan_msg_c_finalize_ex(key,deallocate_pointers);
+
+    RTIOsapiHeap_freeStructure(key);
+    key=NULL;
+
+}
+
+void 
+laser_Scan_msg_cPluginSupport_destroy_key(
+    laser_Scan_msg_cKeyHolder *key) {
+
+    laser_Scan_msg_cPluginSupport_destroy_key_ex(key,RTI_TRUE);
+
+}
 
 /* ----------------------------------------------------------------------------
 Callback functions:
@@ -5636,6 +5674,8 @@ laser_Scan_msg_cPlugin_on_endpoint_attached(
 
     unsigned int serializedSampleMaxSize;
 
+    unsigned int serializedKeyMaxSize;
+
     if (top_level_registration) {} /* To avoid warnings */
     if (containerPluginContext) {} /* To avoid warnings */
 
@@ -5646,11 +5686,23 @@ laser_Scan_msg_cPlugin_on_endpoint_attached(
         laser_Scan_msg_cPluginSupport_create_data,
         (PRESTypePluginDefaultEndpointDataDestroySampleFunction)
         laser_Scan_msg_cPluginSupport_destroy_data,
-        NULL , NULL );
+        (PRESTypePluginDefaultEndpointDataCreateKeyFunction)
+        laser_Scan_msg_cPluginSupport_create_key ,            
+        (PRESTypePluginDefaultEndpointDataDestroyKeyFunction)
+        laser_Scan_msg_cPluginSupport_destroy_key);
 
     if (epd == NULL) {
         return NULL;
     } 
+    serializedKeyMaxSize =  laser_Scan_msg_cPlugin_get_serialized_key_max_size(
+        epd,RTI_FALSE,RTI_CDR_ENCAPSULATION_ID_CDR_BE,0);
+
+    if(!PRESTypePluginDefaultEndpointData_createMD5StreamWithInfo(
+        epd,endpoint_info,serializedKeyMaxSize))  
+    {
+        PRESTypePluginDefaultEndpointData_delete(epd);
+        return NULL;
+    }
 
     if (endpoint_info->endpointKind == PRES_TYPEPLUGIN_ENDPOINT_WRITER) {
         serializedSampleMaxSize = laser_Scan_msg_cPlugin_get_serialized_sample_max_size(
@@ -5740,6 +5792,11 @@ laser_Scan_msg_cPlugin_serialize(
     }
 
     if(serialize_sample) {
+
+        if (!RTICdrStream_serializeLong(
+            stream, &sample->laser_id)) {
+            return RTI_FALSE;
+        }
 
         if(!Header_cPlugin_serialize(
             endpoint_data,
@@ -5888,6 +5945,10 @@ laser_Scan_msg_cPlugin_deserialize_sample(
 
         laser_Scan_msg_c_initialize_ex(sample, RTI_FALSE, RTI_FALSE);
 
+        if (!RTICdrStream_deserializeLong(
+            stream, &sample->laser_id)) {
+            goto fin; 
+        }
         if(!Header_cPlugin_deserialize_sample(
             endpoint_data,
             &sample->header,
@@ -6236,6 +6297,9 @@ RTIBool laser_Scan_msg_cPlugin_skip(
 
     if (skip_sample) {
 
+        if (!RTICdrStream_skipLong (stream)) {
+            goto fin; 
+        }
         if (!Header_cPlugin_skip(
             endpoint_data,
             stream, 
@@ -6381,6 +6445,8 @@ laser_Scan_msg_cPlugin_get_serialized_sample_min_size(
         initial_alignment = 0;
     }
 
+    current_alignment +=RTICdrType_getLongMaxSizeSerialized(
+        current_alignment);
     current_alignment +=Header_cPlugin_get_serialized_sample_min_size(
         endpoint_data,RTI_FALSE,encapsulation_id,current_alignment);
     current_alignment +=World_Pose_cPlugin_get_serialized_sample_min_size(
@@ -6460,6 +6526,10 @@ laser_Scan_msg_cPlugin_get_serialized_sample_size(
             current_alignment);
     }
 
+    current_alignment += RTICdrType_getLongMaxSizeSerialized(
+        PRESTypePluginDefaultEndpointData_getAlignment(
+            endpoint_data, current_alignment));
+
     current_alignment += Header_cPlugin_get_serialized_sample_size(
         endpoint_data,RTI_FALSE, encapsulation_id,
         current_alignment, (const Header_c*) &sample->header);
@@ -6533,7 +6603,7 @@ Key Management functions:
 PRESTypePluginKeyKind 
 laser_Scan_msg_cPlugin_get_key_kind(void)
 {
-    return PRES_TYPEPLUGIN_NO_KEY;
+    return PRES_TYPEPLUGIN_USER_KEY;
 }
 
 RTIBool 
@@ -6548,6 +6618,9 @@ laser_Scan_msg_cPlugin_serialize_key(
 {
     char * position = NULL;
 
+    if (endpoint_data) {} /* To avoid warnings */
+    if (endpoint_plugin_qos) {} /* To avoid warnings */
+
     if(serialize_encapsulation) {
         if (!RTICdrStream_serializeAndSetCdrEncapsulation(stream , encapsulation_id)) {
             return RTI_FALSE;
@@ -6558,13 +6631,8 @@ laser_Scan_msg_cPlugin_serialize_key(
 
     if(serialize_key) {
 
-        if (!laser_Scan_msg_cPlugin_serialize(
-            endpoint_data,
-            sample,
-            stream,
-            RTI_FALSE, encapsulation_id,
-            RTI_TRUE,
-            endpoint_plugin_qos)) {
+        if (!RTICdrStream_serializeLong(
+            stream, &sample->laser_id)) {
             return RTI_FALSE;
         }
 
@@ -6601,10 +6669,8 @@ RTIBool laser_Scan_msg_cPlugin_deserialize_key_sample(
     }
     if (deserialize_key) {
 
-        if (!laser_Scan_msg_cPlugin_deserialize_sample(
-            endpoint_data, sample, stream, 
-            RTI_FALSE, RTI_TRUE, 
-            endpoint_plugin_qos)) {
+        if (!RTICdrStream_deserializeLong(
+            stream, &sample->laser_id)) {
             return RTI_FALSE;
         }
     }
@@ -6669,8 +6735,8 @@ laser_Scan_msg_cPlugin_get_serialized_key_max_size_ex(
         initial_alignment = 0;
     }
 
-    current_alignment += laser_Scan_msg_cPlugin_get_serialized_sample_max_size_ex(
-        endpoint_data, overflow,RTI_FALSE, encapsulation_id, current_alignment);
+    current_alignment +=RTICdrType_getLongMaxSizeSerialized(
+        current_alignment);
 
     if (include_encapsulation) {
         current_alignment += encapsulation_size;
@@ -6712,6 +6778,9 @@ laser_Scan_msg_cPlugin_serialized_sample_to_key(
     RTIBool done = RTI_FALSE;
     RTIBool error = RTI_FALSE;
 
+    if (endpoint_data) {} /* To avoid warnings */
+    if (endpoint_plugin_qos) {} /* To avoid warnings */
+
     if (stream == NULL) {
         error = RTI_TRUE;
         goto fin;
@@ -6725,10 +6794,84 @@ laser_Scan_msg_cPlugin_serialized_sample_to_key(
 
     if (deserialize_key) {
 
-        if (!laser_Scan_msg_cPlugin_deserialize_sample(
-            endpoint_data, sample, stream, RTI_FALSE, 
-            RTI_TRUE, endpoint_plugin_qos)) {
+        if (!RTICdrStream_deserializeLong(
+            stream, &sample->laser_id)) {
             return RTI_FALSE;
+        }
+        if (!Header_cPlugin_skip(
+            endpoint_data,
+            stream, 
+            RTI_FALSE, RTI_TRUE, 
+            endpoint_plugin_qos)) {
+            goto fin; 
+        }
+
+        if (!World_Pose_cPlugin_skip(
+            endpoint_data,
+            stream, 
+            RTI_FALSE, RTI_TRUE, 
+            endpoint_plugin_qos)) {
+            goto fin; 
+        }
+
+        if (!RTICdrStream_skipFloat (stream)) {
+            goto fin; 
+        }
+
+        if (!RTICdrStream_skipFloat (stream)) {
+            goto fin; 
+        }
+
+        if (!RTICdrStream_skipFloat (stream)) {
+            goto fin; 
+        }
+
+        if (!RTICdrStream_skipFloat (stream)) {
+            goto fin; 
+        }
+
+        if (!RTICdrStream_skipFloat (stream)) {
+            goto fin; 
+        }
+
+        if (!RTICdrStream_skipLong (stream)) {
+            goto fin; 
+        }
+
+        if (!RTICdrStream_skipFloat (stream)) {
+            goto fin; 
+        }
+
+        if (!RTICdrStream_skipFloat (stream)) {
+            goto fin; 
+        }
+
+        if (!RTICdrStream_skipFloat (stream)) {
+            goto fin; 
+        }
+
+        if (!RTICdrStream_skipFloat (stream)) {
+            goto fin; 
+        }
+
+        {
+            RTICdrUnsignedLong sequence_length;
+            if (!RTICdrStream_skipPrimitiveSequence(
+                stream,
+                &sequence_length,
+                RTI_CDR_FLOAT_TYPE)){
+                goto fin; 
+            }
+        }
+
+        {
+            RTICdrUnsignedLong sequence_length;
+            if (!RTICdrStream_skipPrimitiveSequence(
+                stream,
+                &sequence_length,
+                RTI_CDR_FLOAT_TYPE)){
+                goto fin; 
+            }
         }
 
     }
@@ -6747,6 +6890,195 @@ laser_Scan_msg_cPlugin_serialized_sample_to_key(
 
     if(deserialize_encapsulation) {
         RTICdrStream_restoreAlignment(stream,position);
+    }
+
+    return RTI_TRUE;
+}
+
+RTIBool 
+laser_Scan_msg_cPlugin_instance_to_key(
+    PRESTypePluginEndpointData endpoint_data,
+    laser_Scan_msg_cKeyHolder *dst, 
+    const laser_Scan_msg_c *src)
+{
+
+    if (endpoint_data) {} /* To avoid warnings */   
+
+    if (!RTICdrType_copyLong (
+        &dst->laser_id, &src->laser_id)) { 
+        return RTI_FALSE;
+    }
+    return RTI_TRUE;
+}
+
+RTIBool 
+laser_Scan_msg_cPlugin_key_to_instance(
+    PRESTypePluginEndpointData endpoint_data,
+    laser_Scan_msg_c *dst, const
+    laser_Scan_msg_cKeyHolder *src)
+{
+
+    if (endpoint_data) {} /* To avoid warnings */   
+    if (!RTICdrType_copyLong (
+        &dst->laser_id, &src->laser_id)) { 
+        return RTI_FALSE;
+    }
+    return RTI_TRUE;
+}
+
+RTIBool 
+laser_Scan_msg_cPlugin_instance_to_keyhash(
+    PRESTypePluginEndpointData endpoint_data,
+    DDS_KeyHash_t *keyhash,
+    const laser_Scan_msg_c *instance)
+{
+    struct RTICdrStream * md5Stream = NULL;
+    struct RTICdrStreamState cdrState;
+    char * buffer = NULL;
+
+    RTICdrStreamState_init(&cdrState);
+    md5Stream = PRESTypePluginDefaultEndpointData_getMD5Stream(endpoint_data);
+
+    if (md5Stream == NULL) {
+        return RTI_FALSE;
+    }
+
+    RTICdrStream_resetPosition(md5Stream);
+    RTICdrStream_setDirtyBit(md5Stream, RTI_TRUE);
+
+    if (!laser_Scan_msg_cPlugin_serialize_key(
+        endpoint_data,
+        instance,
+        md5Stream, 
+        RTI_FALSE, 
+        RTI_CDR_ENCAPSULATION_ID_CDR_BE, 
+        RTI_TRUE,
+        NULL)) 
+    {
+        int size;
+
+        RTICdrStream_pushState(md5Stream, &cdrState, -1);
+
+        size = (int)laser_Scan_msg_cPlugin_get_serialized_sample_size(
+            endpoint_data,
+            RTI_FALSE,
+            RTI_CDR_ENCAPSULATION_ID_CDR_BE,
+            0,
+            instance);
+
+        if (size <= RTICdrStream_getBufferLength(md5Stream)) {
+            RTICdrStream_popState(md5Stream, &cdrState);        
+            return RTI_FALSE;
+        }   
+
+        RTIOsapiHeap_allocateBuffer(&buffer,size,0);
+
+        if (buffer == NULL) {
+            RTICdrStream_popState(md5Stream, &cdrState);
+            return RTI_FALSE;
+        }
+
+        RTICdrStream_set(md5Stream, buffer, size);
+        RTIOsapiMemory_zero(
+            RTICdrStream_getBuffer(md5Stream),
+            RTICdrStream_getBufferLength(md5Stream));
+        RTICdrStream_resetPosition(md5Stream);
+        RTICdrStream_setDirtyBit(md5Stream, RTI_TRUE);
+        if (!laser_Scan_msg_cPlugin_serialize_key(
+            endpoint_data,
+            instance,
+            md5Stream, 
+            RTI_FALSE, 
+            RTI_CDR_ENCAPSULATION_ID_CDR_BE, 
+            RTI_TRUE,
+            NULL)) 
+        {
+            RTICdrStream_popState(md5Stream, &cdrState);
+            RTIOsapiHeap_freeBuffer(buffer);
+            return RTI_FALSE;
+        }        
+    }   
+
+    if (PRESTypePluginDefaultEndpointData_getMaxSizeSerializedKey(endpoint_data) > 
+    (unsigned int)(MIG_RTPS_KEY_HASH_MAX_LENGTH) ||
+    PRESTypePluginDefaultEndpointData_forceMD5KeyHash(endpoint_data)) {
+        RTICdrStream_computeMD5(md5Stream, keyhash->value);
+    } else {
+        RTIOsapiMemory_zero(keyhash->value,MIG_RTPS_KEY_HASH_MAX_LENGTH);
+        RTIOsapiMemory_copy(
+            keyhash->value, 
+            RTICdrStream_getBuffer(md5Stream), 
+            RTICdrStream_getCurrentPositionOffset(md5Stream));
+    }
+
+    keyhash->length = MIG_RTPS_KEY_HASH_MAX_LENGTH;
+
+    if (buffer != NULL) {
+        RTICdrStream_popState(md5Stream, &cdrState);
+        RTIOsapiHeap_freeBuffer(buffer);
+    }
+
+    return RTI_TRUE;
+}
+
+RTIBool 
+laser_Scan_msg_cPlugin_serialized_sample_to_keyhash(
+    PRESTypePluginEndpointData endpoint_data,
+    struct RTICdrStream *stream, 
+    DDS_KeyHash_t *keyhash,
+    RTIBool deserialize_encapsulation,
+    void *endpoint_plugin_qos) 
+{   
+    char * position = NULL;
+
+    RTIBool done = RTI_FALSE;
+    RTIBool error = RTI_FALSE;
+    laser_Scan_msg_c * sample=NULL;
+
+    if (endpoint_plugin_qos) {} /* To avoid warnings */
+    if (stream == NULL) {
+        error = RTI_TRUE;
+        goto fin;
+    }
+
+    if(deserialize_encapsulation) {
+        if (!RTICdrStream_deserializeAndSetCdrEncapsulation(stream)) {
+            return RTI_FALSE;
+        }
+
+        position = RTICdrStream_resetAlignment(stream);
+    }
+
+    sample = (laser_Scan_msg_c *)
+    PRESTypePluginDefaultEndpointData_getTempSample(endpoint_data);
+
+    if (sample == NULL) {
+        return RTI_FALSE;
+    }
+
+    if (!RTICdrStream_deserializeLong(
+        stream, &sample->laser_id)) {
+        return RTI_FALSE;
+    }
+    done = RTI_TRUE;
+  fin:
+    if(!error) {
+        if (done != RTI_TRUE && 
+        RTICdrStream_getRemainder(stream) >=
+        RTI_CDR_PARAMETER_HEADER_ALIGNMENT) {
+            return RTI_FALSE;   
+        }
+    } else {
+        return RTI_FALSE;
+    } 
+
+    if(deserialize_encapsulation) {
+        RTICdrStream_restoreAlignment(stream,position);
+    }
+
+    if (!laser_Scan_msg_cPlugin_instance_to_keyhash(
+        endpoint_data, keyhash, sample)) {
+        return RTI_FALSE;
     }
 
     return RTI_TRUE;
@@ -6821,19 +7153,40 @@ struct PRESTypePlugin *laser_Scan_msg_cPlugin_new(void)
     (PRESTypePluginGetKeyKindFunction)
     laser_Scan_msg_cPlugin_get_key_kind;
 
-    /* These functions are only used for keyed types. As this is not a keyed
-    type they are all set to NULL
-    */
-    plugin->serializeKeyFnc = NULL ;    
-    plugin->deserializeKeyFnc = NULL;  
-    plugin->getKeyFnc = NULL;
-    plugin->returnKeyFnc = NULL;
-    plugin->instanceToKeyFnc = NULL;
-    plugin->keyToInstanceFnc = NULL;
-    plugin->getSerializedKeyMaxSizeFnc = NULL;
-    plugin->instanceToKeyHashFnc = NULL;
-    plugin->serializedSampleToKeyHashFnc = NULL;
-    plugin->serializedKeyToKeyHashFnc = NULL;    
+    plugin->getSerializedKeyMaxSizeFnc =   
+    (PRESTypePluginGetSerializedKeyMaxSizeFunction)
+    laser_Scan_msg_cPlugin_get_serialized_key_max_size;
+    plugin->serializeKeyFnc =
+    (PRESTypePluginSerializeKeyFunction)
+    laser_Scan_msg_cPlugin_serialize_key;
+    plugin->deserializeKeyFnc =
+    (PRESTypePluginDeserializeKeyFunction)
+    laser_Scan_msg_cPlugin_deserialize_key;
+    plugin->deserializeKeySampleFnc =
+    (PRESTypePluginDeserializeKeySampleFunction)
+    laser_Scan_msg_cPlugin_deserialize_key_sample;
+
+    plugin-> instanceToKeyHashFnc = 
+    (PRESTypePluginInstanceToKeyHashFunction)
+    laser_Scan_msg_cPlugin_instance_to_keyhash;
+    plugin->serializedSampleToKeyHashFnc = 
+    (PRESTypePluginSerializedSampleToKeyHashFunction)
+    laser_Scan_msg_cPlugin_serialized_sample_to_keyhash;
+
+    plugin->getKeyFnc =
+    (PRESTypePluginGetKeyFunction)
+    laser_Scan_msg_cPlugin_get_key;
+    plugin->returnKeyFnc =
+    (PRESTypePluginReturnKeyFunction)
+    laser_Scan_msg_cPlugin_return_key;
+
+    plugin->instanceToKeyFnc =
+    (PRESTypePluginInstanceToKeyFunction)
+    laser_Scan_msg_cPlugin_instance_to_key;
+    plugin->keyToInstanceFnc =
+    (PRESTypePluginKeyToInstanceFunction)
+    laser_Scan_msg_cPlugin_key_to_instance;
+    plugin->serializedKeyToKeyHashFnc = NULL; /* Not supported yet */
     plugin->typeCode =  (struct RTICdrTypeCode *)laser_Scan_msg_c_get_typecode();
 
     plugin->languageKind = PRES_TYPEPLUGIN_CPP_LANG;

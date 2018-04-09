@@ -9,8 +9,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the RTI Connext manual.
 */
 
-#ifndef laserScanMsgImpl_1972818959_h
-#define laserScanMsgImpl_1972818959_h
+#ifndef laserScanMsgImpl_1972819042_h
+#define laserScanMsgImpl_1972819042_h
 
 #ifndef NDDS_STANDALONE_TYPE
 #ifndef ndds_c_h
@@ -342,6 +342,7 @@ extern const char *laser_Scan_msg_cTYPENAME;
 
 typedef struct laser_Scan_msg_c {
 
+    DDS_Long   laser_id ;
     Header_c   header ;
     World_Pose_c   world_pose ;
     DDS_Float   angle_min ;

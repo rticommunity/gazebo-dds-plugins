@@ -9,8 +9,8 @@ For more information, type 'rtiddsgen -help' at a command shell
 or consult the RTI Connext manual.
 */
 
-#ifndef laserScanMsg_1972818959_hpp
-#define laserScanMsg_1972818959_hpp
+#ifndef laserScanMsg_1972819042_hpp
+#define laserScanMsg_1972819042_hpp
 
 #include <iosfwd>
 #include "laserScanMsgImpl.h"
@@ -309,6 +309,7 @@ class NDDSUSERDllExport laser_Scan_msg {
     laser_Scan_msg();
 
     laser_Scan_msg(
+        int32_t laser_id_param,
         const Header& header_param,
         const World_Pose& world_pose_param,
         float angle_min_param,
@@ -335,6 +336,9 @@ class NDDSUSERDllExport laser_Scan_msg {
     laser_Scan_msg& operator=(laser_Scan_msg&&  other_) OMG_NOEXCEPT;
     #endif
     #endif 
+
+    int32_t laser_id() const OMG_NOEXCEPT;
+    void laser_id(int32_t value);
 
     Header& header() OMG_NOEXCEPT; 
     const Header& header() const OMG_NOEXCEPT;
@@ -389,6 +393,7 @@ class NDDSUSERDllExport laser_Scan_msg {
 
   private:
 
+    int32_t m_laser_id_;
     Header m_header_;
     World_Pose m_world_pose_;
     float m_angle_min_;
@@ -665,5 +670,5 @@ namespace rti {
 #define NDDSUSERDllExport
 #endif
 
-#endif // laserScanMsg_1972818959_hpp
+#endif // laserScanMsg_1972819042_hpp
 

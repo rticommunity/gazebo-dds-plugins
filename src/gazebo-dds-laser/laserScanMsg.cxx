@@ -470,6 +470,7 @@ std::ostream& operator << (std::ostream& o,const World_Pose& sample)
 // ---- laser_Scan_msg: 
 
 laser_Scan_msg::laser_Scan_msg() :
+    m_laser_id_ (0) ,
     m_angle_min_ (0.0f) ,
     m_angle_max_ (0.0f) ,
     m_angle_step_ (0.0f) ,
@@ -483,6 +484,7 @@ laser_Scan_msg::laser_Scan_msg() :
 }   
 
 laser_Scan_msg::laser_Scan_msg (
+    int32_t laser_id_param,
     const Header& header_param,
     const World_Pose& world_pose_param,
     float angle_min_param,
@@ -498,6 +500,7 @@ laser_Scan_msg::laser_Scan_msg (
     const dds::core::vector<float>& ranges_param,
     const dds::core::vector<float>& intensities_param)
     :
+        m_laser_id_( laser_id_param ),
         m_header_( header_param ),
         m_world_pose_( world_pose_param ),
         m_angle_min_( angle_min_param ),
@@ -515,7 +518,9 @@ laser_Scan_msg::laser_Scan_msg (
 }
 #ifdef RTI_CXX11_RVALUE_REFERENCES
 #ifdef RTI_CXX11_NO_IMPLICIT_MOVE_OPERATIONS
-laser_Scan_msg::laser_Scan_msg(laser_Scan_msg&& other_) OMG_NOEXCEPT  :m_header_ (std::move(other_.m_header_))
+laser_Scan_msg::laser_Scan_msg(laser_Scan_msg&& other_) OMG_NOEXCEPT  :m_laser_id_ (std::move(other_.m_laser_id_))
+,
+m_header_ (std::move(other_.m_header_))
 ,
 m_world_pose_ (std::move(other_.m_world_pose_))
 ,
@@ -556,6 +561,7 @@ laser_Scan_msg& laser_Scan_msg::operator=(laser_Scan_msg&&  other_) OMG_NOEXCEPT
 void laser_Scan_msg::swap(laser_Scan_msg& other_)  OMG_NOEXCEPT 
 {
     using std::swap;
+    swap(m_laser_id_, other_.m_laser_id_);
     swap(m_header_, other_.m_header_);
     swap(m_world_pose_, other_.m_world_pose_);
     swap(m_angle_min_, other_.m_angle_min_);
@@ -573,6 +579,9 @@ void laser_Scan_msg::swap(laser_Scan_msg& other_)  OMG_NOEXCEPT
 }  
 
 bool laser_Scan_msg::operator == (const laser_Scan_msg& other_) const {
+    if (m_laser_id_ != other_.m_laser_id_) {
+        return false;
+    }
     if (m_header_ != other_.m_header_) {
         return false;
     }
@@ -622,6 +631,14 @@ bool laser_Scan_msg::operator != (const laser_Scan_msg& other_) const {
 }
 
 // --- Getters and Setters: -------------------------------------------------
+int32_t laser_Scan_msg::laser_id() const OMG_NOEXCEPT{
+    return m_laser_id_;
+}
+
+void laser_Scan_msg::laser_id(int32_t value) {
+    m_laser_id_ = value;
+}
+
 Header& laser_Scan_msg::header() OMG_NOEXCEPT {
     return m_header_;
 }
@@ -754,6 +771,7 @@ std::ostream& operator << (std::ostream& o,const laser_Scan_msg& sample)
 {
     rti::util::StreamFlagSaver flag_saver (o);
     o <<"[";
+    o << "laser_id: " << sample.laser_id()<<", ";
     o << "header: " << sample.header()<<", ";
     o << "world_pose: " << sample.world_pose()<<", ";
     o << "angle_min: " << std::setprecision(9) <<sample.angle_min()<<", ";

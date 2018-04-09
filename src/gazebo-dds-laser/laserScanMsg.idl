@@ -139,6 +139,11 @@ struct laser_Scan_msg {
         /*
          * Description < >
          */
+        long   laser_id; //@key
+
+        /*
+         * Description < >
+         */
         Header   header;
 
         /*

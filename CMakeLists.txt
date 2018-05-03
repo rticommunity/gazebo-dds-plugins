@@ -5,9 +5,9 @@ project(testing)
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     "${CMAKE_CURRENT_SOURCE_DIR}/resources/cmake")
-message(${CMAKE_MODULE_PATH})
-FIND_PACKAGE(Boost 1.40 COMPONENTS system REQUIRED )
-FIND_PACKAGE(RTIConnextDDS)
+
+include(ConnextDdsCodegen)
+find_package(RTIConnextDDS)
 
 set (CMAKE_CXX_FLAGS "-g -Wall -std=c++11")
 
@@ -17,15 +17,35 @@ if (PKG_CONFIG_FOUND)
   pkg_check_modules(SDF sdformat)
 endif()
 
-add_definitions("${CONNEXTDDS_DEFINITIONS}")
-include_directories(
-  ${GAZEBO_INCLUDE_DIRS}
-  ${SDF_INCLUDE_DIRS}
-  ${CONNEXTDDS_INCLUDE_DIRS}
-)
-
 link_directories(${GAZEBO_LIBRARY_DIRS} $ENV{LD_LIBRARY_PATH})
 
-add_library(GazeboDDSLaser SHARED src/gazebo-dds-laser/gazebo-dds-laser.cxx src/gazebo-dds-laser/laserScanMsg.cxx src/gazebo-dds-laser/laserScanMsg.hpp src/gazebo-dds-laser/laserScanMsgImpl.cxx src/gazebo-dds-laser/laserScanMsgImpl.h src/gazebo-dds-laser/laserScanMsgImplPlugin.cxx src/gazebo-dds-laser/laserScanMsgImplPlugin.h )
-target_link_libraries(GazeboDDSLaser ${Boost_LIBRARIES} ${GAZEBO_LIBRARIES} ${SDF_LIBRARIES} ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_STATIC}
-${CONNEXTDDS_EXTERNAL_LIBS} RayPlugin)
+connextdds_rtiddsgen_run(
+  LANG C++11
+  OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/generated"
+  IDL_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/laserScanMsg.idl"
+  UNBOUNDED
+)
+
+add_library(GazeboDDSLaser MODULE src/gazebo-dds-laser.cxx ${laserScanMsg_CXX11_SOURCES})
+
+target_link_libraries(GazeboDDSLaser 
+  ${Boost_LIBRARIES} 
+  ${GAZEBO_LIBRARIES} 
+  ${SDF_LIBRARIES} 
+  ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_STATIC}
+  ${CONNEXTDDS_EXTERNAL_LIBS} 
+  RayPlugin
+)
+
+target_include_directories(GazeboDDSLaser PRIVATE 
+  ${CONNEXTDDS_INCLUDE_DIRS} 
+  ${GAZEBO_INCLUDE_DIRS} 
+  ${SDF_INCLUDE_DIRS}
+)
+
+target_compile_definitions(GazeboDDSLaser PRIVATE ${CONNEXTDDS_DEFINITIONS})
+target_link_libraries(GazeboDDSLaser
+  ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_STATIC}
+  ${CONNEXTDDS_EXTERNAL_LIBS}
+)
+

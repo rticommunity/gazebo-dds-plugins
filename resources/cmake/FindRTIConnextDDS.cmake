@@ -378,10 +378,10 @@ if(CONNEXTDDS_ARCH MATCHES "Linux")
 
     if(CONNEXTDDS_ARCH MATCHES "i86Linux")
         set(CONNEXTDDS_HOST_ARCH "i86Linux")
-        set(CONNEXTDDS_DEFINITIONS "-m32 -DRTI_UNIX -DRTI_LINUX")
+        set(CONNEXTDDS_DEFINITIONS "-DRTI_UNIX -DRTI_LINUX")
     elseif(CONNEXTDDS_ARCH MATCHES "x64Linux")
         set(CONNEXTDDS_HOST_ARCH "x64Linux")
-        set(CONNEXTDDS_DEFINITIONS "-m64 -DRTI_UNIX -DRTI_LINUX -DRTI_64BIT")
+        set(CONNEXTDDS_DEFINITIONS "-DRTI_UNIX -DRTI_LINUX -DRTI_64BIT")
     else()
         message(FATAL_ERROR
             "${CONNEXTDDS_ARCH} architecture is unsupported by this module")

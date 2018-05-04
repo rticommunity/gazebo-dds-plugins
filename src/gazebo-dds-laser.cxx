@@ -1,5 +1,5 @@
-#ifndef GAZEBO_DDS_CXX
-#define GAZEBO_DDS_CXX
+#ifndef GAZEBO_DDS_LASER_CXX
+#define GAZEBO_DDS_LASER_CXX
 
 #include "../include/gazebo-dds-laser.h"
 #include "data-writer-listener.cxx"
@@ -10,24 +10,10 @@ namespace gazebo {
 GZ_REGISTER_SENSOR_PLUGIN(GazeboDDSLaser)
 
 GazeboDDSLaser::GazeboDDSLaser()
-        : participant_(226),
-          topic_(participant_, "laserScan"),
+        : participant_(dds::core::null),
+          topic_(dds::core::null),
           writer_(dds::core::null)
 {
-    rti::core::policy::Property::Entry value(
-            { "dds.data_writer.history.memory_manager.fast_pool.pool_"
-              "buffer_max_size",
-              "4096" });
-
-    rti::core::policy::Property property;
-    property.set(value);
-    data_writer_qos_ << property;
-    writer_ = dds::pub::DataWriter<laser_Scan_msg>(
-            dds::pub::Publisher(participant_), topic_, data_writer_qos_);
-
-    writer_.listener(
-            new DataWriterListener<laser_Scan_msg>,
-            dds::core::status::StatusMask::all());
 }
 
 GazeboDDSLaser::~GazeboDDSLaser()
@@ -42,12 +28,63 @@ void GazeboDDSLaser::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     // Store the pointer to the sensor
     sensor_ = parent;
 
-    this->gazeboNode_
-            = gazebo::transport::NodePtr(new gazebo::transport::Node());
-    this->gazeboNode_->Init(parent->WorldName());
+    laser_connect_count_ = 0;
 
-    this->laserSubscriber_ = this->gazeboNode_->Subscribe(
-            this->sensor_->Topic(), &GazeboDDSLaser::OnScan, this);
+    gazebo_node_ = gazebo::transport::NodePtr(new gazebo::transport::Node());
+    gazebo_node_->Init(parent->WorldName());
+
+    int domainID;
+    if (!sdf->HasElement("domainID"))
+        domainID = 0;
+    else
+        domainID = sdf->Get<int>("domainID");
+
+    participant_ = dds::domain::find(domainID);
+    if (participant_ == dds::core::null){
+        participant_ = dds::domain::DomainParticipant(domainID);
+    }
+        
+
+    if (!sdf->HasElement("topicName"))
+        topic_ = dds::topic::Topic<laser_Scan_msg>(participant_, "laserScan");
+    else
+        topic_ = dds::topic::Topic<laser_Scan_msg>(
+                participant_, sdf->Get<std::string>("topicName"));
+
+
+    rti::core::policy::Property::Entry value(
+            { "dds.data_writer.history.memory_manager.fast_pool.pool_"
+              "buffer_max_size",
+              "4096" });
+
+    rti::core::policy::Property property;
+    property.set(value);
+    data_writer_qos_ << property;
+    writer_ = dds::pub::DataWriter<laser_Scan_msg>(
+            dds::pub::Publisher(participant_), topic_, data_writer_qos_);
+
+    writer_.listener(
+            new DataWriterListener<laser_Scan_msg>(
+                    std::bind(&GazeboDDSLaser::LaserConnect, this),
+                    std::bind(&GazeboDDSLaser::LaserDisconnect, this)),
+            dds::core::status::StatusMask::all());
+}
+
+void GazeboDDSLaser::LaserConnect()
+{
+    std::cout << "Connected subscriber" << std::endl;
+    this->laser_connect_count_++;
+    if (this->laser_connect_count_ == 1)
+        this->laser_scan_sub_ = this->gazebo_node_->Subscribe(
+                this->sensor_->Topic(), &GazeboDDSLaser::OnScan, this);
+}
+
+void GazeboDDSLaser::LaserDisconnect()
+{
+    std::cout << "Disconnected subscriber" << std::endl;
+    this->laser_connect_count_--;
+    if (this->laser_connect_count_ == 0)
+        this->laser_scan_sub_.reset();
 }
 
 void GazeboDDSLaser::OnScan(ConstLaserScanStampedPtr &msg)
@@ -95,6 +132,7 @@ void GazeboDDSLaser::OnScan(ConstLaserScanStampedPtr &msg)
             msg->scan().intensities().end(),
             sample.intensities().begin());
 
+    std::cout << "Writing..." << std::endl;
     writer_.write(sample);
 }
 }  // namespace gazebo

@@ -1,5 +1,5 @@
-#ifndef GAZEBO_DDS_H
-#define GAZEBO_DDS_H
+#ifndef GAZEBO_DDS_LASER_H
+#define GAZEBO_DDS_LASER_H
 
 #include <iostream>
 #include <math.h>
@@ -29,19 +29,39 @@ namespace gazebo {
 
 class GazeboDDSLaser : public RayPlugin {
 public:
+    /**
+     * @brief Constructor
+     */
     GazeboDDSLaser();
 
+    /**
+     * @brief Destructor
+     */
     ~GazeboDDSLaser();
 
+    /**
+     * @brief Load the plugin inside Gazebo's system
+     *
+     * @param parent object of Gazebo's sensor
+     * @param sdf object of Gazebo's world
+     */
     void Load(sensors::SensorPtr parent, sdf::ElementPtr sdf);
 
+    /**
+     * @brief Read the current sensor's information 
+     *
+     * @param msg current information of the sensor
+     */
     void OnScan(ConstLaserScanStampedPtr &msg);
 
 private:
-    // Pointer to the world
+
+    int laser_connect_count_;
+    void LaserConnect();
+    void LaserDisconnect();
+
     physics::WorldPtr world_;
 
-    // Pointer to the sensor
     sensors::SensorPtr sensor_;
 
     dds::domain::DomainParticipant participant_;
@@ -52,9 +72,9 @@ private:
 
     dds::pub::DataWriter<laser_Scan_msg> writer_;
 
-    gazebo::transport::NodePtr gazeboNode_;
+    gazebo::transport::NodePtr gazebo_node_;
 
-    gazebo::transport::SubscriberPtr laserSubscriber_;
+    gazebo::transport::SubscriberPtr laser_scan_sub_;
 };
 
 }  // namespace gazebo

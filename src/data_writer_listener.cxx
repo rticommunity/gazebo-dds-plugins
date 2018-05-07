@@ -1,7 +1,7 @@
 #ifndef DATA_WRITER_LISTENER_CXX
 #define DATA_WRITER_LISTENER_CXX
 
-#include "../include/data-writer-listener.h"
+#include "../include/data_writer_listener.h"
 
 template <class Type>
 DataWriterListener<Type>::DataWriterListener()

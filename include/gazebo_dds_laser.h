@@ -22,7 +22,7 @@
 #include <rti/core/ListenerBinder.hpp>
 
 #include "../build/generated/laserScanMsg.hpp"
-#include "data-writer-listener.h"
+#include "data_writer_listener.h"
 
 
 namespace gazebo {

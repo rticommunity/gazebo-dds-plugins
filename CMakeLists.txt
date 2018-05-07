@@ -1,7 +1,6 @@
-# # 2.8.8 required to use PROTOBUF_IMPORT_DIRS
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
-project(testing)
+project(dds-gazebo-plugins)
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     "${CMAKE_CURRENT_SOURCE_DIR}/resources/cmake")
@@ -26,7 +25,7 @@ connextdds_rtiddsgen_run(
   UNBOUNDED
 )
 
-add_library(GazeboDDSLaser MODULE src/gazebo-dds-laser.cxx ${laserScanMsg_CXX11_SOURCES})
+add_library(GazeboDDSLaser MODULE src/gazebo_dds_laser.cxx ${laserScanMsg_CXX11_SOURCES})
 
 target_link_libraries(GazeboDDSLaser 
   ${Boost_LIBRARIES} 
@@ -44,8 +43,4 @@ target_include_directories(GazeboDDSLaser PRIVATE
 )
 
 target_compile_definitions(GazeboDDSLaser PRIVATE ${CONNEXTDDS_DEFINITIONS})
-target_link_libraries(GazeboDDSLaser
-  ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_STATIC}
-  ${CONNEXTDDS_EXTERNAL_LIBS}
-)
 

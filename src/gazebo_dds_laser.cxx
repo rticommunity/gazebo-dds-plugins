@@ -1,8 +1,8 @@
 #ifndef GAZEBO_DDS_LASER_CXX
 #define GAZEBO_DDS_LASER_CXX
 
-#include "../include/gazebo-dds-laser.h"
-#include "data-writer-listener.cxx"
+#include "../include/gazebo_dds_laser.h"
+#include "data_writer_listener.cxx"
 
 
 namespace gazebo {
@@ -33,23 +33,23 @@ void GazeboDDSLaser::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     gazebo_node_ = gazebo::transport::NodePtr(new gazebo::transport::Node());
     gazebo_node_->Init(parent->WorldName());
 
-    int domainID;
-    if (!sdf->HasElement("domainID"))
-        domainID = 0;
+    int domain_id;
+    if (!sdf->HasElement("domain_id"))
+        domain_id = 0;
     else
-        domainID = sdf->Get<int>("domainID");
+        domain_id = sdf->Get<int>("domain_id");
 
-    participant_ = dds::domain::find(domainID);
-    if (participant_ == dds::core::null){
-        participant_ = dds::domain::DomainParticipant(domainID);
+    participant_ = dds::domain::find(domain_id);
+    if (participant_ == dds::core::null) {
+        participant_ = dds::domain::DomainParticipant(domain_id);
     }
-        
 
-    if (!sdf->HasElement("topicName"))
-        topic_ = dds::topic::Topic<laser_Scan_msg>(participant_, "laserScan");
-    else
-        topic_ = dds::topic::Topic<laser_Scan_msg>(
-                participant_, sdf->Get<std::string>("topicName"));
+    std::string topic_name= "laserScan";
+
+    if (sdf->HasElement("topic_name"))
+        topic_name=sdf->Get<std::string>("topic_name");
+    
+    topic_ = dds::topic::Topic<laser_Scan_msg>(participant_, topic_name);
 
 
     rti::core::policy::Property::Entry value(
@@ -68,11 +68,12 @@ void GazeboDDSLaser::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
                     std::bind(&GazeboDDSLaser::LaserConnect, this),
                     std::bind(&GazeboDDSLaser::LaserDisconnect, this)),
             dds::core::status::StatusMask::all());
+
+    std::cout << "Starting Laser Plugin - Topic name: " << topic_name << std::endl;
 }
 
 void GazeboDDSLaser::LaserConnect()
 {
-    std::cout << "Connected subscriber" << std::endl;
     this->laser_connect_count_++;
     if (this->laser_connect_count_ == 1)
         this->laser_scan_sub_ = this->gazebo_node_->Subscribe(
@@ -81,7 +82,6 @@ void GazeboDDSLaser::LaserConnect()
 
 void GazeboDDSLaser::LaserDisconnect()
 {
-    std::cout << "Disconnected subscriber" << std::endl;
     this->laser_connect_count_--;
     if (this->laser_connect_count_ == 0)
         this->laser_scan_sub_.reset();
@@ -132,7 +132,6 @@ void GazeboDDSLaser::OnScan(ConstLaserScanStampedPtr &msg)
             msg->scan().intensities().end(),
             sample.intensities().begin());
 
-    std::cout << "Writing..." << std::endl;
     writer_.write(sample);
 }
 }  // namespace gazebo

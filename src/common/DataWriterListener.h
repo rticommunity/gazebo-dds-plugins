@@ -5,12 +5,13 @@
 #include <dds/pub/ddspub.hpp>
 #include <dds/sub/ddssub.hpp>
 #include <rti/core/ListenerBinder.hpp>
+
 #include <rti/util/util.hpp>
 
 #include <dds/dds.hpp>
 
 
-template <class Type>
+template <typename Type>
 class DataWriterListener : public dds::pub::NoOpDataWriterListener<Type> {
 public:
     DataWriterListener();

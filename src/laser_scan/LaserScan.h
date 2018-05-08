@@ -1,5 +1,5 @@
-#ifndef GAZEBO_DDS_LASER_H
-#define GAZEBO_DDS_LASER_H
+#ifndef DDS_LASER_SCAN_H
+#define DDS_LASER_SCAN_H
 
 #include <iostream>
 #include <math.h>
@@ -18,26 +18,30 @@
 #include <dds/pub/ddspub.hpp>
 #include <dds/sub/ddssub.hpp>
 #include <rti/util/util.hpp>
+#include <dds/domain/find.hpp>
 
 #include <rti/core/ListenerBinder.hpp>
 
-#include "../build/generated/laserScanMsg.hpp"
-#include "data_writer_listener.h"
+#include "LaserScanMsg.hpp"
+#include "DataWriterListener.h"
+#include "Properties.h"
 
 
 namespace gazebo {
 
-class GazeboDDSLaser : public RayPlugin {
+namespace dds {
+
+class LaserScan : public RayPlugin {
 public:
     /**
      * @brief Constructor
      */
-    GazeboDDSLaser();
+    LaserScan();
 
     /**
      * @brief Destructor
      */
-    ~GazeboDDSLaser();
+    ~LaserScan();
 
     /**
      * @brief Load the plugin inside Gazebo's system
@@ -64,19 +68,20 @@ private:
 
     sensors::SensorPtr sensor_;
 
-    dds::domain::DomainParticipant participant_;
+    ::dds::domain::DomainParticipant participant_;
 
-    dds::topic::Topic<laser_Scan_msg> topic_;
+    ::dds::topic::Topic<LaserScanMsg> topic_;
 
-    dds::pub::qos::DataWriterQos data_writer_qos_;
+    ::dds::pub::qos::DataWriterQos data_writer_qos_;
 
-    dds::pub::DataWriter<laser_Scan_msg> writer_;
+    ::dds::pub::DataWriter<LaserScanMsg> writer_;
 
     gazebo::transport::NodePtr gazebo_node_;
 
     gazebo::transport::SubscriberPtr laser_scan_sub_;
 };
 
+} //namespace dds
 }  // namespace gazebo
 
 #endif

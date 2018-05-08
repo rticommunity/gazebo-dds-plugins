@@ -1,0 +1,199 @@
+/* --- Time type: ------------------------------------------------------- */
+
+/*
+ * This is the Time type.
+ *
+ * Simulation time
+ */
+struct Time {
+    /*
+     * Seconds of the simulation time
+     */
+    unsigned long sec;
+
+    /*
+     * Nanoseconds of the simulation time
+     */
+    unsigned long nsec;
+    };
+
+/* --- Header type: ------------------------------------------------------- */
+
+/*
+ * This is the Header type.
+ *
+ * Header information of a message
+ */
+struct Header {
+        /*
+         * Current simulation time
+         */
+        Time stamp;
+
+        /*
+         * Id of the current frame
+         */
+        string frame_id;
+
+};
+
+/* --- position type: ------------------------------------------------------- */
+
+/*
+ * This is the Position type.
+ *
+ * Position of an object
+ */
+struct Position {
+    /*
+     * Position relative to X axis
+     */
+    float x;
+
+    /*
+     * Position relative to Y axis
+     */
+    float y;
+
+    /*
+     * Position relative to Z axis
+     */
+    float z;
+
+};
+
+/* --- Orientation type: ------------------------------------------------------- */
+
+/*
+ * This is the Orientation type.
+ *
+ * Orientation of an object
+ */
+struct Orientation {
+    /*
+     * Orientation in the X axis
+     */
+    float x;
+
+    /*
+     * Orientation in the Y axis
+     */
+    float y;
+
+    /*
+     * Orientation in the Z axis
+     */
+    float z;
+
+    /*
+     * Orientation in the W axis
+     */
+    float w;
+
+};
+
+/* --- WorldPose type: ------------------------------------------------------- */
+
+/*
+ * This is the WorldPose type.
+ *
+ * Position and orientation of an object
+ */
+struct WorldPose {
+    /*
+     * Position of the object
+     */
+    Position position;
+
+    /*
+     * Orientation of the object
+     */
+    Orientation orientation;
+
+};
+
+
+
+/* --- LaserScanMsg type: ------------------------------------------------------- */
+
+/*
+ * This is the LaserScanMsg type.
+ *
+ * Information that a laser scans in the world
+ */
+struct LaserScanMsg {
+    /*
+     * Id of the laser
+     */
+    long   laser_id; //@key
+
+    /*
+     * Header information
+     */
+    Header   header;
+
+    /*
+     * Position of the laser
+     */
+    WorldPose   world_pose;
+
+    /*
+     * Minimun angle
+     */
+    float   angle_min;
+
+    /*
+     * Maximum angle
+     */
+    float   angle_max;
+
+    /*
+     * Angle step
+     */
+    float   angle_step;
+
+    /*
+     * Minimum angle
+     */
+    float   range_min;
+
+    /*
+     * Maximum range
+     */
+    float   range_max;
+
+    /*
+     * Number of range sample 
+     */
+    long   count;
+
+    /*
+     * Minimum vertical angle
+     */
+    float   vertical_angle_min;
+
+    /*
+     * Maximum vertical angle
+     */
+    float   vertical_angle_max;
+
+    /*
+     * Vertical angle step
+     */
+    float   vertical_angle_step;
+
+    /*
+     * Vertical count
+     */
+    float   vertical_count;
+
+    /*
+     * List of ranges
+     */
+    sequence<float>   ranges;
+
+    /*
+     * List of intensities
+     */
+    sequence<float>   intensities;
+};

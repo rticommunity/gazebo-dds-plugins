@@ -1,14 +1,14 @@
 #ifndef DATA_WRITER_LISTENER_CXX
 #define DATA_WRITER_LISTENER_CXX
 
-#include "../include/data_writer_listener.h"
+#include "DataWriterListener.h"
 
-template <class Type>
+template <typename Type>
 DataWriterListener<Type>::DataWriterListener()
 {
 }
 
-template <class Type>
+template <typename Type>
 DataWriterListener<Type>::DataWriterListener(
         std::function<void()> on_con,
         std::function<void()> on_discon)
@@ -17,7 +17,7 @@ DataWriterListener<Type>::DataWriterListener(
     on_disconnect_ = on_discon;
 }
 
-template <class Type>
+template <typename Type>
 void DataWriterListener<Type>::on_publication_matched(
         dds::pub::DataWriter<Type> &writer,
         const dds::core::status::PublicationMatchedStatus &status)

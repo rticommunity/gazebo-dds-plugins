@@ -1,31 +1,14 @@
 #ifndef DDS_LASER_SCAN_H
 #define DDS_LASER_SCAN_H
 
-#include <iostream>
-#include <math.h>
-#include <sdf/sdf.hh>
-
-#include <functional>
-#include <gazebo/common/common.hh>
 #include <gazebo/gazebo.hh>
-#include <gazebo/physics/physics.hh>
 #include <gazebo/plugins/RayPlugin.hh>
-#include <ignition/math/Vector3.hh>
-
-#include <algorithm>
 
 #include <dds/core/ddscore.hpp>
-#include <dds/pub/ddspub.hpp>
-#include <dds/sub/ddssub.hpp>
-#include <rti/util/util.hpp>
 #include <dds/domain/find.hpp>
-
-#include <rti/core/ListenerBinder.hpp>
+#include <dds/pub/ddspub.hpp>
 
 #include "LaserScanMsg.hpp"
-#include "DataWriterListener.h"
-#include "Properties.h"
-
 
 namespace gazebo {
 
@@ -52,17 +35,18 @@ public:
     void Load(sensors::SensorPtr parent, sdf::ElementPtr sdf);
 
     /**
-     * @brief Read the current sensor's information 
+     * @brief Read the current sensor's information
      *
      * @param msg current information of the sensor
      */
     void OnScan(ConstLaserScanStampedPtr &msg);
 
 private:
-
-    int laser_connect_count_;
     void LaserConnect();
     void LaserDisconnect();
+
+private:
+    int laser_connect_count_;
 
     physics::WorldPtr world_;
 
@@ -81,7 +65,7 @@ private:
     gazebo::transport::SubscriberPtr laser_scan_sub_;
 };
 
-} //namespace dds
+}  // namespace dds
 }  // namespace gazebo
 
-#endif
+#endif // DDS_LASER_SCAN_H

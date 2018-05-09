@@ -1,9 +1,9 @@
 #ifndef DDS_LASER_SCAN_CXX
-#define DDS_LASER_SCAN__CXX
+#define DDS_LASER_SCAN_CXX
 
 #include "LaserScan.h"
 #include "DataWriterListener.cxx"
-
+#include "Properties.h"
 
 namespace gazebo {
 
@@ -37,10 +37,10 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     gazebo_node_->Init(parent->WorldName());
 
     // Obtain the domain id from loaded world
-    int domain_id=0;
+    int domain_id = 0;
     if (sdf->HasElement(DOMAIN_ID_PROPERTY_NAME)) {
         domain_id = sdf->Get<int>(DOMAIN_ID_PROPERTY_NAME);
-    } 
+    }
 
     participant_ = ::dds::domain::find(domain_id);
     if (participant_ == ::dds::core::null) {
@@ -55,6 +55,7 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
 
     topic_ = ::dds::topic::Topic<LaserScanMsg>(participant_, topic_name);
 
+    // Change the maximum size of the sequences
     rti::core::policy::Property::Entry value(
             { "dds.data_writer.history.memory_manager.fast_pool.pool_"
               "buffer_max_size",
@@ -66,13 +67,14 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     writer_ = ::dds::pub::DataWriter<LaserScanMsg>(
             ::dds::pub::Publisher(participant_), topic_, data_writer_qos_);
 
+    // Add a new listener to the DataWriter
     writer_.listener(
             new DataWriterListener<LaserScanMsg>(
                     std::bind(&LaserScan::LaserConnect, this),
                     std::bind(&LaserScan::LaserDisconnect, this)),
             ::dds::core::status::StatusMask::publication_matched());
 
-    gzmsg << "Starting Laser Plugin - Topic name:" << topic_name << std::endl;
+    gzmsg << "Starting Laser Plugin - Topic name: " << topic_name << std::endl;
 }
 
 void LaserScan::LaserConnect()
@@ -140,4 +142,5 @@ void LaserScan::OnScan(ConstLaserScanStampedPtr &msg)
 
 }  // namespace dds
 }  // namespace gazebo
-#endif
+
+#endif  // DDS_LASER_SCAN_CXX

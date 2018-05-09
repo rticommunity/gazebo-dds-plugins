@@ -3,24 +3,33 @@
 
 #include <dds/core/ddscore.hpp>
 #include <dds/pub/ddspub.hpp>
-#include <dds/sub/ddssub.hpp>
-#include <rti/core/ListenerBinder.hpp>
 
-#include <rti/util/util.hpp>
-
-#include <dds/dds.hpp>
-
-
-template <typename Type>
-class DataWriterListener : public dds::pub::NoOpDataWriterListener<Type> {
+template <typename T>
+class DataWriterListener : public dds::pub::NoOpDataWriterListener<T> {
 public:
+    /**
+     * @brief Constructor
+     */
     DataWriterListener();
 
-    DataWriterListener(std::function<void()> on_con,
-    std::function<void()> on_discon);
+    /**
+     * @brief Constructor
+     * 
+     * @param on_connect on connect callback
+     * @param on_disconnect on disconnect callback
+     */
+    DataWriterListener(
+            std::function<void()> on_connect,
+            std::function<void()> on_disconnect);
 
+    /**
+     * @brief On publication matched
+     * 
+     * @param writer datawriter that did match
+     * @param status status of the match
+     */
     virtual void on_publication_matched(
-            dds::pub::DataWriter<Type> &writer,
+            dds::pub::DataWriter<T> &writer,
             const dds::core::status::PublicationMatchedStatus &status);
 
 private:
@@ -28,4 +37,4 @@ private:
     std::function<void()> on_disconnect_;
 };
 
-#endif
+#endif // DATA_WRITER_LISTENER_H

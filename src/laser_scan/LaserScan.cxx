@@ -94,50 +94,44 @@ void LaserScan::LaserDisconnect()
 
 void LaserScan::OnScan(ConstLaserScanStampedPtr &msg)
 {
-    LaserScanMsg sample;
+    sample_.laser_id(sensor_->Id());
+    sample_.header().stamp().sec(msg->time().sec());
+    sample_.header().stamp().nsec(msg->time().nsec());
+    sample_.header().frame_id(sensor_->ParentName());
 
-    Position position(
-            msg->scan().world_pose().position().x(),
-            msg->scan().world_pose().position().y(),
-            msg->scan().world_pose().position().z());
+    sample_.world_pose().position().x(msg->scan().world_pose().position().x());
+    sample_.world_pose().position().y(msg->scan().world_pose().position().y());
+    sample_.world_pose().position().z(msg->scan().world_pose().position().z());
+    
+    sample_.world_pose().orientation().x(msg->scan().world_pose().orientation().x());
+    sample_.world_pose().orientation().y(msg->scan().world_pose().orientation().y());
+    sample_.world_pose().orientation().z(msg->scan().world_pose().orientation().z());
+    sample_.world_pose().orientation().w(msg->scan().world_pose().orientation().w());
 
-    Orientation orientation(
-            msg->scan().world_pose().orientation().x(),
-            msg->scan().world_pose().orientation().y(),
-            msg->scan().world_pose().orientation().z(),
-            msg->scan().world_pose().orientation().w());
+    sample_.angle_min(msg->scan().angle_min());
+    sample_.angle_max(msg->scan().angle_max());
+    sample_.angle_step(msg->scan().angle_step());
+    sample_.range_min(msg->scan().range_min());
+    sample_.range_max(msg->scan().range_max());
+    sample_.count(msg->scan().count());
+    sample_.vertical_angle_min(msg->scan().vertical_angle_min());
+    sample_.vertical_angle_max(msg->scan().vertical_angle_max());
+    sample_.vertical_angle_step(msg->scan().vertical_angle_step());
+    sample_.vertical_count(msg->scan().vertical_count());
 
-
-    sample.laser_id(sensor_->Id());
-    sample.header(
-            Header(Time(msg->time().sec(), msg->time().nsec()),
-                   sensor_->ParentName()));
-
-    sample.world_pose(WorldPose(position, orientation));
-    sample.angle_min(msg->scan().angle_min());
-    sample.angle_max(msg->scan().angle_max());
-    sample.angle_step(msg->scan().angle_step());
-    sample.range_min(msg->scan().range_min());
-    sample.range_max(msg->scan().range_max());
-    sample.count(msg->scan().count());
-    sample.vertical_angle_min(msg->scan().vertical_angle_min());
-    sample.vertical_angle_max(msg->scan().vertical_angle_max());
-    sample.vertical_angle_step(msg->scan().vertical_angle_step());
-    sample.vertical_count(msg->scan().vertical_count());
-
-    sample.ranges().resize(msg->scan().ranges_size());
+    sample_.ranges().resize(msg->scan().ranges_size());
     std::copy(
             msg->scan().ranges().begin(),
             msg->scan().ranges().end(),
-            sample.ranges().begin());
+            sample_.ranges().begin());
 
-    sample.intensities().resize(msg->scan().intensities_size());
+    sample_.intensities().resize(msg->scan().intensities_size());
     std::copy(
             msg->scan().intensities().begin(),
             msg->scan().intensities().end(),
-            sample.intensities().begin());
+            sample_.intensities().begin());
 
-    writer_.write(sample);
+    writer_.write(sample_);
 }
 
 }  // namespace dds

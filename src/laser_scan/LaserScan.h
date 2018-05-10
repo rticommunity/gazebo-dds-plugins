@@ -63,6 +63,8 @@ private:
     gazebo::transport::NodePtr gazebo_node_;
 
     gazebo::transport::SubscriberPtr laser_scan_sub_;
+
+    LaserScanMsg sample_;
 };
 
 }  // namespace dds

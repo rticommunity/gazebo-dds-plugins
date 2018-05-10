@@ -14,7 +14,7 @@ public:
 
     /**
      * @brief Constructor
-     * 
+     *
      * @param on_connect on connect callback
      * @param on_disconnect on disconnect callback
      */
@@ -24,7 +24,7 @@ public:
 
     /**
      * @brief On publication matched
-     * 
+     *
      * @param writer datawriter that did match
      * @param status status of the match
      */
@@ -37,4 +37,4 @@ private:
     std::function<void()> on_disconnect_;
 };
 
-#endif // DATA_WRITER_LISTENER_H
+#endif  // DATA_WRITER_LISTENER_H

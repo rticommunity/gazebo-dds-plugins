@@ -28,4 +28,4 @@ void DataWriterListener<T>::on_publication_matched(
     }
 }
 
-#endif // DATA_WRITER_LISTENER_CXX
+#endif  // DATA_WRITER_LISTENER_CXX

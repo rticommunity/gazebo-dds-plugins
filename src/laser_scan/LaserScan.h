@@ -1,6 +1,3 @@
-#ifndef DDS_LASER_SCAN_H
-#define DDS_LASER_SCAN_H
-
 #include <gazebo/gazebo.hh>
 #include <gazebo/plugins/RayPlugin.hh>
 
@@ -10,9 +7,7 @@
 
 #include "LaserScanMsg.hpp"
 
-namespace gazebo {
-
-namespace dds {
+namespace gazebo { namespace dds {
 
 class LaserScan : public RayPlugin {
 public:
@@ -42,32 +37,16 @@ public:
     void OnScan(ConstLaserScanStampedPtr &msg);
 
 private:
-    void LaserConnect();
-    void LaserDisconnect();
-
-private:
-    int laser_connect_count_;
-
     physics::WorldPtr world_;
-
     sensors::SensorPtr sensor_;
-
     ::dds::domain::DomainParticipant participant_;
-
     ::dds::topic::Topic<LaserScanMsg> topic_;
-
     ::dds::pub::qos::DataWriterQos data_writer_qos_;
-
     ::dds::pub::DataWriter<LaserScanMsg> writer_;
-
     gazebo::transport::NodePtr gazebo_node_;
-
     gazebo::transport::SubscriberPtr laser_scan_sub_;
-
     LaserScanMsg sample_;
 };
 
 }  // namespace dds
 }  // namespace gazebo
-
-#endif // DDS_LASER_SCAN_H

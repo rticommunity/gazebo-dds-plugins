@@ -1,13 +1,7 @@
-#ifndef DDS_LASER_SCAN_CXX
-#define DDS_LASER_SCAN_CXX
-
 #include "LaserScan.h"
-#include "DataWriterListener.cxx"
-#include "Properties.h"
+#include "common/Properties.h"
 
-namespace gazebo {
-
-namespace dds {
+namespace gazebo { namespace dds {
 
 // Register this plugin with the simulator
 GZ_REGISTER_SENSOR_PLUGIN(LaserScan)
@@ -30,8 +24,6 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
 
     // Store the pointer to the sensor
     sensor_ = parent;
-
-    laser_connect_count_ = 0;
 
     gazebo_node_ = gazebo::transport::NodePtr(new gazebo::transport::Node());
     gazebo_node_->Init(parent->WorldName());
@@ -67,29 +59,10 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     writer_ = ::dds::pub::DataWriter<LaserScanMsg>(
             ::dds::pub::Publisher(participant_), topic_, data_writer_qos_);
 
-    // Add a new listener to the DataWriter
-    writer_.listener(
-            new DataWriterListener<LaserScanMsg>(
-                    std::bind(&LaserScan::LaserConnect, this),
-                    std::bind(&LaserScan::LaserDisconnect, this)),
-            ::dds::core::status::StatusMask::publication_matched());
+    this->laser_scan_sub_ = this->gazebo_node_->Subscribe(
+            this->sensor_->Topic(), &LaserScan::OnScan, this);
 
     gzmsg << "Starting Laser Plugin - Topic name: " << topic_name << std::endl;
-}
-
-void LaserScan::LaserConnect()
-{
-    this->laser_connect_count_++;
-    if (this->laser_connect_count_ == 1)
-        this->laser_scan_sub_ = this->gazebo_node_->Subscribe(
-                this->sensor_->Topic(), &LaserScan::OnScan, this);
-}
-
-void LaserScan::LaserDisconnect()
-{
-    this->laser_connect_count_--;
-    if (this->laser_connect_count_ == 0)
-        this->laser_scan_sub_.reset();
 }
 
 void LaserScan::OnScan(ConstLaserScanStampedPtr &msg)
@@ -102,11 +75,15 @@ void LaserScan::OnScan(ConstLaserScanStampedPtr &msg)
     sample_.world_pose().position().x(msg->scan().world_pose().position().x());
     sample_.world_pose().position().y(msg->scan().world_pose().position().y());
     sample_.world_pose().position().z(msg->scan().world_pose().position().z());
-    
-    sample_.world_pose().orientation().x(msg->scan().world_pose().orientation().x());
-    sample_.world_pose().orientation().y(msg->scan().world_pose().orientation().y());
-    sample_.world_pose().orientation().z(msg->scan().world_pose().orientation().z());
-    sample_.world_pose().orientation().w(msg->scan().world_pose().orientation().w());
+
+    sample_.world_pose().orientation().x(
+            msg->scan().world_pose().orientation().x());
+    sample_.world_pose().orientation().y(
+            msg->scan().world_pose().orientation().y());
+    sample_.world_pose().orientation().z(
+            msg->scan().world_pose().orientation().z());
+    sample_.world_pose().orientation().w(
+            msg->scan().world_pose().orientation().w());
 
     sample_.angle_min(msg->scan().angle_min());
     sample_.angle_max(msg->scan().angle_max());
@@ -136,5 +113,3 @@ void LaserScan::OnScan(ConstLaserScanStampedPtr &msg)
 
 }  // namespace dds
 }  // namespace gazebo
-
-#endif  // DDS_LASER_SCAN_CXX

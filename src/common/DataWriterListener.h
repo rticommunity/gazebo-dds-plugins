@@ -19,8 +19,8 @@ public:
      * @param on_disconnect on disconnect callback
      */
     DataWriterListener(
-            std::function<void()> on_connect,
-            std::function<void()> on_disconnect);
+            const std::function<void()> &on_connect,
+            const std::function<void()> &on_disconnect);
 
     /**
      * @brief On publication matched

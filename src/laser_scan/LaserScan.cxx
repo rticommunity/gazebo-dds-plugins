@@ -1,5 +1,6 @@
-#include "LaserScan.h"
+
 #include "common/Properties.h"
+#include "LaserScan.h"
 
 namespace gazebo { namespace dds {
 

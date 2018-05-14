@@ -1,15 +1,16 @@
 include(ConnextDdsCodegen)
 
 connextdds_rtiddsgen_run(
-        LANG C++11
-        OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        IDL_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LaserScanMsg.idl"
-        UNBOUNDED
-    )
+    LANG C++11
+    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+    IDL_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LaserScanMsg.idl"
+    UNBOUNDED
+)
 
 find_library(RayPlugin 
     NAMES RayPlugin
-    PATHS ${GAZEBO_LIBRARY_DIRS})
+    PATHS ${GAZEBO_LIBRARY_DIRS}
+)
 
 add_library(DdsLaserPlugin MODULE 
     LaserScan.cxx 
@@ -32,4 +33,5 @@ target_include_directories(DdsLaserPlugin PRIVATE
 )
 
 target_compile_definitions(DdsLaserPlugin PRIVATE 
-    ${CONNEXTDDS_DEFINITIONS})
+    ${CONNEXTDDS_DEFINITIONS}
+)

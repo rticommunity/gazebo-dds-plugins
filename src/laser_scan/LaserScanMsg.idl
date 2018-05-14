@@ -14,7 +14,7 @@ struct Time {
     /*
      * Nanoseconds of the simulation time
      */
-    unsigned long nsec;
+    unsigned long nanosec;
     };
 
 /* --- Header type: ------------------------------------------------------- */
@@ -112,8 +112,6 @@ struct WorldPose {
 
 };
 
-
-
 /* --- LaserScanMsg type: ------------------------------------------------------- */
 
 /*
@@ -130,7 +128,7 @@ struct LaserScanMsg {
     /*
      * Header information
      */
-    Header   header;
+    Header header;
 
     /*
      * Position of the laser

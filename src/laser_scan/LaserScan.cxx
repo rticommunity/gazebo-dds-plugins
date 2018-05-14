@@ -70,7 +70,7 @@ void LaserScan::OnScan(ConstLaserScanStampedPtr &msg)
 {
     sample_.laser_id(sensor_->Id());
     sample_.header().stamp().sec(msg->time().sec());
-    sample_.header().stamp().nsec(msg->time().nsec());
+    sample_.header().stamp().nanosec(msg->time().nsec());
     sample_.header().frame_id(sensor_->ParentName());
 
     sample_.world_pose().position().x(msg->scan().world_pose().position().x());

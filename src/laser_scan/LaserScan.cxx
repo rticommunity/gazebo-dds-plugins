@@ -30,8 +30,12 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     gazebo_node_->Init(parent->WorldName());
 
     // Obtain the domain id from loaded world
-    int domain_id = 0;
-    if (sdf->HasElement(DOMAIN_ID_PROPERTY_NAME)) {
+    int domain_id;
+    if (!sdf->HasElement(DOMAIN_ID_PROPERTY_NAME)) {
+        domain_id = 0;
+        gzwarn << "Missing <domain_id>, set to default: " << domain_id
+               << std::endl;
+    } else {
         domain_id = sdf->Get<int>(DOMAIN_ID_PROPERTY_NAME);
     }
 
@@ -41,8 +45,12 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     }
 
     // Obtain the topic name from loaded world
-    std::string topic_name = "laserScan";
-    if (sdf->HasElement(TOPIC_NAME_PROPERTY_NAME)) {
+    std::string topic_name;
+    if (!sdf->HasElement(TOPIC_NAME_PROPERTY_NAME)) {
+        topic_name = "laserScan";
+        gzwarn << "Missing <topic_name>, set to default: " << topic_name
+               << std::endl;
+    } else {
         topic_name = sdf->Get<std::string>(TOPIC_NAME_PROPERTY_NAME);
     }
 

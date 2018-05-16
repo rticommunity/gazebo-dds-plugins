@@ -1,13 +1,11 @@
-
 #include <iostream>
 #include <regex>
 
 #include <gazebo/physics/World.hh>
 #include <gazebo/sensors/ImuSensor.hh>
 
-#include "ImuScan.h"
 #include "common/Properties.h"
-
+#include "ImuScan.h"
 
 namespace gazebo { namespace dds {
 
@@ -17,9 +15,9 @@ ImuScan::ImuScan()
         : SensorPlugin(),
           participant_(::dds::core::null),
           topic_(::dds::core::null),
-          writer_(::dds::core::null)
+          writer_(::dds::core::null),
+          seed_(0)
 {
-    seed = 0;
 }
 
 ImuScan::~ImuScan()
@@ -41,15 +39,6 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
         gaussian_noise_ = 0;
         gzwarn << "Missing <gaussian_noise>, set to default: "
                << gaussian_noise_ << std::endl;
-    }
-
-    if (sdf->HasElement("xyz_offset")) {
-        offset_.Pos() = sdf->Get<ignition::math::Vector3d>("xyz_offset");
-    } else {
-        offset_.Pos() = ignition::math::Vector3d(0, 0, 0);
-        gzwarn << "Missing <xyz_offset>, set to default: " << offset_.Pos()[0]
-               << ' ' << offset_.Pos()[1] << ' ' << offset_.Pos()[2]
-               << std::endl;
     }
 
     if (sdf->HasElement("rpy_offset")) {
@@ -87,7 +76,6 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
                << std::endl;
     }
 
-
     topic_ = ::dds::topic::Topic<sensor_msgs::msg::Imu>(
             participant_, topic_name);
 
@@ -95,29 +83,38 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
             ::dds::pub::Publisher(participant_), topic_);
 
     // Generate gazebo topic name
-    gazebo_topic_name_ = "/gazebo/" + sensor_->ScopedName() + "/imu";
-    gazebo_topic_name_
-            = std::regex_replace(gazebo_topic_name_, std::regex("::"), "/");
+    std::string gazebo_topic_name = "/gazebo/" + sensor_->ScopedName() + "/imu";
+    gazebo_topic_name
+            = std::regex_replace(gazebo_topic_name, std::regex("::"), "/");
 
-    this->laser_scan_sub_ = this->gazebo_node_->Subscribe(
-            gazebo_topic_name_, &ImuScan::OnScan, this);
+    this->imu_scan_sub_ = this->gazebo_node_->Subscribe(
+            gazebo_topic_name, &ImuScan::OnScan, this);
+
+    // Init constant information
+    sample_.header().frame_id(sensor_->ParentName());
+
+    double covariance = gaussian_noise_ * gaussian_noise_;
+    sample_.orientation_covariance()[0] = covariance;
+    sample_.orientation_covariance()[4] = covariance;
+    sample_.orientation_covariance()[8] = covariance;
+    sample_.angular_velocity_covariance()[0] = covariance;
+    sample_.angular_velocity_covariance()[4] = covariance;
+    sample_.angular_velocity_covariance()[8] = covariance;
+    sample_.linear_acceleration_covariance()[0] = covariance;
+    sample_.linear_acceleration_covariance()[4] = covariance;
+    sample_.linear_acceleration_covariance()[8] = covariance;
 
     gzmsg << "Starting Imu Plugin - Topic name: " << topic_name << std::endl;
 }
 
 void ImuScan::OnScan(ConstIMUPtr &msg)
 {
-    orientation_ = offset_.Rot() * sensor_->Orientation();  // applying offsets
-                                                            // to the
-                                                            // orientation
-                                                            // measurement
+    // Applying offsets to the orientation measurement
+    orientation_ = offset_.Rot() * sensor_->Orientation();
 
-    // preparing message header
     sample_.header().stamp().sec(msg->stamp().sec());
     sample_.header().stamp().nanosec(msg->stamp().nsec());
-    sample_.header().frame_id(sensor_->ParentName());
 
-    // Guassian noise is applied to all measurements
     sample_.orientation().x(
             orientation_.X() + GuassianKernel(0, gaussian_noise_));
     sample_.orientation().y(
@@ -144,36 +141,18 @@ void ImuScan::OnScan(ConstIMUPtr &msg)
     sample_.angular_velocity().z(
             msg->angular_velocity().z() + GuassianKernel(0, gaussian_noise_));
 
-    // covariance is related to the Gaussian noise
-    sample_.orientation_covariance()[0] = gaussian_noise_ * gaussian_noise_;
-    sample_.orientation_covariance()[4] = gaussian_noise_ * gaussian_noise_;
-    sample_.orientation_covariance()[8] = gaussian_noise_ * gaussian_noise_;
-    sample_.angular_velocity_covariance()[0]
-            = gaussian_noise_ * gaussian_noise_;
-    sample_.angular_velocity_covariance()[4]
-            = gaussian_noise_ * gaussian_noise_;
-    sample_.angular_velocity_covariance()[8]
-            = gaussian_noise_ * gaussian_noise_;
-    sample_.linear_acceleration_covariance()[0]
-            = gaussian_noise_ * gaussian_noise_;
-    sample_.linear_acceleration_covariance()[4]
-            = gaussian_noise_ * gaussian_noise_;
-    sample_.linear_acceleration_covariance()[8]
-            = gaussian_noise_ * gaussian_noise_;
-
-    // publishing data
     writer_.write(sample_);
 }
 
 double ImuScan::GuassianKernel(double mu, double sigma)
 {
     // generation of two normalized uniform random variables
-    double U1 = static_cast<double>(rand_r(&seed))
+    double U1 = static_cast<double>(rand_r(&seed_))
             / static_cast<double>(RAND_MAX);
-    double U2 = static_cast<double>(rand_r(&seed))
+    double U2 = static_cast<double>(rand_r(&seed_))
             / static_cast<double>(RAND_MAX);
 
-    // using Box-Muller transform to obtain a varaible with a standard normal
+    // using Box-Muller transform to obtain a variable with a standard normal
     // distribution
     double Z0 = sqrt(-2.0 * ::log(U1)) * cos(2.0 * M_PI * U2);
 

@@ -54,7 +54,7 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
         topic_name = sdf->Get<std::string>(TOPIC_NAME_PROPERTY_NAME);
     }
 
-    topic_ = ::dds::topic::Topic<LaserScanMsg>(participant_, topic_name);
+    topic_ = ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg>(participant_, topic_name);
 
     // Change the maximum size of the sequences
     rti::core::policy::Property::Entry value(
@@ -65,7 +65,7 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     rti::core::policy::Property property;
     property.set(value);
     data_writer_qos_ << property;
-    writer_ = ::dds::pub::DataWriter<LaserScanMsg>(
+    writer_ = ::dds::pub::DataWriter<sensor_msgs::msg::LaserScanMsg>(
             ::dds::pub::Publisher(participant_), topic_, data_writer_qos_);
 
     this->laser_scan_sub_ = this->gazebo_node_->Subscribe(

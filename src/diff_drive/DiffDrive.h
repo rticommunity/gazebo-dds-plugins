@@ -9,6 +9,7 @@
 #include "geometry_msgs/msg/Twist.hpp"
 #include "nav_msgs/msg/Odometry.hpp"
 #include "sensor_msgs/msg/JointState.hpp"
+#include "common/GazeboDdsUtils.h"
 
 namespace gazebo { namespace dds {
 
@@ -55,6 +56,20 @@ private:
     ::dds::pub::DataWriter<sensor_msgs::msg::JointState> writer_joint_state_;
     ::dds::pub::DataWriter<geometry_msgs::msg::Twist> reader_;
     nav_msgs::msg::Odometry sample_;
+
+    physics::ModelPtr parent;
+    event::ConnectionPtr update_connection_;
+
+    double wheel_separation_;
+    double wheel_diameter_;
+    double wheel_accel_;
+    double wheel_torque_;
+    double update_period_;
+    double wheel_speed_[2];
+    double wheel_speed_instr_[2];
+
+    std::vector<physics::JointPtr> joints_;
+    
 };
 
 }  // namespace dds

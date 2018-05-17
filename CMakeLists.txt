@@ -13,3 +13,4 @@ set (CMAKE_CXX_STANDARD 11)
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/laser_scan")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/imu_scan")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/diff_drive")

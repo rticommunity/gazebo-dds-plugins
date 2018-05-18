@@ -1,7 +1,7 @@
 #ifndef DATA_READER_LISTENER_CXX
 #define DATA_READER_LISTENER_CXX
 
-#include "../include/DataReaderListener.h"
+#include "DataReaderListener.h"
 
 template <typename T>
 DataReaderListener<T>::DataReaderListener(const std::function<void(T)> &on_data)
@@ -17,7 +17,7 @@ void DataReaderListener<T>::on_data_available(dds::sub::DataReader<T> &reader)
         // If the reference we get is valid data, it means we have actual
         // data available, otherwise we got metadata.
         if (sample.info().valid()) {
-            on_data_();
+            on_data_(sample);
         }
     }
 }

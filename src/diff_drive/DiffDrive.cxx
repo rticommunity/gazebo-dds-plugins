@@ -2,10 +2,22 @@
 
 #include <gazebo/physics/World.hh>
 
-#include "common/Properties.h"
-#include "DiffDrive.h"
+#include <ignition/math/Quaternion.hh>
+#include <ignition/math/Vector3.hh>
 
-namespace gazebo { namespace dds {
+#include "DiffDrive.h"
+#include "common/DataReaderListener.cxx"
+#include "common/GazeboDdsUtils.cxx"
+#include "common/Properties.h"
+
+namespace gazebo {
+namespace dds {
+
+enum {
+    RIGHT,
+    LEFT,
+};
+
 
 GZ_REGISTER_MODEL_PLUGIN(DiffDrive)
 
@@ -27,14 +39,203 @@ DiffDrive::~DiffDrive()
 
 void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
 {
-//     gzmsg << "Starting Imu Plugin - Topic name: " << topic_name << std::endl;
+    this->parent = parent;
+
+    GazeboDdsUtils::GetParameter<double>(
+            sdf, wheel_separation_, "wheel_separation", 0.34);
+    GazeboDdsUtils::GetParameter<double>(
+            sdf, wheel_diameter_, "wheel_diameter", 0.15);
+    GazeboDdsUtils::GetParameter<double>(
+            sdf, wheel_accel_, "wheel_acceleration", 0.0);
+    GazeboDdsUtils::GetParameter<double>(
+            sdf, wheel_torque_, "wheel_torque", 5.0);
+
+    // Initialize velocity
+    wheel_speed_[RIGHT] = 0;
+    wheel_speed_[LEFT] = 0;
+
+    // Initialize velocity support
+    wheel_speed_instr_[RIGHT] = 0;
+    wheel_speed_instr_[LEFT] = 0;
+
+    // Obtain joints from loaded world
+    joints_.resize(2);
+    joints_[LEFT]
+            = GazeboDdsUtils::GetJoint(sdf, parent, "leftJoint", "left_joint");
+    joints_[RIGHT] = GazeboDdsUtils::GetJoint(
+            sdf, parent, "rightJoint", "right_joint");
+    joints_[LEFT]->SetParam("fmax", 0, wheel_torque_);
+    joints_[RIGHT]->SetParam("fmax", 0, wheel_torque_);
+
+
+    // Obtain the domain id from loaded world
+    int domain_id;
+    GazeboDdsUtils::GetParameter<int>(
+            sdf, domain_id, DOMAIN_ID_PROPERTY_NAME.c_str(), 0);
+
+    participant_ = ::dds::domain::find(domain_id);
+    if (participant_ == ::dds::core::null) {
+        participant_ = ::dds::domain::DomainParticipant(domain_id);
+    }
+
+    // Obtain the Odometry topic name from loaded world
+    std::string topic_name_odometry;
+    GazeboDdsUtils::GetParameter<std::string>(
+            sdf, topic_name_odometry, "topic_name_odometry", "OdometryState");
+
+    topic_odometry_ = ::dds::topic::Topic<nav_msgs::msg::Odometry>(
+            participant_, topic_name_odometry);
+
+    writer_odometry_ = ::dds::pub::DataWriter<nav_msgs::msg::Odometry>(
+            ::dds::pub::Publisher(participant_), topic_odometry_);
+
+    // Obtain the Odometry topic name from loaded world
+    std::string topic_name_joint;
+    GazeboDdsUtils::GetParameter<std::string>(
+            sdf, topic_name_joint, "topic_name_joint", "JointState");
+
+    topic_joint_state_ = ::dds::topic::Topic<sensor_msgs::msg::JointState>(
+            participant_, topic_name_joint);
+
+    writer_joint_state_ = ::dds::pub::DataWriter<sensor_msgs::msg::JointState>(
+            ::dds::pub::Publisher(participant_), topic_joint_state_);
+
+    // Obtain the Twist topic name from loaded world
+    std::string topic_name_twist;
+    GazeboDdsUtils::GetParameter<std::string>(
+            sdf, topic_name_twist, "topic_name_twist", "cmd_vel");
+
+    topic_twist_ = ::dds::topic::Topic<geometry_msgs::msg::Twist>(
+            participant_, topic_name_twist);
+
+    reader_ = ::dds::sub::DataReader<geometry_msgs::msg::Twist>(
+            ::dds::sub::Subscriber(participant_), topic_twist_);
+
+    // FIX
+    // reader_.listener(
+    //     new
+    //     DataReaderListener<geometry_msgs::msg::Twist>(std::bind(&DiffDrive::CmdCallBack<geometry_msgs::msg::Twist>,
+    //     this, std::placeholders::_1)),
+    //     ::dds::core::status::StatusMask::data_available()
+    // );
+
+    // Init samples
+    joint_state_sample_.name().resize(2);
+    joint_state_sample_.position().resize(2);
+
+    // listen to the update event (broadcast every simulation iteration)
+    this->update_connection_ = event::Events::ConnectWorldUpdateBegin(
+            boost::bind(&DiffDrive::UpdateChild, this));
+
+    gzmsg << "Starting Diff drive Plugin" << std::endl;
+    gzmsg << "- Odometry topic name: " << topic_name_odometry << std::endl;
+    gzmsg << "- JointState topic name: " << topic_name_joint << std::endl;
+    gzmsg << "- Twist topic name: " << topic_name_twist << std::endl;
+}
+
+void DiffDrive::UpdateChild()
+{
+    PublishOdometry();
+    PublishJointState();
 }
 
 void DiffDrive::PublishOdometry()
 {
+#if GAZEBO_MAJOR_VERSION >= 8
+    common::Time current_time = parent->GetWorld()->RealTime();
+#else
+    common::Time current_time = parent->GetWorld()->GetRealTime();
+#endif
+
+    ignition::math::Quaterniond orientation;
+    ignition::math::Vector3d position;
+
+    // if (odom_source_ == ENCODER) {
+    //     // getting data form encoder integration
+    //     orientation = ignition::math::Quaterniond(0.0, 0.0, 0.0, 0.0);
+    //     // vt = ignition::math::Quaterniond ( odom_.pose.pose.position.x,
+    //     // odom_.pose.pose.position.y, odom_.pose.pose.position.z );
+    // }
+    // if (odom_source_ == WORLD) {
+#if GAZEBO_MAJOR_VERSION >= 8
+    ignition::math::Pose3d pose = parent->WorldPose();
+#else
+    ignition::math::Pose3d pose = parent->GetWorldPose().Ign();
+#endif
+    orientation = ignition::math::Quaterniond(
+            pose.Rot().X(), pose.Rot().Y(), pose.Rot().Z(), pose.Rot().W());
+    position = ignition::math::Vector3d(
+            pose.Pos().X(), pose.Pos().Y(), pose.Pos().Z());
+
+    odometry_sample_.pose().pose().position().x(position.X());
+    odometry_sample_.pose().pose().position().y(position.Y());
+    odometry_sample_.pose().pose().position().z(position.Z());
+
+    odometry_sample_.pose().pose().orientation().x(orientation.X());
+    odometry_sample_.pose().pose().orientation().y(orientation.Y());
+    odometry_sample_.pose().pose().orientation().z(orientation.Z());
+    odometry_sample_.pose().pose().orientation().w(orientation.W());
+
+    // get velocity in /odom frame
+    ignition::math::Vector3d linear;
+#if GAZEBO_MAJOR_VERSION >= 8
+    linear = parent->WorldLinearVel();
+    odometry_sample_.twist().twist().angular().z(parent->WorldAngularVel().Z());
+#else
+    linear = parent->GetWorldLinearVel().Ign();
+    odometry_sample_.twist().twist().angular().z(
+            parent->GetWorldAngularVel().Ign().Z());
+#endif
+
+    // convert velocity to child_frame_id (aka base_footprint)
+    float yaw = pose.Rot().Yaw();
+    odometry_sample_.twist().twist().linear().x(
+            cosf(yaw) * linear.X() + sinf(yaw) * linear.Y());
+    odometry_sample_.twist().twist().linear().y(
+            cosf(yaw) * linear.Y() - sinf(yaw) * linear.X());
+    // }
+
+    // set covariance
+    odometry_sample_.pose().covariance()[0] = 0.00001;
+    odometry_sample_.pose().covariance()[7] = 0.00001;
+    odometry_sample_.pose().covariance()[14] = 1000000000000.0;
+    odometry_sample_.pose().covariance()[21] = 1000000000000.0;
+    odometry_sample_.pose().covariance()[28] = 1000000000000.0;
+    odometry_sample_.pose().covariance()[35] = 0.001;
+
+    // set header
+    odometry_sample_.header().stamp().sec(current_time.sec);
+    odometry_sample_.header().stamp().nanosec(current_time.nsec);
+
+    writer_odometry_.write(odometry_sample_);
 }
 
 void DiffDrive::PublishJointState()
+{
+#if GAZEBO_MAJOR_VERSION >= 8
+    common::Time current_time = parent->GetWorld()->RealTime();
+#else
+    common::Time current_time = parent->GetWorld()->GetRealTime();
+#endif
+
+    joint_state_sample_.header().stamp().sec(current_time.sec);
+    joint_state_sample_.header().stamp().nanosec(current_time.nsec);
+
+    for (int i = 0; i < 2; i++) {
+#if GAZEBO_MAJOR_VERSION >= 8
+        double position = joints_[i]->Position(0);
+#else
+        double position = joints_[i]->GetAngle(0).Radian();
+#endif
+
+        joint_state_sample_.name()[i] = joints_[i]->GetName();
+        joint_state_sample_.position()[i] = position;
+    }
+
+    writer_joint_state_.write(joint_state_sample_);
+}
+
+void DiffDrive::CmdCallBack(geometry_msgs::msg::Twist &msg)
 {
 }
 

@@ -6,6 +6,7 @@
 #include <dds/pub/ddspub.hpp>
 #include <dds/sub/ddssub.hpp>
 
+#include "geometry_msgs/msg/Pose2D.hpp"
 #include "geometry_msgs/msg/Twist.hpp"
 #include "nav_msgs/msg/Odometry.hpp"
 #include "sensor_msgs/msg/JointState.hpp"
@@ -47,6 +48,8 @@ private:
 
     void PublishJointState();
 
+    void CmdCallBack(geometry_msgs::msg::Twist & msg);
+
 private:
     ::dds::domain::DomainParticipant participant_;
     ::dds::topic::Topic<nav_msgs::msg::Odometry> topic_odometry_;
@@ -54,8 +57,9 @@ private:
     ::dds::topic::Topic<geometry_msgs::msg::Twist> topic_twist_;
     ::dds::pub::DataWriter<nav_msgs::msg::Odometry> writer_odometry_;
     ::dds::pub::DataWriter<sensor_msgs::msg::JointState> writer_joint_state_;
-    ::dds::pub::DataWriter<geometry_msgs::msg::Twist> reader_;
-    nav_msgs::msg::Odometry sample_;
+    ::dds::sub::DataReader<geometry_msgs::msg::Twist> reader_;
+    nav_msgs::msg::Odometry odometry_sample_;
+    sensor_msgs::msg::JointState joint_state_sample_;
 
     physics::ModelPtr parent;
     event::ConnectionPtr update_connection_;
@@ -69,6 +73,7 @@ private:
     double wheel_speed_instr_[2];
 
     std::vector<physics::JointPtr> joints_;
+    geometry_msgs::msg::Pose2D pose_encoder_;
     
 };
 

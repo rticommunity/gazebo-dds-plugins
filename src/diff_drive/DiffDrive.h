@@ -10,7 +10,6 @@
 #include "geometry_msgs/msg/Twist.hpp"
 #include "nav_msgs/msg/Odometry.hpp"
 #include "sensor_msgs/msg/JointState.hpp"
-#include "common/GazeboDdsUtils.h"
 
 namespace gazebo { namespace dds {
 
@@ -44,11 +43,11 @@ protected:
       virtual void UpdateChild();
 
 private:
-    void PublishOdometry();
+    void publish_odometry();
 
-    void PublishJointState();
+    void publish_joint_state();
 
-    void CmdCallBack(geometry_msgs::msg::Twist & msg);
+    void cmd_callback(const geometry_msgs::msg::Twist & msg);
 
 private:
     ::dds::domain::DomainParticipant participant_;
@@ -71,6 +70,9 @@ private:
     double update_period_;
     double wheel_speed_[2];
     double wheel_speed_instr_[2];
+    std::string odom_source_;
+    bool legacy_mode_;
+    std::mutex mutex_;
 
     std::vector<physics::JointPtr> joints_;
     geometry_msgs::msg::Pose2D pose_encoder_;

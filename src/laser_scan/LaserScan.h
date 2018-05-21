@@ -34,7 +34,7 @@ public:
      *
      * @param msg current information of the sensor
      */
-    void OnScan(ConstLaserScanStampedPtr &msg);
+    void on_scan(ConstLaserScanStampedPtr &msg);
 
 private:
     sensors::SensorPtr sensor_;

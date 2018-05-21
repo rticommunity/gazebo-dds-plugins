@@ -1,10 +1,13 @@
 #ifndef GAZEBO_DDS_UTILS_CXX
 #define GAZEBO_DDS_UTILS_CXX
 
-#include "GazeboDdsUtils.h"
+#include <gazebo/common/common.hh>
+#include <gazebo/physics/physics.hh>
+
+namespace gazebo { namespace dds { namespace utils {
 
 template <class T>
-void GazeboDdsUtils::GetParameter(
+void get_world_parameter(
         sdf::ElementPtr sdf,
         T &tag_variable,
         const char *tag_name,
@@ -19,17 +22,22 @@ void GazeboDdsUtils::GetParameter(
     }
 }
 
-gazebo::physics::JointPtr GazeboDdsUtils::GetJoint(
+gazebo::physics::JointPtr get_joint(
         sdf::ElementPtr sdf,
         gazebo::physics::ModelPtr parent,
-        const char * tag_name,
-        const std::string & joint_default_name)
+        const char *tag_name,
+        const std::string &joint_default_name)
 {
     std::string joint_name;
-    GetParameter<std::string>(sdf,joint_name, tag_name, joint_default_name);
+    get_world_parameter<std::string>(
+            sdf, joint_name, tag_name, joint_default_name);
     gazebo::physics::JointPtr joint = parent->GetJoint(joint_name);
 
     return joint;
 }
 
-#endif  // DATA_WRITER_LISTENER_CXX
+}  // namespace utils
+}  // namespace dds
+}  // namespace gazebo
+
+#endif  // GAZEBO_DDS_UTILS_CXX

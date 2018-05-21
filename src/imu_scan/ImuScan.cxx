@@ -4,8 +4,9 @@
 #include <gazebo/physics/World.hh>
 #include <gazebo/sensors/ImuSensor.hh>
 
-#include "common/Properties.h"
 #include "ImuScan.h"
+#include "common/GazeboDdsUtils.cxx"
+#include "common/Properties.h"
 
 namespace gazebo { namespace dds {
 
@@ -33,13 +34,8 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
     gazebo_node_->Init(parent->WorldName());
 
     // Obtain Imu's information from loaded world
-    if (sdf->HasElement("gaussian_noise")) {
-        gaussian_noise_ = sdf->Get<double>("gaussian_noise");
-    } else {
-        gaussian_noise_ = 0;
-        gzwarn << "Missing <gaussian_noise>, set to default: "
-               << gaussian_noise_ << std::endl;
-    }
+    utils::get_world_parameter<double>(
+            sdf, gaussian_noise_, "gaussian_noise", 0.0);
 
     if (sdf->HasElement("rpy_offset")) {
         offset_.Rot() = ignition::math::Quaterniond(
@@ -88,7 +84,7 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
             = std::regex_replace(gazebo_topic_name, std::regex("::"), "/");
 
     this->imu_scan_sub_ = this->gazebo_node_->Subscribe(
-            gazebo_topic_name, &ImuScan::OnScan, this);
+            gazebo_topic_name, &ImuScan::on_scan, this);
 
     // Init constant information
     sample_.header().frame_id(sensor_->ParentName());
@@ -107,7 +103,7 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
     gzmsg << "Starting Imu Plugin - Topic name: " << topic_name << std::endl;
 }
 
-void ImuScan::OnScan(ConstIMUPtr &msg)
+void ImuScan::on_scan(ConstIMUPtr &msg)
 {
     // Applying offsets to the orientation measurement
     orientation_ = offset_.Rot() * sensor_->Orientation();
@@ -116,35 +112,35 @@ void ImuScan::OnScan(ConstIMUPtr &msg)
     sample_.header().stamp().nanosec(msg->stamp().nsec());
 
     sample_.orientation().x(
-            orientation_.X() + GuassianKernel(0, gaussian_noise_));
+            orientation_.X() + guassian_kernel(0, gaussian_noise_));
     sample_.orientation().y(
-            orientation_.Y() + GuassianKernel(0, gaussian_noise_));
+            orientation_.Y() + guassian_kernel(0, gaussian_noise_));
     sample_.orientation().z(
-            orientation_.Z() + GuassianKernel(0, gaussian_noise_));
+            orientation_.Z() + guassian_kernel(0, gaussian_noise_));
     sample_.orientation().w(
-            orientation_.W() + GuassianKernel(0, gaussian_noise_));
+            orientation_.W() + guassian_kernel(0, gaussian_noise_));
 
     sample_.linear_acceleration().x(
             msg->linear_acceleration().x()
-            + GuassianKernel(0, gaussian_noise_));
+            + guassian_kernel(0, gaussian_noise_));
     sample_.linear_acceleration().y(
             msg->linear_acceleration().y()
-            + GuassianKernel(0, gaussian_noise_));
+            + guassian_kernel(0, gaussian_noise_));
     sample_.linear_acceleration().z(
             msg->linear_acceleration().z()
-            + GuassianKernel(0, gaussian_noise_));
+            + guassian_kernel(0, gaussian_noise_));
 
     sample_.angular_velocity().x(
-            msg->angular_velocity().x() + GuassianKernel(0, gaussian_noise_));
+            msg->angular_velocity().x() + guassian_kernel(0, gaussian_noise_));
     sample_.angular_velocity().y(
-            msg->angular_velocity().y() + GuassianKernel(0, gaussian_noise_));
+            msg->angular_velocity().y() + guassian_kernel(0, gaussian_noise_));
     sample_.angular_velocity().z(
-            msg->angular_velocity().z() + GuassianKernel(0, gaussian_noise_));
+            msg->angular_velocity().z() + guassian_kernel(0, gaussian_noise_));
 
     writer_.write(sample_);
 }
 
-double ImuScan::GuassianKernel(double mu, double sigma)
+double ImuScan::guassian_kernel(double mu, double sigma)
 {
     // generation of two normalized uniform random variables
     double U1 = static_cast<double>(rand_r(&seed_))

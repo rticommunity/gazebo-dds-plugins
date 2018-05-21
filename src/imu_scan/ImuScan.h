@@ -39,7 +39,7 @@ private:
      *
      * @param msg current information of the sensor
      */
-    void OnScan(ConstIMUPtr & msg);
+    void on_scan(ConstIMUPtr & msg);
     
     /**
      * @brief Gaussian noise generator
@@ -47,7 +47,7 @@ private:
      * @param mu offset value
      * @param sigma scaling value
      */
-    double GuassianKernel(double mu, double sigma);
+    double guassian_kernel(double mu, double sigma);
 
 private:
     sensors::ImuSensor* sensor_;

@@ -39,12 +39,14 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
 {
     this->parent = parent;
 
-    // Initialize velocity and velocity support
     wheel_speed_[RIGHT] = 0;
     wheel_speed_[LEFT] = 0;
 
     wheel_speed_instr_[RIGHT] = 0;
     wheel_speed_instr_[LEFT] = 0;
+
+    position_wheel_ = 0.0;
+    rotation_wheel_ = 0.0;
 
     // Obtain joints from loaded world
     utils::get_world_parameter<double>(
@@ -53,25 +55,32 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
             sdf, wheel_diameter_, "wheel_diameter", 0.15);
     utils::get_world_parameter<double>(
             sdf, wheel_accel_, "wheel_acceleration", 0.0);
-    utils::get_world_parameter<double>(
-            sdf, wheel_torque_, "wheel_torque", 5.0);
-    utils::get_world_parameter<std::string>(
-            sdf, odom_source_, "odometry_source", "world");
+    utils::get_world_parameter<double>(sdf, wheel_torque_, "wheel_torque", 5.0);
     utils::get_world_parameter<std::string>(
             sdf, odom_source_, "odometry_source", "world");
     utils::get_world_parameter<bool>(sdf, legacy_mode_, "legacy_mode", true);
+    utils::get_world_parameter<double>(
+            sdf, update_period_, "update_rate", 100.0);
 
+    if (update_period_ > 0.0) {
+        update_period_ = 1.0 / update_period_;
+    } else {
+        update_period_ = 0.0;
+    }
 
+// Obtain the time of simulation
+#if GAZEBO_MAJOR_VERSION >= 8
+    last_update_ = parent->GetWorld()->SimTime();
+#else
+    last_update_ = parent->GetWorld()->GetSimTime();
+#endif
 
     // Obtain joints from loaded world
     joints_.resize(2);
-    joints_[LEFT]
-            = utils::get_joint(sdf, parent, "leftJoint", "left_joint");
-    joints_[RIGHT] = utils::get_joint(
-            sdf, parent, "rightJoint", "right_joint");
+    joints_[LEFT] = utils::get_joint(sdf, parent, "leftJoint", "left_joint");
+    joints_[RIGHT] = utils::get_joint(sdf, parent, "rightJoint", "right_joint");
     joints_[LEFT]->SetParam("fmax", 0, wheel_torque_);
     joints_[RIGHT]->SetParam("fmax", 0, wheel_torque_);
-
 
     // Obtain the domain id from loaded world
     int domain_id;
@@ -113,13 +122,16 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     topic_twist_ = ::dds::topic::Topic<geometry_msgs::msg::Twist>(
             participant_, topic_name_twist);
 
-    reader_ = ::dds::sub::DataReader<geometry_msgs::msg::Twist>(
-            ::dds::sub::Subscriber(participant_), topic_twist_);
+    rti::core::policy::Property::Entry value(
+            { "dds.data_reader.history.depth", "1" });
 
-    reader_.listener(
-            new DataReaderListener<geometry_msgs::msg::Twist>(std::bind(
-                    &DiffDrive::cmd_callback, this, std::placeholders::_1)),
-            ::dds::core::status::StatusMask::data_available());
+    rti::core::policy::Property property;
+    property.set(value);
+    data_reader_qos_ << property;
+    reader_ = ::dds::sub::DataReader<geometry_msgs::msg::Twist>(
+            ::dds::sub::Subscriber(participant_),
+            topic_twist_,
+            data_reader_qos_);
 
     // Init samples
     joint_state_sample_.name().resize(2);
@@ -135,21 +147,111 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     gzmsg << "- Twist topic name: " << topic_name_twist << std::endl;
 }
 
+void DiffDrive::Reset()
+{
+#if GAZEBO_MAJOR_VERSION >= 8
+    last_update_ = parent->GetWorld()->SimTime();
+#else
+    last_update_ = parent->GetWorld()->GetSimTime();
+#endif
+    pose_encoder_.X() = 0;
+    pose_encoder_.Y() = 0;
+    pose_encoder_.Z() = 0;
+    position_wheel_ = 0;
+    rotation_wheel_ = 0;
+    joints_[LEFT]->SetParam("fmax", 0, wheel_torque_);
+    joints_[RIGHT]->SetParam("fmax", 0, wheel_torque_);
+}
+
 void DiffDrive::UpdateChild()
 {
-    publish_odometry();
-    publish_joint_state();
+    // Joint::Reset is called after ModelPlugin::Reset, so we need to set
+    // maxForce to wheel_torque other than GazeboRosDiffDrive::Reset
+    for (int i = 0; i < 2; i++) {
+        if (fabs(wheel_torque_ - joints_[i]->GetParam("fmax", 0)) > 1e-6) {
+            joints_[i]->SetParam("fmax", 0, wheel_torque_);
+        }
+    }
+
+    if (odom_source_ == "encoder")
+        update_odometry_encoder();
+#if GAZEBO_MAJOR_VERSION >= 8
+    current_time_ = parent->GetWorld()->SimTime();
+#else
+    current_time_ = parent->GetWorld()->GetSimTime();
+#endif
+
+    diff_time_ = (current_time_ - last_update_).Double();
+
+    if (diff_time_ > update_period_) {
+        publish_odometry();
+        publish_joint_state();
+
+        ::dds::sub::LoanedSamples<geometry_msgs::msg::Twist> samples
+                = reader_.read();
+        if (samples.length() > 0) {
+            if (samples[0].info().valid()) {
+                get_wheel_velocities(samples[0].data());
+            }
+        }
+
+        double current_speed[2];
+
+        current_speed[LEFT]
+                = joints_[LEFT]->GetVelocity(0) * (wheel_diameter_ / 2.0);
+        current_speed[RIGHT]
+                = joints_[RIGHT]->GetVelocity(0) * (wheel_diameter_ / 2.0);
+
+        if (wheel_accel_ == 0
+            || (fabs(wheel_speed_[LEFT] - current_speed[LEFT]) < 0.01)
+            || (fabs(wheel_speed_[RIGHT] - current_speed[RIGHT]) < 0.01)) {
+            // if max_accel == 0, or target speed is reached
+            joints_[LEFT]->SetParam(
+                    "vel", 0, wheel_speed_[LEFT] / (wheel_diameter_ / 2.0));
+            joints_[RIGHT]->SetParam(
+                    "vel", 0, wheel_speed_[RIGHT] / (wheel_diameter_ / 2.0));
+        } else {
+            if (wheel_speed_[LEFT] >= current_speed[LEFT]) {
+                wheel_speed_instr_[LEFT]
+                        += fmin(wheel_speed_[LEFT] - current_speed[LEFT],
+                                wheel_accel_ * diff_time_);
+            } else {
+                wheel_speed_instr_[LEFT]
+                        += fmax(wheel_speed_[LEFT] - current_speed[LEFT],
+                                -wheel_accel_ * diff_time_);
+            }
+
+            if (wheel_speed_[RIGHT] > current_speed[RIGHT]) {
+                wheel_speed_instr_[RIGHT]
+                        += fmin(wheel_speed_[RIGHT] - current_speed[RIGHT],
+                                wheel_accel_ * diff_time_);
+            } else {
+                wheel_speed_instr_[RIGHT]
+                        += fmax(wheel_speed_[RIGHT] - current_speed[RIGHT],
+                                -wheel_accel_ * diff_time_);
+            }
+            joints_[LEFT]->SetParam(
+                    "vel",
+                    0,
+                    wheel_speed_instr_[LEFT] / (wheel_diameter_ / 2.0));
+            joints_[RIGHT]->SetParam(
+                    "vel",
+                    0,
+                    wheel_speed_instr_[RIGHT] / (wheel_diameter_ / 2.0));
+        }
+        last_update_ += common::Time(update_period_);
+    }
 }
 
 void DiffDrive::publish_odometry()
 {
 #if GAZEBO_MAJOR_VERSION >= 8
-    common::Time current_time = parent->GetWorld()->RealTime();
+    current_time_ = parent->GetWorld()->RealTime();
 #else
-    common::Time current_time = parent->GetWorld()->GetRealTime();
+    current_time_ = parent->GetWorld()->GetRealTime();
 #endif
 
-    // FIX changes local variables
+    // FIX no local variable
     ignition::math::Quaterniond orientation;
     ignition::math::Vector3d position;
 
@@ -182,7 +284,7 @@ void DiffDrive::publish_odometry()
         odometry_sample_.pose().pose().orientation().w(orientation.W());
 
         // get velocity in /odom frame
-        ignition::math::Vector3d linear;
+        ignition::math::Vector3d linear;  // FIX no local variable
 #if GAZEBO_MAJOR_VERSION >= 8
         linear = parent->WorldLinearVel();
         odometry_sample_.twist().twist().angular().z(
@@ -194,7 +296,7 @@ void DiffDrive::publish_odometry()
 #endif
 
         // convert velocity to child_frame_id (aka base_footprint)
-        float yaw = pose.Rot().Yaw();
+        float yaw = pose.Rot().Yaw();  // FIX no local variable
         odometry_sample_.twist().twist().linear().x(
                 cosf(yaw) * linear.X() + sinf(yaw) * linear.Y());
         odometry_sample_.twist().twist().linear().y(
@@ -210,8 +312,8 @@ void DiffDrive::publish_odometry()
     odometry_sample_.pose().covariance()[35] = 0.001;
 
     // set header
-    odometry_sample_.header().stamp().sec(current_time.sec);
-    odometry_sample_.header().stamp().nanosec(current_time.nsec);
+    odometry_sample_.header().stamp().sec(current_time_.sec);
+    odometry_sample_.header().stamp().nanosec(current_time_.nsec);
     // FIX frame_id
 
     writer_odometry_.write(odometry_sample_);
@@ -220,13 +322,13 @@ void DiffDrive::publish_odometry()
 void DiffDrive::publish_joint_state()
 {
 #if GAZEBO_MAJOR_VERSION >= 8
-    common::Time current_time = parent->GetWorld()->RealTime();
+    current_time_ = parent->GetWorld()->RealTime();
 #else
-    common::Time current_time = parent->GetWorld()->GetRealTime();
+    current_time_ = parent->GetWorld()->GetRealTime();
 #endif
 
-    joint_state_sample_.header().stamp().sec(current_time.sec);
-    joint_state_sample_.header().stamp().nanosec(current_time.nsec);
+    joint_state_sample_.header().stamp().sec(current_time_.sec);
+    joint_state_sample_.header().stamp().nanosec(current_time_.nsec);
     // FIX frame_id
 
     for (int i = 0; i < 2; i++) {
@@ -235,7 +337,6 @@ void DiffDrive::publish_joint_state()
 #else
         double position = joints_[i]->GetAngle(0).Radian();
 #endif
-
         joint_state_sample_.name()[i] = joints_[i]->GetName();
         joint_state_sample_.position()[i] = position;
     }
@@ -243,8 +344,81 @@ void DiffDrive::publish_joint_state()
     writer_joint_state_.write(joint_state_sample_);
 }
 
-void DiffDrive::cmd_callback(const geometry_msgs::msg::Twist &msg)
+void DiffDrive::get_wheel_velocities(const geometry_msgs::msg::Twist &msg)
 {
+    position_wheel_ = msg.linear().x();
+    rotation_wheel_ = msg.angular().z();
+
+    if (legacy_mode_) {
+        wheel_speed_[LEFT]
+                = position_wheel_ + rotation_wheel_ * wheel_separation_ / 2.0;
+        wheel_speed_[RIGHT]
+                = position_wheel_ - rotation_wheel_ * wheel_separation_ / 2.0;
+    } else {
+        wheel_speed_[LEFT]
+                = position_wheel_ - rotation_wheel_ * wheel_separation_ / 2.0;
+        wheel_speed_[RIGHT]
+                = position_wheel_ + rotation_wheel_ * wheel_separation_ / 2.0;
+    }
+}
+
+void DiffDrive::update_odometry_encoder()
+{
+// FIX no local variables
+#if GAZEBO_MAJOR_VERSION >= 8
+    current_time_ = parent->GetWorld()->SimTime();
+#else
+    current_time_ = parent->GetWorld()->GetSimTime();
+#endif
+
+    // FIX no local variables
+    diff_time_ = (current_time_ - last_odom_update_).Double();
+    last_odom_update_ = current_time_;
+
+    // Book: Sigwart 2011 Autonompus Mobile Robots page:337
+    double sl = joints_[LEFT]->GetVelocity(0) * (wheel_diameter_ / 2.0)
+            * diff_time_;
+    double sr = joints_[RIGHT]->GetVelocity(0) * (wheel_diameter_ / 2.0)
+            * diff_time_;
+    double ssum = sl + sr;
+
+    double sdiff;
+    if (legacy_mode_) {
+        sdiff = sl - sr;
+    } else {
+        sdiff = sr - sl;
+    }
+
+    double dx = (ssum) / 2.0
+            * cos(pose_encoder_.Z() + (sdiff) / (2.0 * wheel_separation_));
+    double dy = (ssum) / 2.0
+            * sin(pose_encoder_.Z() + (sdiff) / (2.0 * wheel_separation_));
+    double dtheta = (sdiff) / wheel_separation_;
+
+    pose_encoder_.X() += dx;
+    pose_encoder_.Y() += dy;
+    pose_encoder_.Z() += dtheta;
+
+    double w = dtheta / diff_time_;
+    double v = sqrt(dx * dx + dy * dy) / diff_time_;
+
+    ignition::math::Quaterniond qt;
+    ignition::math::Vector3d vt;
+    qt.Euler(0, 0, pose_encoder_.Z());
+    vt = ignition::math::Vector3d(pose_encoder_.X(), pose_encoder_.Y(), 0);
+
+    odometry_sample_.pose().pose().position().x(vt.X());
+    odometry_sample_.pose().pose().position().y(vt.Y());
+    odometry_sample_.pose().pose().position().z(vt.Z());
+
+    odometry_sample_.pose().pose().orientation().x(qt.X());
+    odometry_sample_.pose().pose().orientation().y(qt.Y());
+    odometry_sample_.pose().pose().orientation().z(qt.Z());
+    odometry_sample_.pose().pose().orientation().w(qt.W());
+
+    odometry_sample_.twist().twist().angular().z(w);
+    odometry_sample_.twist().twist().linear().x(dx / diff_time_);
+    odometry_sample_.twist().twist().linear().y(dy / diff_time_);
 }
 
 }  // namespace dds

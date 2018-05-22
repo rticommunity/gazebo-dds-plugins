@@ -32,6 +32,8 @@ public:
      * @param sdf object of Gazebo's world
      */
     void Load(physics::ModelPtr parent, sdf::ElementPtr sdf);
+
+    void Reset();
     
 protected:
     /**
@@ -47,7 +49,9 @@ private:
 
     void publish_joint_state();
 
-    void cmd_callback(const geometry_msgs::msg::Twist & msg);
+    void get_wheel_velocities(const geometry_msgs::msg::Twist & msg);
+
+    void update_odometry_encoder();
 
 private:
     ::dds::domain::DomainParticipant participant_;
@@ -56,9 +60,13 @@ private:
     ::dds::topic::Topic<geometry_msgs::msg::Twist> topic_twist_;
     ::dds::pub::DataWriter<nav_msgs::msg::Odometry> writer_odometry_;
     ::dds::pub::DataWriter<sensor_msgs::msg::JointState> writer_joint_state_;
+    ::dds::sub::qos::DataReaderQos data_reader_qos_;
     ::dds::sub::DataReader<geometry_msgs::msg::Twist> reader_;
     nav_msgs::msg::Odometry odometry_sample_;
     sensor_msgs::msg::JointState joint_state_sample_;
+    common::Time last_update_;
+    common::Time last_odom_update_;
+    common::Time current_time_;
 
     physics::ModelPtr parent;
     event::ConnectionPtr update_connection_;
@@ -72,10 +80,12 @@ private:
     double wheel_speed_instr_[2];
     std::string odom_source_;
     bool legacy_mode_;
-    std::mutex mutex_;
+    double position_wheel_;
+    double rotation_wheel_;
+    double diff_time_;
 
     std::vector<physics::JointPtr> joints_;
-    geometry_msgs::msg::Pose2D pose_encoder_;
+    ignition::math::Vector3d pose_encoder_;
     
 };
 

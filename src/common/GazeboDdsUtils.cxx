@@ -36,6 +36,16 @@ gazebo::physics::JointPtr get_joint(
     return joint;
 }
 
+common::Time get_sim_time(physics::ModelPtr parent)
+{
+#if GAZEBO_MAJOR_VERSION >= 8
+    return parent->GetWorld()->SimTime();
+#else
+    return parent->GetWorld()->GetSimTime();
+#endif
+}
+
+
 }  // namespace utils
 }  // namespace dds
 }  // namespace gazebo

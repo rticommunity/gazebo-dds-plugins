@@ -1,12 +1,12 @@
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
+#include <ignition/math/Vector3.hh>
 
 #include <dds/core/ddscore.hpp>
 #include <dds/domain/find.hpp>
 #include <dds/pub/ddspub.hpp>
 #include <dds/sub/ddssub.hpp>
 
-#include "geometry_msgs/msg/Pose2D.hpp"
 #include "geometry_msgs/msg/Twist.hpp"
 #include "nav_msgs/msg/Odometry.hpp"
 #include "sensor_msgs/msg/JointState.hpp"
@@ -33,25 +33,42 @@ public:
      */
     void Load(physics::ModelPtr parent, sdf::ElementPtr sdf);
 
+    /**
+     * @brief Reset model information
+     */
     void Reset();
-    
+
 protected:
     /**
      * @brief Update model
-     *
-     * @param parent object of Gazebo's model
-     * @param sdf object of Gazebo's world
      */
-      virtual void UpdateChild();
+    virtual void UpdateChild();
 
 private:
+    /**
+     * @brief Publish odometry sample
+     */
     void publish_odometry();
 
+    /**
+     * @brief Publish JointState sample
+     */
     void publish_joint_state();
 
-    void get_wheel_velocities(const geometry_msgs::msg::Twist & msg);
+    /**
+     * @brief Obtain velocity of the wheels
+     * msg Message with the new twist of the model
+     */
+    void get_wheel_velocities(const geometry_msgs::msg::Twist &msg);
 
+    /**
+     * @brief Update odometry when it is in encoder mode
+     */
     void update_odometry_encoder();
+
+    inline ignition::math::Pose3d get_world_pose();
+    inline double get_joint_position(int index);
+    inline void get_world_velocity();
 
 private:
     ::dds::domain::DomainParticipant participant_;
@@ -68,26 +85,30 @@ private:
     common::Time last_odom_update_;
     common::Time current_time_;
 
-    physics::ModelPtr parent;
+    physics::ModelPtr parent_;
     event::ConnectionPtr update_connection_;
 
     double wheel_separation_;
     double wheel_diameter_;
     double wheel_accel_;
     double wheel_torque_;
-    double update_period_;
+    double wheel_position_;
+    double wheel_rotation_;
     double wheel_speed_[2];
     double wheel_speed_instr_[2];
+    double update_period_;
     std::string odom_source_;
+    ignition::math::Vector3d odometry_position_;
+    ignition::math::Quaterniond odometry_orientation_;
     bool legacy_mode_;
-    double position_wheel_;
-    double rotation_wheel_;
     double diff_time_;
 
     std::vector<physics::JointPtr> joints_;
     ignition::math::Vector3d pose_encoder_;
-    
+    ignition::math::Pose3d world_pose_;
+    ignition::math::Vector3d world_linear_;
 };
 
 }  // namespace dds
 }  // namespace gazebo
+

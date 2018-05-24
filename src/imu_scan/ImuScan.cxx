@@ -147,18 +147,18 @@ void ImuScan::on_scan(ConstIMUPtr &msg)
 double ImuScan::guassian_kernel(double mu, double sigma)
 {
     // generation of two normalized uniform random variables
-    double U1 = static_cast<double>(rand_r(&seed_))
+    double uniform_rand1 = static_cast<double>(rand_r(&seed_))
             / static_cast<double>(RAND_MAX);
-    double U2 = static_cast<double>(rand_r(&seed_))
+    double uniform_rand2 = static_cast<double>(rand_r(&seed_))
             / static_cast<double>(RAND_MAX);
 
     // using Box-Muller transform to obtain a variable with a standard normal
     // distribution
-    double Z0 = sqrt(-2.0 * ::log(U1)) * cos(2.0 * M_PI * U2);
+    double standard_normal = sqrt(-2.0 * ::log(uniform_rand1)) * cos(2.0 * M_PI * uniform_rand2);
 
     // scaling
-    Z0 = sigma * Z0 + mu;
-    return Z0;
+    standard_normal = sigma * standard_normal + mu;
+    return standard_normal;
 }
 
 }  // namespace dds

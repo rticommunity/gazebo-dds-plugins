@@ -57,6 +57,7 @@ private:
 
     /**
      * @brief Obtain velocity of the wheels
+     * 
      * msg Message with the new twist of the model
      */
     void get_wheel_velocities(const geometry_msgs::msg::Twist &msg);
@@ -66,9 +67,25 @@ private:
      */
     void update_odometry_encoder();
 
-    inline ignition::math::Pose3d get_world_pose();
-    inline double get_joint_position(int index);
-    inline void get_world_velocity();
+    /**
+     * @brief Obtain pose3d of the world
+     * 
+     * @return pose3d of the world
+     */
+    ignition::math::Pose3d get_world_pose();
+
+    /**
+     * @brief Obtain position of the specific joint
+     * 
+     * @param index index of the joint in the array of Joint
+     * @return position of the specific joint
+     */
+    double get_joint_position(int index);
+
+    /**
+     * @brief Obtain position of the specific joint
+     */
+    void get_world_velocity();
 
 private:
     ::dds::domain::DomainParticipant participant_;
@@ -79,12 +96,19 @@ private:
     ::dds::pub::DataWriter<sensor_msgs::msg::JointState> writer_joint_state_;
     ::dds::sub::qos::DataReaderQos data_reader_qos_;
     ::dds::sub::DataReader<geometry_msgs::msg::Twist> reader_;
+    ::dds::sub::LoanedSamples<geometry_msgs::msg::Twist> twist_samples_;
     nav_msgs::msg::Odometry odometry_sample_;
+    ignition::math::Vector3d odometry_position_;
+    ignition::math::Quaterniond odometry_orientation_;
     sensor_msgs::msg::JointState joint_state_sample_;
+    std::vector<physics::JointPtr> joints_;
+    ignition::math::Vector3d pose_encoder_;
+    ignition::math::Pose3d world_pose_;
+    ignition::math::Vector3d world_linear_;
+    
     common::Time last_update_;
     common::Time last_odom_update_;
     common::Time current_time_;
-
     physics::ModelPtr parent_;
     event::ConnectionPtr update_connection_;
 
@@ -98,15 +122,9 @@ private:
     double wheel_speed_instr_[2];
     double update_period_;
     std::string odom_source_;
-    ignition::math::Vector3d odometry_position_;
-    ignition::math::Quaterniond odometry_orientation_;
+    
     bool legacy_mode_;
     double diff_time_;
-
-    std::vector<physics::JointPtr> joints_;
-    ignition::math::Vector3d pose_encoder_;
-    ignition::math::Pose3d world_pose_;
-    ignition::math::Vector3d world_linear_;
 };
 
 }  // namespace dds

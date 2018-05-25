@@ -1,8 +1,3 @@
-#include <iostream>
-
-#include <gazebo/physics/World.hh>
-#include <ignition/math/Quaternion.hh>
-
 #include "common/GazeboDdsUtils.cxx"
 #include "common/Properties.h"
 #include "DiffDrive.h"

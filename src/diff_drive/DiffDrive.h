@@ -1,6 +1,5 @@
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
-#include <ignition/math/Vector3.hh>
 
 #include <dds/core/ddscore.hpp>
 #include <dds/domain/find.hpp>

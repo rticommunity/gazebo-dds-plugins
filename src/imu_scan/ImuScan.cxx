@@ -1,12 +1,11 @@
 #include <iostream>
 #include <regex>
 
-#include <gazebo/physics/World.hh>
 #include <gazebo/sensors/ImuSensor.hh>
 
-#include "ImuScan.h"
 #include "common/GazeboDdsUtils.cxx"
 #include "common/Properties.h"
+#include "ImuScan.h"
 
 namespace gazebo { namespace dds {
 

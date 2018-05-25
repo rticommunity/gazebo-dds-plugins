@@ -2,9 +2,6 @@
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/common/UpdateInfo.hh>
 
-#include <ignition/math/Vector3.hh>
-#include <ignition/math/Pose3.hh>
-
 #include <dds/core/ddscore.hpp>
 #include <dds/domain/find.hpp>
 #include <dds/pub/ddspub.hpp>

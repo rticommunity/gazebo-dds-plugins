@@ -1,6 +1,3 @@
-#ifndef GAZEBO_DDS_UTILS_CXX
-#define GAZEBO_DDS_UTILS_CXX
-
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
 
@@ -49,5 +46,3 @@ common::Time get_sim_time(physics::ModelPtr parent)
 }  // namespace utils
 }  // namespace dds
 }  // namespace gazebo
-
-#endif  // GAZEBO_DDS_UTILS_CXX

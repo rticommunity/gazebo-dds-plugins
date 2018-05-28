@@ -97,20 +97,18 @@ private:
     ::dds::sub::DataReader<geometry_msgs::msg::Twist> reader_;
     ::dds::sub::LoanedSamples<geometry_msgs::msg::Twist> twist_samples_;
     nav_msgs::msg::Odometry odometry_sample_;
-    ignition::math::Vector3d odometry_position_;
-    ignition::math::Quaterniond odometry_orientation_;
     sensor_msgs::msg::JointState joint_state_sample_;
+    std::string odom_source_;
     std::vector<physics::JointPtr> joints_;
+    ignition::math::Quaterniond odometry_orientation_;
     ignition::math::Vector3d pose_encoder_;
     ignition::math::Pose3d world_pose_;
     ignition::math::Vector3d world_linear_;
-    
     common::Time last_update_;
     common::Time last_odom_update_;
     common::Time current_time_;
     physics::ModelPtr parent_;
     event::ConnectionPtr update_connection_;
-
     double wheel_separation_;
     double wheel_diameter_;
     double wheel_accel_;
@@ -120,8 +118,6 @@ private:
     double wheel_speed_[2];
     double wheel_speed_instr_[2];
     double update_period_;
-    std::string odom_source_;
-    
     bool legacy_mode_;
     double diff_time_;
 };

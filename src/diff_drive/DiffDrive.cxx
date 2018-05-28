@@ -237,44 +237,17 @@ void DiffDrive::publish_odometry()
     odometry_sample_.header().stamp().sec(current_time_.sec);
     odometry_sample_.header().stamp().nanosec(current_time_.nsec);
 
-    if (odom_source_ == "encoder") {
-        odometry_orientation_.X()
-                = odometry_sample_.pose().pose().orientation().x();
-        odometry_orientation_.Y()
-                = odometry_sample_.pose().pose().orientation().y();
-        odometry_orientation_.Z()
-                = odometry_sample_.pose().pose().orientation().z();
-        odometry_orientation_.W()
-                = odometry_sample_.pose().pose().orientation().w();
-
-        odometry_position_.X() = odometry_sample_.pose().pose().position().x();
-        odometry_position_.Y() = odometry_sample_.pose().pose().position().y();
-        odometry_position_.Z() = odometry_sample_.pose().pose().position().z();
-    }
     if (odom_source_ == "world") {
         world_pose_ = get_world_pose();
 
-        odometry_orientation_.X() = world_pose_.Rot().X();
-        odometry_orientation_.Y() = world_pose_.Rot().Y();
-        odometry_orientation_.Z() = world_pose_.Rot().Z();
-        odometry_orientation_.W() = world_pose_.Rot().W();
+        odometry_sample_.pose().pose().position().x(world_pose_.Pos().X());
+        odometry_sample_.pose().pose().position().y(world_pose_.Pos().Y());
+        odometry_sample_.pose().pose().position().z(world_pose_.Pos().Z());
 
-        odometry_position_.X() = world_pose_.Pos().X();
-        odometry_position_.Y() = world_pose_.Pos().Y();
-        odometry_position_.Z() = world_pose_.Pos().Z();
-
-        odometry_sample_.pose().pose().position().x(odometry_position_.X());
-        odometry_sample_.pose().pose().position().y(odometry_position_.Y());
-        odometry_sample_.pose().pose().position().z(odometry_position_.Z());
-
-        odometry_sample_.pose().pose().orientation().x(
-                odometry_orientation_.X());
-        odometry_sample_.pose().pose().orientation().y(
-                odometry_orientation_.Y());
-        odometry_sample_.pose().pose().orientation().z(
-                odometry_orientation_.Z());
-        odometry_sample_.pose().pose().orientation().w(
-                odometry_orientation_.W());
+        odometry_sample_.pose().pose().orientation().x(world_pose_.Rot().X());
+        odometry_sample_.pose().pose().orientation().y(world_pose_.Rot().Y());
+        odometry_sample_.pose().pose().orientation().z(world_pose_.Rot().Z());
+        odometry_sample_.pose().pose().orientation().w(world_pose_.Rot().W());
 
         // get velocity in /odom frame
         get_world_velocity();
@@ -364,13 +337,10 @@ void DiffDrive::update_odometry_encoder()
     pose_encoder_.Z() = pose_encoder_.Z() + derivative_theta;
 
     odometry_orientation_.Euler(0, 0, pose_encoder_.Z());
-    odometry_position_.X() = pose_encoder_.X();
-    odometry_position_.Y() = pose_encoder_.Y();
-    odometry_position_.Z() = 0;
 
-    odometry_sample_.pose().pose().position().x(odometry_position_.X());
-    odometry_sample_.pose().pose().position().y(odometry_position_.Y());
-    odometry_sample_.pose().pose().position().z(odometry_position_.Z());
+    odometry_sample_.pose().pose().position().x(pose_encoder_.X());
+    odometry_sample_.pose().pose().position().y(pose_encoder_.Y());
+    odometry_sample_.pose().pose().position().z(0);
 
     odometry_sample_.pose().pose().orientation().x(odometry_orientation_.X());
     odometry_sample_.pose().pose().orientation().y(odometry_orientation_.Y());

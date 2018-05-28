@@ -34,18 +34,17 @@ public:
      *
      * @param msg current information of the sensor
      */
-    void OnScan(ConstLaserScanStampedPtr &msg);
+    void on_scan(ConstLaserScanStampedPtr &msg);
 
 private:
-    physics::WorldPtr world_;
     sensors::SensorPtr sensor_;
     ::dds::domain::DomainParticipant participant_;
-    ::dds::topic::Topic<LaserScanMsg> topic_;
+    ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg> topic_;
     ::dds::pub::qos::DataWriterQos data_writer_qos_;
-    ::dds::pub::DataWriter<LaserScanMsg> writer_;
+    ::dds::pub::DataWriter<sensor_msgs::msg::LaserScanMsg> writer_;
     gazebo::transport::NodePtr gazebo_node_;
     gazebo::transport::SubscriberPtr laser_scan_sub_;
-    LaserScanMsg sample_;
+    sensor_msgs::msg::LaserScanMsg sample_;
 };
 
 }  // namespace dds

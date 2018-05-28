@@ -1,11 +1,24 @@
 include(ConnextDdsCodegen)
 
 connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-    IDL_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LaserScanMsg.idl"
-    UNBOUNDED
-)
+        LANG C++11
+        OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/std_msgs/msg"
+        IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/std_msgs/msg/Time.idl"
+    )
+
+connextdds_rtiddsgen_run(
+        LANG C++11
+        OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/std_msgs/msg"
+        IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/std_msgs/msg/Header.idl"
+    )
+
+connextdds_rtiddsgen_run(
+        LANG C++11
+        OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+        IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/sensor_msgs/msg/LaserScanMsg.idl"
+        INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl"
+        UNBOUNDED
+    )
 
 find_library(RayPlugin 
     NAMES RayPlugin
@@ -15,7 +28,10 @@ find_library(RayPlugin
 add_library(DdsLaserPlugin MODULE 
     LaserScan.cxx 
     LaserScan.h 
-    ${LaserScanMsg_CXX11_SOURCES})
+    ${Time_CXX11_SOURCES}
+    ${Header_CXX11_SOURCES}
+    ${LaserScanMsg_CXX11_SOURCES}
+)
 
 target_link_libraries(DdsLaserPlugin 
     ${GAZEBO_LIBRARIES}  
@@ -33,5 +49,4 @@ target_include_directories(DdsLaserPlugin PRIVATE
 )
 
 target_compile_definitions(DdsLaserPlugin PRIVATE 
-    ${CONNEXTDDS_DEFINITIONS}
-)
+    ${CONNEXTDDS_DEFINITIONS})

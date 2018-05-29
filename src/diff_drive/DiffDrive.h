@@ -30,18 +30,18 @@ public:
      * @param parent object of Gazebo's model
      * @param sdf object of Gazebo's world
      */
-    void Load(physics::ModelPtr parent, sdf::ElementPtr sdf);
+    void Load(physics::ModelPtr parent, sdf::ElementPtr sdf) override;
 
     /**
      * @brief Reset model information
      */
-    void Reset();
+    void Reset() override;
 
 protected:
     /**
      * @brief Update model
      */
-    virtual void UpdateChild();
+    void update_model();
 
 private:
     /**
@@ -113,13 +113,10 @@ private:
     double wheel_diameter_;
     double wheel_accel_;
     double wheel_torque_;
-    double wheel_position_;
-    double wheel_rotation_;
     double wheel_speed_[2];
     double wheel_speed_instr_[2];
     double update_period_;
     bool legacy_mode_;
-    double diff_time_;
 };
 
 }  // namespace dds

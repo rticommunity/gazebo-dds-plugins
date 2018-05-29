@@ -36,9 +36,6 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     wheel_speed_instr_[RIGHT] = 0;
     wheel_speed_instr_[LEFT] = 0;
 
-    wheel_position_ = 0.0;
-    wheel_rotation_ = 0.0;
-
     // Obtain information of the plugin from loaded world
     utils::get_world_parameter<double>(
             sdf, wheel_separation_, "wheel_separation", 0.34);
@@ -131,7 +128,7 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
 
     // listen to the world update event
     this->update_connection_ = event::Events::ConnectWorldUpdateBegin(
-            boost::bind(&DiffDrive::UpdateChild, this));
+            boost::bind(&DiffDrive::update_model, this));
 
     gzmsg << "Starting Differential drive Plugin" << std::endl;
     gzmsg << "- Odometry topic name: " << topic_name_odometry << std::endl;
@@ -146,13 +143,11 @@ void DiffDrive::Reset()
     pose_encoder_.X() = 0;
     pose_encoder_.Y() = 0;
     pose_encoder_.Z() = 0;
-    wheel_position_ = 0;
-    wheel_rotation_ = 0;
     joints_[LEFT]->SetParam("fmax", 0, wheel_torque_);
     joints_[RIGHT]->SetParam("fmax", 0, wheel_torque_);
 }
 
-void DiffDrive::UpdateChild()
+void DiffDrive::update_model()
 {
     for (unsigned int i = 0; i < 2; i++) {
         if (fabs(wheel_torque_ - joints_[i]->GetParam("fmax", 0)) > 1e-6) {
@@ -166,7 +161,7 @@ void DiffDrive::UpdateChild()
 
     current_time_ = utils::get_sim_time(parent_);
 
-    diff_time_ = (current_time_ - last_update_).Double();
+    double diff_time_ = (current_time_ - last_update_).Double();
 
     if (diff_time_ > update_period_) {
         publish_odometry();
@@ -288,19 +283,16 @@ void DiffDrive::publish_joint_state()
 
 void DiffDrive::get_wheel_velocities(const geometry_msgs::msg::Twist &msg)
 {
-    wheel_position_ = msg.linear().x();
-    wheel_rotation_ = msg.angular().z();
-
     if (legacy_mode_) {
-        wheel_speed_[LEFT]
-                = wheel_position_ + wheel_rotation_ * wheel_separation_ / 2.0;
-        wheel_speed_[RIGHT]
-                = wheel_position_ - wheel_rotation_ * wheel_separation_ / 2.0;
+        wheel_speed_[LEFT] = msg.linear().x()
+                + msg.angular().z() * wheel_separation_ / 2.0;
+        wheel_speed_[RIGHT] = msg.linear().x()
+                - msg.angular().z() * wheel_separation_ / 2.0;
     } else {
-        wheel_speed_[LEFT]
-                = wheel_position_ - wheel_rotation_ * wheel_separation_ / 2.0;
-        wheel_speed_[RIGHT]
-                = wheel_position_ + wheel_rotation_ * wheel_separation_ / 2.0;
+        wheel_speed_[LEFT] = msg.linear().x()
+                - msg.angular().z() * wheel_separation_ / 2.0;
+        wheel_speed_[RIGHT] = msg.linear().x()
+                + msg.angular().z() * wheel_separation_ / 2.0;
     }
 }
 
@@ -308,7 +300,7 @@ void DiffDrive::update_odometry_encoder()
 {
     current_time_ = utils::get_sim_time(parent_);
 
-    diff_time_ = (current_time_ - last_odom_update_).Double();
+    double diff_time_ = (current_time_ - last_odom_update_).Double();
     last_odom_update_ = current_time_;
 
     // Book: Sigwart 2011 Autonompus Mobile Robots page:337
@@ -332,9 +324,9 @@ void DiffDrive::update_odometry_encoder()
                   + (distance_diff) / (2.0 * wheel_separation_));
     double derivative_theta = (distance_diff) / wheel_separation_;
 
-    pose_encoder_.X() = pose_encoder_.X() + derivative_x;
-    pose_encoder_.Y() = pose_encoder_.Y() + derivative_y;
-    pose_encoder_.Z() = pose_encoder_.Z() + derivative_theta;
+    pose_encoder_.X() += derivative_x;
+    pose_encoder_.Y() += derivative_y;
+    pose_encoder_.Z() += derivative_theta;
 
     odometry_orientation_.Euler(0, 0, pose_encoder_.Z());
 

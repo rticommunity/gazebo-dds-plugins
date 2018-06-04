@@ -57,7 +57,7 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     }
 
     // Obtain time of the simulation
-    last_update_ = utils::get_sim_time(parent_);
+    last_update_ = utils::get_sim_time(parent_->GetWorld());
 
     // Obtain joints from loaded world
     joints_.resize(2);
@@ -138,7 +138,7 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
 
 void DiffDrive::Reset()
 {
-    last_update_ = utils::get_sim_time(parent_);
+    last_update_ = utils::get_sim_time(parent_->GetWorld());
 
     pose_encoder_.X() = 0;
     pose_encoder_.Y() = 0;
@@ -159,7 +159,7 @@ void DiffDrive::update_model()
         update_odometry_encoder();
     }
 
-    current_time_ = utils::get_sim_time(parent_);
+    current_time_ = utils::get_sim_time(parent_->GetWorld());
 
     double diff_time_ = (current_time_ - last_update_).Double();
 
@@ -227,7 +227,7 @@ void DiffDrive::update_model()
 
 void DiffDrive::publish_odometry()
 {
-    current_time_ = utils::get_sim_time(parent_);
+    current_time_ = utils::get_sim_time(parent_->GetWorld());
 
     odometry_sample_.header().stamp().sec(current_time_.sec);
     odometry_sample_.header().stamp().nanosec(current_time_.nsec);
@@ -268,7 +268,7 @@ void DiffDrive::publish_odometry()
 
 void DiffDrive::publish_joint_state()
 {
-    current_time_ = utils::get_sim_time(parent_);
+    current_time_ = utils::get_sim_time(parent_->GetWorld());
 
     joint_state_sample_.header().stamp().sec(current_time_.sec);
     joint_state_sample_.header().stamp().nanosec(current_time_.nsec);
@@ -298,7 +298,7 @@ void DiffDrive::get_wheel_velocities(const geometry_msgs::msg::Twist &msg)
 
 void DiffDrive::update_odometry_encoder()
 {
-    current_time_ = utils::get_sim_time(parent_);
+    current_time_ = utils::get_sim_time(parent_->GetWorld());
 
     double diff_time_ = (current_time_ - last_odom_update_).Double();
     last_odom_update_ = current_time_;

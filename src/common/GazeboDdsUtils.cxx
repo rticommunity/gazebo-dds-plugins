@@ -33,12 +33,12 @@ gazebo::physics::JointPtr get_joint(
     return joint;
 }
 
-common::Time get_sim_time(physics::ModelPtr parent)
+common::Time get_sim_time(physics::WorldPtr world)
 {
 #if GAZEBO_MAJOR_VERSION >= 8
-    return parent->GetWorld()->SimTime();
+    return world->SimTime();
 #else
-    return parent->GetWorld()->GetSimTime();
+    return world->GetSimTime();
 #endif
 }
 

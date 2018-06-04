@@ -1,0 +1,167 @@
+#include <gazebo/sensors/ContactSensor.hh>
+
+#include "common/GazeboDdsUtils.cxx"
+#include "common/Properties.h"
+#include "BumperScan.h"
+
+namespace gazebo { namespace dds {
+
+GZ_REGISTER_SENSOR_PLUGIN(BumperScan);
+
+BumperScan::BumperScan()
+        : ContactPlugin(),
+          participant_(::dds::core::null),
+          topic_(::dds::core::null),
+          writer_(::dds::core::null)
+{
+}
+
+BumperScan::~BumperScan()
+{
+}
+
+void BumperScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
+{
+    sensor_ = dynamic_cast<gazebo::sensors::ContactSensor *>(parent.get());
+
+    // Obtain the domain id from loaded world
+    int domain_id;
+    utils::get_world_parameter<int>(
+            sdf, domain_id, DOMAIN_ID_PROPERTY_NAME.c_str(), 0);
+
+    participant_ = ::dds::domain::find(domain_id);
+    if (participant_ == ::dds::core::null) {
+        participant_ = ::dds::domain::DomainParticipant(domain_id);
+    }
+
+    // Obtain topic name from loaded world
+    std::string topic_name;
+    utils::get_world_parameter<std::string>(
+            sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "bumperScan");
+
+    topic_ = ::dds::topic::Topic<gazebo_msgs::msg::ContactsState>(
+            participant_, topic_name);
+
+    writer_ = ::dds::pub::DataWriter<gazebo_msgs::msg::ContactsState>(
+            ::dds::pub::Publisher(participant_), topic_);
+
+    sensor_connection_
+            = sensor_->ConnectUpdated(std::bind(&BumperScan::on_scan, this));
+
+    gzmsg << "Starting Bumper plugin - Topic name: " << topic_name << std::endl;
+}
+
+void BumperScan::on_scan()
+{
+    current_time_ = sensor_->LastUpdateTime();
+    contacts_sample_.header().stamp().sec(current_time_.sec);
+    contacts_sample_.header().stamp().nanosec(current_time_.nsec);
+
+    frame_rot_ = ignition::math::Quaterniond(1, 0, 0, 0);
+
+    // GetContacts returns all contacts on the collision body
+    unsigned int contactsPacketSize = sensor_->Contacts().contact_size();
+    contacts_sample_.states().resize(contactsPacketSize);
+
+    for (unsigned int i = 0; i < contactsPacketSize; ++i) {
+        contact_ = sensor_->Contacts().contact(i);
+
+        contact_state_msg_.collision1_name(contact_.collision1());
+        contact_state_msg_.collision2_name(contact_.collision2());
+
+        std::ostringstream stream;
+        stream << "Debug:  i:(" << i << "/" << contactsPacketSize
+               << ")     my geom:" << contact_state_msg_.collision1_name()
+               << "   other geom:" << contact_state_msg_.collision2_name()
+               << "         time:" << contact_.time().sec() << ", "
+               << contact_.time().nsec() << std::endl;
+        contact_state_msg_.info(stream.str());
+
+        total_wrench_msg_.force().x(0);
+        total_wrench_msg_.force().y(0);
+        total_wrench_msg_.force().z(0);
+        total_wrench_msg_.torque().x(0);
+        total_wrench_msg_.torque().y(0);
+        total_wrench_msg_.torque().z(0);
+
+        unsigned int contactGroupSize = contact_.position_size();
+        contact_state_msg_.wrenches().resize(contactGroupSize);
+        contact_state_msg_.contact_positions().resize(contactGroupSize);
+        contact_state_msg_.contact_normals().resize(contactGroupSize);
+        contact_state_msg_.depths().resize(contactGroupSize);
+
+        for (unsigned int j = 0; j < contactGroupSize; ++j) {
+            // Get force, torque and rotate into user specified frame.
+            // frame_rot is identity if world is used (default for now)
+            contact_force_
+                    = frame_rot_.RotateVectorReverse(ignition::math::Vector3d(
+                            contact_.wrench(j).body_1_wrench().force().x(),
+                            contact_.wrench(j).body_1_wrench().force().y(),
+                            contact_.wrench(j).body_1_wrench().force().z()));
+            contact_torque_
+                    = frame_rot_.RotateVectorReverse(ignition::math::Vector3d(
+                            contact_.wrench(j).body_1_wrench().torque().x(),
+                            contact_.wrench(j).body_1_wrench().torque().y(),
+                            contact_.wrench(j).body_1_wrench().torque().z()));
+
+            // set wrenches
+            wrench_msg_.force().x(contact_force_.X());
+            wrench_msg_.force().y(contact_force_.Y());
+            wrench_msg_.force().z(contact_force_.Z());
+            wrench_msg_.torque().x(contact_torque_.X());
+            wrench_msg_.torque().y(contact_torque_.Y());
+            wrench_msg_.torque().z(contact_torque_.Z());
+            contact_state_msg_.wrenches()[j] = wrench_msg_;
+
+            total_wrench_msg_.force().x(
+                    total_wrench_msg_.force().x() + wrench_msg_.force().x());
+            total_wrench_msg_.force().y(
+                    total_wrench_msg_.force().y() + wrench_msg_.force().y());
+            total_wrench_msg_.force().z(
+                    total_wrench_msg_.force().z() + wrench_msg_.force().z());
+            total_wrench_msg_.torque().x(
+                    total_wrench_msg_.torque().x() + wrench_msg_.torque().x());
+            total_wrench_msg_.torque().y(
+                    total_wrench_msg_.torque().y() + wrench_msg_.torque().y());
+            total_wrench_msg_.torque().z(
+                    total_wrench_msg_.torque().z() + wrench_msg_.torque().z());
+
+            // transform contact positions into relative frame
+            // set contact positions
+            contact_position_
+                    = frame_rot_.RotateVectorReverse(ignition::math::Vector3d(
+                            contact_.position(j).x(),
+                            contact_.position(j).y(),
+                            contact_.position(j).z()));
+
+            contact_position_msg_.x(contact_position_.X());
+            contact_position_msg_.y(contact_position_.Y());
+            contact_position_msg_.z(contact_position_.Z());
+            contact_state_msg_.contact_positions()[j] = contact_position_msg_;
+
+            // rotate normal into user specified frame.
+            // frame_rot is identity if world is used.
+            contact_normal_
+                    = frame_rot_.RotateVectorReverse(ignition::math::Vector3d(
+                            contact_.normal(j).x(),
+                            contact_.normal(j).y(),
+                            contact_.normal(j).z()));
+            // set contact normals
+            contact_normal_msg_.x(contact_normal_.X());
+            contact_normal_msg_.y(contact_normal_.Y());
+            contact_normal_msg_.z(contact_normal_.Z());
+            contact_state_msg_.contact_normals()[j] = contact_normal_msg_;
+
+            // set contact depth, interpenetration
+            contact_state_msg_.depths()[j] = contact_.depth(j);
+        }
+
+        contact_state_msg_.total_wrench() = total_wrench_msg_;
+        contacts_sample_.states()[i] = contact_state_msg_;
+    }
+
+    writer_.write(contacts_sample_);
+}
+
+}  // namespace dds
+}  // namespace gazebo

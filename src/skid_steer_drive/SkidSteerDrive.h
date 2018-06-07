@@ -11,21 +11,44 @@
 #include "geometry_msgs/msg/Twist.hpp"
 #include "nav_msgs/msg/Odometry.hpp"
 #include "sensor_msgs/msg/JointState.hpp"
-// #include <nav_msgs/msg/OccupancyGrid.h>
 
 namespace gazebo { namespace dds {
 
 class SkidSteerDrive : public ModelPlugin {
 public:
+    /**
+     * @brief Constructor
+     */
     SkidSteerDrive();
+
+    /**
+     * @brief Destructor
+     */
     ~SkidSteerDrive();
+
+    /**
+     * @brief Load the plugin inside Gazebo's system
+     *
+     * @param parent object of Gazebo's model
+     * @param sdf object of Gazebo's world
+     */
     void Load(physics::ModelPtr parent, sdf::ElementPtr sdf) override;
+
+    /**
+     * @brief Reset model information
+     */
     void Reset() override;
 
 protected:
+    /**
+     * @brief Update model
+     */
     virtual void update_model();
 
 private:
+    /**
+     * @brief Publish odometry sample
+     */
     void publish_odometry();
 
     /**
@@ -33,7 +56,32 @@ private:
      */
     void publish_joint_state();
 
+    /**
+     * @brief Obtain velocity of the wheels
+     * 
+     * msg Message with the new twist of the model
+     */
     void get_wheel_velocities(const geometry_msgs::msg::Twist &msg);
+
+    /**
+     * @brief Obtain pose3d of the world
+     * 
+     * @return pose3d of the world
+     */
+    ignition::math::Pose3d get_world_pose();
+
+    /**
+     * @brief Obtain position of the specific joint
+     * 
+     * @param index index of the joint in the array of Joint
+     * @return position of the specific joint
+     */
+    double get_joint_position(int index);
+
+    /**
+     * @brief Obtain position of the specific joint
+     */
+    void get_world_velocity();
 
 private:
     ::dds::domain::DomainParticipant participant_;
@@ -44,8 +92,12 @@ private:
     ::dds::pub::DataWriter<sensor_msgs::msg::JointState> writer_joint_state_;
     ::dds::sub::qos::DataReaderQos data_reader_qos_;
     ::dds::sub::DataReader<geometry_msgs::msg::Twist> reader_;
+    ::dds::sub::LoanedSamples<geometry_msgs::msg::Twist> twist_samples_;
+    nav_msgs::msg::Odometry odometry_sample_;
+    sensor_msgs::msg::JointState joint_state_sample_;
 
     physics::ModelPtr parent_;
+    physics::JointPtr joints_[4];
     event::ConnectionPtr update_connection_;
 
     std::string left_front_joint_name_;
@@ -54,6 +106,12 @@ private:
     std::string right_rear_joint_name_;
 
     common::Time last_update_;
+    common::Time last_odom_update_;
+    common::Time current_time_;
+
+    ignition::math::Quaterniond odometry_orientation_;
+    ignition::math::Pose3d world_pose_;
+    ignition::math::Vector3d world_linear_;
 
     double wheel_separation_;
     double wheel_diameter_;
@@ -64,7 +122,6 @@ private:
     double covariance_y_;
     double covariance_yaw_;
 
-    physics::JointPtr joints_[4];
 };
 
 }  // namespace dds

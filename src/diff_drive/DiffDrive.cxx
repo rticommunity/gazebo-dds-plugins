@@ -60,7 +60,6 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     last_update_ = utils::get_sim_time(parent_);
 
     // Obtain joints from loaded world
-    joints_.resize(2);
     joints_[LEFT] = utils::get_joint(sdf, parent_, "leftJoint", "left_joint");
     joints_[RIGHT]
             = utils::get_joint(sdf, parent_, "rightJoint", "right_joint");
@@ -149,7 +148,7 @@ void DiffDrive::Reset()
 
 void DiffDrive::update_model()
 {
-    for (unsigned int i = 0; i < 2; i++) {
+    for (unsigned int i = 0; i < WHEEL_NUMBER; i++) {
         if (fabs(wheel_torque_ - joints_[i]->GetParam("fmax", 0)) > 1e-6) {
             joints_[i]->SetParam("fmax", 0, wheel_torque_);
         }
@@ -175,7 +174,7 @@ void DiffDrive::update_model()
             }
         }
 
-        double current_speed[2];
+        double current_speed[WHEEL_NUMBER];
 
         current_speed[LEFT]
                 = joints_[LEFT]->GetVelocity(0) * (wheel_diameter_ / 2.0);
@@ -273,7 +272,7 @@ void DiffDrive::publish_joint_state()
     joint_state_sample_.header().stamp().sec(current_time_.sec);
     joint_state_sample_.header().stamp().nanosec(current_time_.nsec);
 
-    for (unsigned int i = 0; i < 2; i++) {
+    for (unsigned int i = 0; i < WHEEL_NUMBER; i++) {
         joint_state_sample_.name()[i] = joints_[i]->GetName();
         joint_state_sample_.position()[i] = get_joint_position(i);
     }

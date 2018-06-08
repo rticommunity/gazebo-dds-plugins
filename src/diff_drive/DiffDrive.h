@@ -12,6 +12,8 @@
 
 namespace gazebo { namespace dds {
 
+const int WHEEL_NUMBER = 2;
+
 class DiffDrive : public ModelPlugin {
 public:
     /**
@@ -56,7 +58,7 @@ private:
 
     /**
      * @brief Obtain velocity of the wheels
-     * 
+     *
      * msg Message with the new twist of the model
      */
     void get_wheel_velocities(const geometry_msgs::msg::Twist &msg);
@@ -68,14 +70,14 @@ private:
 
     /**
      * @brief Obtain pose3d of the world
-     * 
+     *
      * @return pose3d of the world
      */
     ignition::math::Pose3d get_world_pose();
 
     /**
      * @brief Obtain position of the specific joint
-     * 
+     *
      * @param index index of the joint in the array of Joint
      * @return position of the specific joint
      */
@@ -99,7 +101,7 @@ private:
     nav_msgs::msg::Odometry odometry_sample_;
     sensor_msgs::msg::JointState joint_state_sample_;
     std::string odom_source_;
-    std::vector<physics::JointPtr> joints_;
+    physics::JointPtr joints_[WHEEL_NUMBER];
     ignition::math::Quaterniond odometry_orientation_;
     ignition::math::Vector3d pose_encoder_;
     ignition::math::Pose3d world_pose_;
@@ -113,12 +115,11 @@ private:
     double wheel_diameter_;
     double wheel_accel_;
     double wheel_torque_;
-    double wheel_speed_[2];
-    double wheel_speed_instr_[2];
+    double wheel_speed_[WHEEL_NUMBER];
+    double wheel_speed_instr_[WHEEL_NUMBER];
     double update_period_;
     bool legacy_mode_;
 };
 
 }  // namespace dds
 }  // namespace gazebo
-

@@ -118,8 +118,8 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
             data_reader_qos_);
 
     // Init samples
-    joint_state_sample_.name().resize(2);
-    joint_state_sample_.position().resize(2);
+    joint_state_sample_.name().resize(WHEEL_NUMBER);
+    joint_state_sample_.position().resize(WHEEL_NUMBER);
     joint_state_sample_.header().frame_id(parent_->GetName() + "/joint");
 
     odometry_sample_.header().frame_id(parent_->GetName() + "/odometry");
@@ -168,10 +168,8 @@ void DiffDrive::update_model()
 
         twist_samples_ = reader_.read();
 
-        if (twist_samples_.length() > 0) {
-            if (twist_samples_[0].info().valid()) {
-                get_wheel_velocities(twist_samples_[0].data());
-            }
+        if (twist_samples_.length() > 0 && twist_samples_[0].info().valid()) {
+            get_wheel_velocities(twist_samples_[0].data());
         }
 
         double current_speed[WHEEL_NUMBER];

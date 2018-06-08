@@ -1,8 +1,9 @@
+#include "SkidSteerDrive.h"
 #include "common/GazeboDdsUtils.cxx"
 #include "common/Properties.h"
-#include "SkidSteerDrive.h"
 
-namespace gazebo { namespace dds {
+namespace gazebo {
+namespace dds {
 
 enum WHEEL_POSITION_ENUM {
     RIGHT_FRONT = 0,
@@ -130,8 +131,8 @@ void SkidSteerDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
             data_reader_qos_);
 
     // Init samples
-    joint_state_sample_.name().resize(4);
-    joint_state_sample_.position().resize(4);
+    joint_state_sample_.name().resize(WHEEL_NUMBER);
+    joint_state_sample_.position().resize(WHEEL_NUMBER);
     joint_state_sample_.header().frame_id(parent_->GetName() + "/joint");
 
     odometry_sample_.header().frame_id(parent_->GetName() + "/odometry");
@@ -159,6 +160,12 @@ void SkidSteerDrive::Reset()
 
 void SkidSteerDrive::update_model()
 {
+    for (unsigned int i = 0; i < WHEEL_NUMBER; i++) {
+        if (fabs(wheel_torque_ - joints_[i]->GetParam("fmax", 0)) > 1e-6) {
+            joints_[i]->SetParam("fmax", 0, wheel_torque_);
+        }
+    }
+
     current_time_ = utils::get_sim_time(parent_->GetWorld());
     double diff_time_ = (current_time_ - last_update_).Double();
 
@@ -168,13 +175,9 @@ void SkidSteerDrive::update_model()
 
         twist_samples_ = reader_.read();
 
-        if (twist_samples_.length() > 0) {
-            if (twist_samples_[0].info().valid()) {
-                get_wheel_velocities(twist_samples_[0].data());
-            }
+        if (twist_samples_.length() > 0 && twist_samples_[0].info().valid()) {
+            get_wheel_velocities(twist_samples_[0].data());
         }
-
-        double current_speed[2];
 
         joints_[LEFT_FRONT]->SetParam(
                 "vel", 0, wheel_speed_[LEFT_FRONT] / (wheel_diameter_ / 2.0));
@@ -187,18 +190,18 @@ void SkidSteerDrive::update_model()
 
         last_update_ += common::Time(update_period_);
     }
+    
 }
 
 void SkidSteerDrive::get_wheel_velocities(const geometry_msgs::msg::Twist &msg)
 {
-    wheel_speed_[LEFT_FRONT]
-            = msg.linear().x() - msg.angular().z() * wheel_separation_ / 2.0;
-    wheel_speed_[LEFT_REAR]
-            = msg.linear().x() - msg.angular().z() * wheel_separation_ / 2.0;
-    wheel_speed_[RIGHT_FRONT]
-            = msg.linear().x() + msg.angular().z() * wheel_separation_ / 2.0;
-    wheel_speed_[RIGHT_REAR]
-            = msg.linear().x() + msg.angular().z() * wheel_separation_ / 2.0;
+    double linear_x = msg.linear().x();
+    double angular_z = msg.angular().z();
+
+    wheel_speed_[LEFT_FRONT] = linear_x + angular_z * wheel_separation_ / 2.0;
+    wheel_speed_[LEFT_REAR] = linear_x + angular_z * wheel_separation_ / 2.0;
+    wheel_speed_[RIGHT_FRONT] = linear_x - angular_z * wheel_separation_ / 2.0;
+    wheel_speed_[RIGHT_REAR] = linear_x - angular_z * wheel_separation_ / 2.0;
 }
 
 void SkidSteerDrive::publish_odometry()

@@ -1,5 +1,3 @@
-#include <map>
-
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
 
@@ -13,6 +11,8 @@
 #include "sensor_msgs/msg/JointState.hpp"
 
 namespace gazebo { namespace dds {
+
+const int WHEEL_NUMBER = 4;
 
 class SkidSteerDrive : public ModelPlugin {
 public:
@@ -97,7 +97,7 @@ private:
     sensor_msgs::msg::JointState joint_state_sample_;
 
     physics::ModelPtr parent_;
-    physics::JointPtr joints_[4];
+    physics::JointPtr joints_[WHEEL_NUMBER];
     event::ConnectionPtr update_connection_;
 
     std::string left_front_joint_name_;
@@ -106,7 +106,6 @@ private:
     std::string right_rear_joint_name_;
 
     common::Time last_update_;
-    common::Time last_odom_update_;
     common::Time current_time_;
 
     ignition::math::Quaterniond odometry_orientation_;
@@ -116,7 +115,7 @@ private:
     double wheel_separation_;
     double wheel_diameter_;
     double wheel_torque_;
-    double wheel_speed_[4];
+    double wheel_speed_[WHEEL_NUMBER];
     double update_period_;
     double covariance_x_;
     double covariance_y_;

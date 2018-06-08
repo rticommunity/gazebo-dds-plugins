@@ -1,11 +1,10 @@
-#ifndef DATA_WRITER_LISTENER_H
-#define DATA_WRITER_LISTENER_H
-
 #include <dds/core/ddscore.hpp>
 #include <dds/pub/ddspub.hpp>
 
+namespace gazebo { namespace dds {
+
 template <typename T>
-class DataWriterListener : public dds::pub::NoOpDataWriterListener<T> {
+class DataWriterListener : public ::dds::pub::NoOpDataWriterListener<T> {
 public:
     /**
      * @brief Constructor
@@ -29,12 +28,13 @@ public:
      * @param status status of the match
      */
     virtual void on_publication_matched(
-            dds::pub::DataWriter<T> &writer,
-            const dds::core::status::PublicationMatchedStatus &status);
+            ::dds::pub::DataWriter<T> &writer,
+            const ::dds::core::status::PublicationMatchedStatus &status);
 
 private:
     std::function<void()> on_connect_;
     std::function<void()> on_disconnect_;
 };
 
-#endif  // DATA_WRITER_LISTENER_H
+}  // namespace dds
+}  // namespace gazebo

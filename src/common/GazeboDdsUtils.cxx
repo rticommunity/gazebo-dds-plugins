@@ -30,6 +30,13 @@ gazebo::physics::JointPtr get_joint(
             sdf, joint_name, tag_name, joint_default_name);
     gazebo::physics::JointPtr joint = parent->GetJoint(joint_name);
 
+    if(!joint){
+        char error[200];
+        snprintf(error, 200,
+                 "Couldn't get wheel hinge joint named %s", joint_name.c_str());
+        gzthrow(error);
+    }
+
     return joint;
 }
 

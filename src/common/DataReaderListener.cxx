@@ -1,7 +1,6 @@
-#ifndef DATA_READER_LISTENER_CXX
-#define DATA_READER_LISTENER_CXX
-
 #include "DataReaderListener.h"
+
+namespace gazebo { namespace dds {
 
 template <typename T>
 DataReaderListener<T>::DataReaderListener(
@@ -11,9 +10,9 @@ DataReaderListener<T>::DataReaderListener(
 }
 
 template <typename T>
-void DataReaderListener<T>::on_data_available(dds::sub::DataReader<T> &reader)
+void DataReaderListener<T>::on_data_available(::dds::sub::DataReader<T> &reader)
 {
-    dds::sub::LoanedSamples<T> samples = reader.take();
+    ::dds::sub::LoanedSamples<T> samples = reader.take();
     for (auto sample : samples) {
         // If the reference we get is valid data, it means we have actual
         // data available, otherwise we got metadata.
@@ -23,4 +22,5 @@ void DataReaderListener<T>::on_data_available(dds::sub::DataReader<T> &reader)
     }
 }
 
-#endif  // DATA_READER_LISTENER_CXX
+}  // namespace dds
+}  // namespace gazebo

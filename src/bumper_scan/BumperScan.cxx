@@ -59,7 +59,7 @@ void BumperScan::on_scan()
 
     frame_rot_ = ignition::math::Quaterniond(1, 0, 0, 0);
 
-    // GetContacts returns all contacts on the collision body
+    // Obtain contacts
     unsigned int contactsPacketSize = sensor_->Contacts().contact_size();
     contacts_sample_.states().resize(contactsPacketSize);
 
@@ -70,7 +70,7 @@ void BumperScan::on_scan()
         contact_state_msg_.collision2_name(contact_.collision2());
 
         std::ostringstream stream;
-        stream << "Debug:  i:(" << i << "/" << contactsPacketSize
+        stream << "Info:  i:(" << i << "/" << contactsPacketSize
                << ")     my geom:" << contact_state_msg_.collision1_name()
                << "   other geom:" << contact_state_msg_.collision2_name()
                << "         time:" << contact_.time().sec() << ", "
@@ -84,6 +84,7 @@ void BumperScan::on_scan()
         total_wrench_msg_.torque().y(0);
         total_wrench_msg_.torque().z(0);
 
+        // Obtain contact group
         unsigned int contactGroupSize = contact_.position_size();
         contact_state_msg_.wrenches().resize(contactGroupSize);
         contact_state_msg_.contact_positions().resize(contactGroupSize);
@@ -91,8 +92,7 @@ void BumperScan::on_scan()
         contact_state_msg_.depths().resize(contactGroupSize);
 
         for (unsigned int j = 0; j < contactGroupSize; ++j) {
-            // Get force, torque and rotate into user specified frame.
-            // frame_rot is identity if world is used (default for now)
+            // Calculate force, torque
             contact_force_
                     = frame_rot_.RotateVectorReverse(ignition::math::Vector3d(
                             contact_.wrench(j).body_1_wrench().force().x(),
@@ -104,7 +104,7 @@ void BumperScan::on_scan()
                             contact_.wrench(j).body_1_wrench().torque().y(),
                             contact_.wrench(j).body_1_wrench().torque().z()));
 
-            // set wrenches
+            // Set wrenches
             wrench_msg_.force().x(contact_force_.X());
             wrench_msg_.force().y(contact_force_.Y());
             wrench_msg_.force().z(contact_force_.Z());
@@ -126,8 +126,7 @@ void BumperScan::on_scan()
             total_wrench_msg_.torque().z(
                     total_wrench_msg_.torque().z() + wrench_msg_.torque().z());
 
-            // transform contact positions into relative frame
-            // set contact positions
+            // Set contact positions
             contact_position_
                     = frame_rot_.RotateVectorReverse(ignition::math::Vector3d(
                             contact_.position(j).x(),
@@ -139,20 +138,19 @@ void BumperScan::on_scan()
             contact_position_msg_.z(contact_position_.Z());
             contact_state_msg_.contact_positions()[j] = contact_position_msg_;
 
-            // rotate normal into user specified frame.
-            // frame_rot is identity if world is used.
+            // Set contact normal
             contact_normal_
                     = frame_rot_.RotateVectorReverse(ignition::math::Vector3d(
                             contact_.normal(j).x(),
                             contact_.normal(j).y(),
                             contact_.normal(j).z()));
-            // set contact normals
+
             contact_normal_msg_.x(contact_normal_.X());
             contact_normal_msg_.y(contact_normal_.Y());
             contact_normal_msg_.z(contact_normal_.Z());
             contact_state_msg_.contact_normals()[j] = contact_normal_msg_;
 
-            // set contact depth, interpenetration
+            // Set contact depth
             contact_state_msg_.depths()[j] = contact_.depth(j);
         }
 

@@ -32,7 +32,7 @@ void Elevator::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
         participant_ = ::dds::domain::DomainParticipant(domain_id);
     }
 
-     // Obtain topic name from loaded world
+    // Obtain topic name from loaded world
     std::string topic_name;
     utils::get_world_parameter<std::string>(
             sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "elevator");
@@ -47,16 +47,15 @@ void Elevator::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     property.set(value);
     data_reader_qos_ << property;
     reader_ = ::dds::sub::DataReader<std_msgs::msg::Int32>(
-            ::dds::sub::Subscriber(participant_),
-            topic_,
-            data_reader_qos_);
+            ::dds::sub::Subscriber(participant_), topic_, data_reader_qos_);
 
     reader_.listener(
-            new DataReaderListener<std_msgs::msg::Int32>(std::bind(
-                    &Elevator::on_msg, this, std::placeholders::_1)),
+            new DataReaderListener<std_msgs::msg::Int32>(
+                    std::bind(&Elevator::on_msg, this, std::placeholders::_1)),
             ::dds::core::status::StatusMask::data_available());
-    
-    gzmsg << "Starting elevator plugin - Topic name: " << topic_name << std::endl;
+
+    gzmsg << "Starting elevator plugin - Topic name: " << topic_name
+          << std::endl;
 }
 
 void Elevator::on_msg(const std_msgs::msg::Int32 &msg)

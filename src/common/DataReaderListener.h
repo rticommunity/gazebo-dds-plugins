@@ -1,10 +1,9 @@
-#ifndef DATA_READER_LISTENER_H
-#define DATA_READER_LISTENER_H
-
 #include <dds/sub/ddssub.hpp>
 
+namespace gazebo { namespace dds {
+
 template <typename T>
-class DataReaderListener : public dds::sub::NoOpDataReaderListener<T> {
+class DataReaderListener : public ::dds::sub::NoOpDataReaderListener<T> {
 public:
     /**
      * @brief Constructor
@@ -18,10 +17,11 @@ public:
      *
      * @param reader datareader that have data available
      */
-    virtual void on_data_available(dds::sub::DataReader<T>& reader);
+    virtual void on_data_available(::dds::sub::DataReader<T>& reader);
 
 private:
     std::function<void(const T &sample)> on_data_;
 };
 
-#endif  // DATA_READER_LISTENER_H
+}  // namespace dds
+}  // namespace gazebo

@@ -130,9 +130,14 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
             boost::bind(&DiffDrive::update_model, this));
 
     gzmsg << "Starting Differential drive Plugin" << std::endl;
-    gzmsg << "- Odometry topic name: " << topic_name_odometry << std::endl;
-    gzmsg << "- JointState topic name: " << topic_name_joint << std::endl;
-    gzmsg << "- Twist topic name: " << topic_name_twist << std::endl;
+    gzmsg << "* Publications:" << std::endl;
+    gzmsg << "  - " << topic_name_odometry << " [nav_msgs/msg/Odometry]"
+          << std::endl;
+    gzmsg << "  - " << topic_name_joint << " [sensor_msgs/msg/JointState]"
+          << std::endl;
+    gzmsg << "* Subscriptions:" << std::endl;
+    gzmsg << "  - " << topic_name_twist << " [geometry_msgs/msg/Twist]"
+          << std::endl;
 }
 
 void DiffDrive::Reset()

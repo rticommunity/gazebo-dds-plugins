@@ -1,6 +1,6 @@
-#include "SkidSteerDrive.h"
 #include "common/GazeboDdsUtils.cxx"
 #include "common/Properties.h"
+#include "SkidSteerDrive.h"
 
 namespace gazebo {
 namespace dds {
@@ -25,12 +25,10 @@ SkidSteerDrive::SkidSteerDrive()
 {
 }
 
-// Destructor
 SkidSteerDrive::~SkidSteerDrive()
 {
 }
 
-// Load the controller
 void SkidSteerDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
 {
     parent_ = parent;
@@ -143,19 +141,23 @@ void SkidSteerDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
             boost::bind(&SkidSteerDrive::update_model, this));
 
     gzmsg << "Starting Skid Steer drive Plugin" << std::endl;
-    gzmsg << "- Odometry topic name: " << topic_name_odometry << std::endl;
-    gzmsg << "- JointState topic name: " << topic_name_joint << std::endl;
-    gzmsg << "- Twist topic name: " << topic_name_twist << std::endl;
+    gzmsg << "* Publications:" << std::endl;
+    gzmsg << "  - " << topic_name_odometry << " [nav_msgs/msg/Odometry]"
+          << std::endl;
+    gzmsg << "  - " << topic_name_joint << " [sensor_msgs/msg/JointState]"
+          << std::endl;
+    gzmsg << "* Subscriptions:" << std::endl;
+    gzmsg << "  - " << topic_name_twist << " [geometry_msgs/msg/Twist]"
+          << std::endl;
 }
 
 void SkidSteerDrive::Reset()
 {
     last_update_ = utils::get_sim_time(parent_->GetWorld());
 
-    joints_[LEFT_FRONT]->SetParam("fmax", 0, wheel_torque_);
-    joints_[RIGHT_FRONT]->SetParam("fmax", 0, wheel_torque_);
-    joints_[LEFT_REAR]->SetParam("fmax", 0, wheel_torque_);
-    joints_[RIGHT_REAR]->SetParam("fmax", 0, wheel_torque_);
+    for (unsigned int i = 0; i < WHEEL_NUMBER; i++) {
+        joints_[i]->SetParam("fmax", 0, wheel_torque_);
+    }
 }
 
 void SkidSteerDrive::update_model()
@@ -179,6 +181,7 @@ void SkidSteerDrive::update_model()
             get_wheel_velocities(twist_samples_[0].data());
         }
 
+        // Update joints velocity
         joints_[LEFT_FRONT]->SetParam(
                 "vel", 0, wheel_speed_[LEFT_FRONT] / (wheel_diameter_ / 2.0));
         joints_[RIGHT_FRONT]->SetParam(
@@ -190,7 +193,6 @@ void SkidSteerDrive::update_model()
 
         last_update_ += common::Time(update_period_);
     }
-    
 }
 
 void SkidSteerDrive::get_wheel_velocities(const geometry_msgs::msg::Twist &msg)
@@ -198,10 +200,10 @@ void SkidSteerDrive::get_wheel_velocities(const geometry_msgs::msg::Twist &msg)
     double linear_x = msg.linear().x();
     double angular_z = msg.angular().z();
 
-    wheel_speed_[LEFT_FRONT] = linear_x + angular_z * wheel_separation_ / 2.0;
-    wheel_speed_[LEFT_REAR] = linear_x + angular_z * wheel_separation_ / 2.0;
-    wheel_speed_[RIGHT_FRONT] = linear_x - angular_z * wheel_separation_ / 2.0;
-    wheel_speed_[RIGHT_REAR] = linear_x - angular_z * wheel_separation_ / 2.0;
+    wheel_speed_[LEFT_FRONT] = linear_x - angular_z * wheel_separation_ / 2.0;
+    wheel_speed_[LEFT_REAR] = linear_x - angular_z * wheel_separation_ / 2.0;
+    wheel_speed_[RIGHT_FRONT] = linear_x + angular_z * wheel_separation_ / 2.0;
+    wheel_speed_[RIGHT_REAR] = linear_x + angular_z * wheel_separation_ / 2.0;
 }
 
 void SkidSteerDrive::publish_odometry()
@@ -256,7 +258,7 @@ void SkidSteerDrive::publish_joint_state()
     joint_state_sample_.header().stamp().sec(current_time_.sec);
     joint_state_sample_.header().stamp().nanosec(current_time_.nsec);
 
-    for (unsigned int i = 0; i < 4; i++) {
+    for (unsigned int i = 0; i < WHEEL_NUMBER; i++) {
         joint_state_sample_.name()[i] = joints_[i]->GetName();
         joint_state_sample_.position()[i] = get_joint_position(i);
     }

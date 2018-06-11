@@ -37,7 +37,7 @@ void BumperScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     // Obtain topic name from loaded world
     std::string topic_name;
     utils::get_world_parameter<std::string>(
-            sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "bumperScan");
+            sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "bumper_scan");
 
     topic_ = ::dds::topic::Topic<gazebo_msgs::msg::ContactsState>(
             participant_, topic_name);
@@ -48,7 +48,10 @@ void BumperScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     sensor_connection_
             = sensor_->ConnectUpdated(std::bind(&BumperScan::on_scan, this));
 
-    gzmsg << "Starting Bumper plugin - Topic name: " << topic_name << std::endl;
+    gzmsg << "Starting Bumper plugin" << std::endl;
+    gzmsg << "* Publications:" << std::endl;
+    gzmsg << "  - " << topic_name << " [gazebo_msgs/msg/ContactsState]" 
+          << std::endl;
 }
 
 void BumperScan::on_scan()

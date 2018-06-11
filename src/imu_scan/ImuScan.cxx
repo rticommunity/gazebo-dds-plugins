@@ -89,7 +89,9 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
     sample_.linear_acceleration_covariance()[4] = covariance;
     sample_.linear_acceleration_covariance()[8] = covariance;
 
-    gzmsg << "Starting Imu Plugin - Topic name: " << topic_name << std::endl;
+    gzmsg << "Starting Imu Plugin" << std::endl;
+    gzmsg << "* Publications:" << std::endl;
+    gzmsg << "  - " << topic_name << " [sensor_msgs/msg/Imu]" << std::endl;
 }
 
 void ImuScan::on_scan(ConstIMUPtr &msg)
@@ -139,7 +141,8 @@ double ImuScan::guassian_kernel(double mu, double sigma)
 
     // using Box-Muller transform to obtain a variable with a standard normal
     // distribution
-    double standard_normal = sqrt(-2.0 * ::log(first_uniform_rand)) * cos(2.0 * M_PI * second_uniform_rand);
+    double standard_normal = sqrt(-2.0 * ::log(first_uniform_rand)) * 
+            cos(2.0 * M_PI * second_uniform_rand);
 
     // scaling
     standard_normal = sigma * standard_normal + mu;

@@ -95,23 +95,14 @@ private:
     ::dds::sub::LoanedSamples<geometry_msgs::msg::Twist> twist_samples_;
     nav_msgs::msg::Odometry odometry_sample_;
     sensor_msgs::msg::JointState joint_state_sample_;
-
     physics::ModelPtr parent_;
     physics::JointPtr joints_[WHEEL_NUMBER];
     event::ConnectionPtr update_connection_;
-
-    std::string left_front_joint_name_;
-    std::string right_front_joint_name_;
-    std::string left_rear_joint_name_;
-    std::string right_rear_joint_name_;
-
     common::Time last_update_;
     common::Time current_time_;
-
     ignition::math::Quaterniond odometry_orientation_;
     ignition::math::Pose3d world_pose_;
     ignition::math::Vector3d world_linear_;
-
     double wheel_separation_;
     double wheel_diameter_;
     double wheel_torque_;
@@ -120,7 +111,6 @@ private:
     double covariance_x_;
     double covariance_y_;
     double covariance_yaw_;
-
 };
 
 }  // namespace dds

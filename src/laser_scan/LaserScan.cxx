@@ -45,7 +45,8 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "laserScan");
 
-    topic_ = ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg>(participant_, topic_name);
+    topic_ = ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg>(
+            participant_, topic_name);
 
     // Change the maximum size of the sequences
     rti::core::policy::Property::Entry value(
@@ -62,7 +63,10 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     this->laser_scan_sub_ = this->gazebo_node_->Subscribe(
             this->sensor_->Topic(), &LaserScan::on_scan, this);
 
-    gzmsg << "Starting Laser Plugin - Topic name: " << topic_name << std::endl;
+    gzmsg << "Starting Laser Plugin"<< std::endl;
+    gzmsg << "* Publications:" << std::endl;
+    gzmsg << "  - " << topic_name << " [sensor_msgs/msg/LaserScanMsg]" 
+          << std::endl;
 }
 
 void LaserScan::on_scan(ConstLaserScanStampedPtr &msg)

@@ -2,14 +2,11 @@
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/common/UpdateInfo.hh>
 
-#include <ignition/math/Vector3.hh>
-#include <ignition/math/Pose3.hh>
-
 #include <dds/core/ddscore.hpp>
 #include <dds/domain/find.hpp>
 #include <dds/pub/ddspub.hpp>
 
-#include "Imu.hpp"
+#include "sensor_msgs/msg/Imu.hpp"
 
 namespace gazebo { namespace dds {
 
@@ -31,7 +28,7 @@ public:
      * @param parent object of Gazebo's sensor
      * @param sdf object of Gazebo's world
      */
-    void Load(sensors::SensorPtr parent, sdf::ElementPtr sdf);
+    void Load(sensors::SensorPtr parent, sdf::ElementPtr sdf) override;
 
 private:
     /**

@@ -1,9 +1,9 @@
 #include <iostream>
 #include <regex>
 
-#include <gazebo/physics/World.hh>
 #include <gazebo/sensors/ImuSensor.hh>
 
+#include "common/GazeboDdsUtils.cxx"
 #include "common/Properties.h"
 #include "ImuScan.h"
 
@@ -33,13 +33,8 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
     gazebo_node_->Init(parent->WorldName());
 
     // Obtain Imu's information from loaded world
-    if (sdf->HasElement("gaussian_noise")) {
-        gaussian_noise_ = sdf->Get<double>("gaussian_noise");
-    } else {
-        gaussian_noise_ = 0;
-        gzwarn << "Missing <gaussian_noise>, set to default: "
-               << gaussian_noise_ << std::endl;
-    }
+    utils::get_world_parameter<double>(
+            sdf, gaussian_noise_, "gaussian_noise", 0.0);
 
     if (sdf->HasElement("rpy_offset")) {
         offset_.Rot() = ignition::math::Quaterniond(
@@ -53,13 +48,8 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
 
     // Obtain the domain id from loaded world
     int domain_id;
-    if (sdf->HasElement(DOMAIN_ID_PROPERTY_NAME)) {
-        domain_id = sdf->Get<int>(DOMAIN_ID_PROPERTY_NAME);
-    } else {
-        domain_id = 0;
-        gzwarn << "Missing <domain_id>, set to default: " << domain_id
-               << std::endl;
-    }
+    utils::get_world_parameter<int>(
+            sdf, domain_id, DOMAIN_ID_PROPERTY_NAME.c_str(), 0);
 
     participant_ = ::dds::domain::find(domain_id);
     if (participant_ == ::dds::core::null) {
@@ -68,13 +58,8 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
 
     // Obtain the topic name from loaded world
     std::string topic_name;
-    if (sdf->HasElement(TOPIC_NAME_PROPERTY_NAME)) {
-        topic_name = sdf->Get<std::string>(TOPIC_NAME_PROPERTY_NAME);
-    } else {
-        topic_name = "ImuScan";
-        gzwarn << "Missing <topic_name>, set to default: " << topic_name
-               << std::endl;
-    }
+    utils::get_world_parameter<std::string>(
+            sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "ImuScan");
 
     topic_ = ::dds::topic::Topic<sensor_msgs::msg::Imu>(
             participant_, topic_name);
@@ -147,14 +132,14 @@ void ImuScan::on_scan(ConstIMUPtr &msg)
 double ImuScan::guassian_kernel(double mu, double sigma)
 {
     // generation of two normalized uniform random variables
-    double uniform_rand1 = static_cast<double>(rand_r(&seed_))
+    double first_uniform_rand = static_cast<double>(rand_r(&seed_))
             / static_cast<double>(RAND_MAX);
-    double uniform_rand2 = static_cast<double>(rand_r(&seed_))
+    double second_uniform_rand = static_cast<double>(rand_r(&seed_))
             / static_cast<double>(RAND_MAX);
 
     // using Box-Muller transform to obtain a variable with a standard normal
     // distribution
-    double standard_normal = sqrt(-2.0 * ::log(uniform_rand1)) * cos(2.0 * M_PI * uniform_rand2);
+    double standard_normal = sqrt(-2.0 * ::log(first_uniform_rand)) * cos(2.0 * M_PI * second_uniform_rand);
 
     // scaling
     standard_normal = sigma * standard_normal + mu;

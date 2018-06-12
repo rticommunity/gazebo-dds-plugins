@@ -1,5 +1,6 @@
 
 #include "common/Properties.h"
+#include "common/GazeboDdsUtils.cxx"
 #include "LaserScan.h"
 
 namespace gazebo { namespace dds {
@@ -31,13 +32,8 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
 
     // Obtain the domain id from loaded world
     int domain_id;
-    if (!sdf->HasElement(DOMAIN_ID_PROPERTY_NAME)) {
-        domain_id = 0;
-        gzwarn << "Missing <domain_id>, set to default: " << domain_id
-               << std::endl;
-    } else {
-        domain_id = sdf->Get<int>(DOMAIN_ID_PROPERTY_NAME);
-    }
+    utils::get_world_parameter<int>(
+            sdf, domain_id, DOMAIN_ID_PROPERTY_NAME.c_str(), 0);
 
     participant_ = ::dds::domain::find(domain_id);
     if (participant_ == ::dds::core::null) {
@@ -46,13 +42,8 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
 
     // Obtain the topic name from loaded world
     std::string topic_name;
-    if (!sdf->HasElement(TOPIC_NAME_PROPERTY_NAME)) {
-        topic_name = "laserScan";
-        gzwarn << "Missing <topic_name>, set to default: " << topic_name
-               << std::endl;
-    } else {
-        topic_name = sdf->Get<std::string>(TOPIC_NAME_PROPERTY_NAME);
-    }
+    utils::get_world_parameter<std::string>(
+            sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "laserScan");
 
     topic_ = ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg>(participant_, topic_name);
 

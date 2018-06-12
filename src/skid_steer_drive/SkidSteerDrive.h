@@ -1,3 +1,31 @@
+/*
+ * Copyright 2018 Real-Time Innovations, Inc.
+ * Copyright (c) 2010, Daniel Hewlett, Antons Rebguns
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are met:
+ *      * Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *      * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *      * Neither the name of the <organization> nor the
+ *      names of its contributors may be used to endorse or promote products
+ *      derived from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY Antons Rebguns <email> ''AS IS'' AND ANY
+ *  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *  DISCLAIMED. IN NO EVENT SHALL Antons Rebguns <email> BE LIABLE FOR ANY
+ *  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ *  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ *  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
 
@@ -58,21 +86,21 @@ private:
 
     /**
      * @brief Obtain velocity of the wheels
-     * 
+     *
      * msg Message with the new twist of the model
      */
     void get_wheel_velocities(const geometry_msgs::msg::Twist &msg);
 
     /**
      * @brief Obtain pose3d of the world
-     * 
+     *
      * @return pose3d of the world
      */
     ignition::math::Pose3d get_world_pose();
 
     /**
      * @brief Obtain position of the specific joint
-     * 
+     *
      * @param index index of the joint in the array of Joint
      * @return position of the specific joint
      */

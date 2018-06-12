@@ -169,9 +169,9 @@ void SkidSteerDrive::update_model()
     }
 
     current_time_ = utils::get_sim_time(parent_->GetWorld());
-    double diff_time_ = (current_time_ - last_update_).Double();
+    double diff_time = (current_time_ - last_update_).Double();
 
-    if (diff_time_ > update_period_) {
+    if (diff_time > update_period_) {
         publish_odometry();
         publish_joint_state();
 

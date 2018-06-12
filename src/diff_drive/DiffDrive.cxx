@@ -165,9 +165,9 @@ void DiffDrive::update_model()
 
     current_time_ = utils::get_sim_time(parent_->GetWorld());
 
-    double diff_time_ = (current_time_ - last_update_).Double();
+    double diff_time = (current_time_ - last_update_).Double();
 
-    if (diff_time_ > update_period_) {
+    if (diff_time > update_period_) {
         publish_odometry();
         publish_joint_state();
 
@@ -196,21 +196,21 @@ void DiffDrive::update_model()
             if (wheel_speed_[LEFT] >= current_speed[LEFT]) {
                 wheel_speed_instr_[LEFT]
                         += fmin(wheel_speed_[LEFT] - current_speed[LEFT],
-                                wheel_accel_ * diff_time_);
+                                wheel_accel_ * diff_time);
             } else {
                 wheel_speed_instr_[LEFT]
                         += fmax(wheel_speed_[LEFT] - current_speed[LEFT],
-                                -wheel_accel_ * diff_time_);
+                                -wheel_accel_ * diff_time);
             }
 
             if (wheel_speed_[RIGHT] > current_speed[RIGHT]) {
                 wheel_speed_instr_[RIGHT]
                         += fmin(wheel_speed_[RIGHT] - current_speed[RIGHT],
-                                wheel_accel_ * diff_time_);
+                                wheel_accel_ * diff_time);
             } else {
                 wheel_speed_instr_[RIGHT]
                         += fmax(wheel_speed_[RIGHT] - current_speed[RIGHT],
-                                -wheel_accel_ * diff_time_);
+                                -wheel_accel_ * diff_time);
             }
 
             // Update joints velocity
@@ -302,14 +302,14 @@ void DiffDrive::update_odometry_encoder()
 {
     current_time_ = utils::get_sim_time(parent_->GetWorld());
 
-    double diff_time_ = (current_time_ - last_odom_update_).Double();
+    double diff_time = (current_time_ - last_odom_update_).Double();
     last_odom_update_ = current_time_;
 
     // Book: Sigwart 2011 Autonompus Mobile Robots page:337
     double distance_left = joints_[LEFT]->GetVelocity(0)
-            * (wheel_diameter_ / 2.0) * diff_time_;
+            * (wheel_diameter_ / 2.0) * diff_time;
     double distance_right = joints_[RIGHT]->GetVelocity(0)
-            * (wheel_diameter_ / 2.0) * diff_time_;
+            * (wheel_diameter_ / 2.0) * diff_time;
 
     double distance_diff;
     if (legacy_mode_) {
@@ -341,9 +341,9 @@ void DiffDrive::update_odometry_encoder()
     odometry_sample_.pose().pose().orientation().z(odometry_orientation_.Z());
     odometry_sample_.pose().pose().orientation().w(odometry_orientation_.W());
 
-    odometry_sample_.twist().twist().angular().z(derivative_theta / diff_time_);
-    odometry_sample_.twist().twist().linear().x(derivative_x / diff_time_);
-    odometry_sample_.twist().twist().linear().y(derivative_y / diff_time_);
+    odometry_sample_.twist().twist().angular().z(derivative_theta / diff_time);
+    odometry_sample_.twist().twist().linear().x(derivative_x / diff_time);
+    odometry_sample_.twist().twist().linear().y(derivative_y / diff_time);
 }
 
 inline ignition::math::Pose3d DiffDrive::get_world_pose()

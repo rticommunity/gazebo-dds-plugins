@@ -63,17 +63,18 @@ void BumperScan::on_scan()
     frame_rot_ = ignition::math::Quaterniond(1, 0, 0, 0);
 
     // Obtain contacts
-    unsigned int contactsPacketSize = sensor_->Contacts().contact_size();
-    contacts_sample_.states().resize(contactsPacketSize);
+    unsigned int contacts_size = sensor_->Contacts().contact_size();
+    unsigned int contact_group_size;
+    contacts_sample_.states().resize(contacts_size);
 
-    for (unsigned int i = 0; i < contactsPacketSize; ++i) {
+    for (unsigned int i = 0; i < contacts_size; ++i) {
         contact_ = sensor_->Contacts().contact(i);
 
         contact_state_msg_.collision1_name(contact_.collision1());
         contact_state_msg_.collision2_name(contact_.collision2());
 
         std::ostringstream stream;
-        stream << "Info:  i:(" << i << "/" << contactsPacketSize
+        stream << "Info:  i:(" << i << "/" << contacts_size
                << ")     my geom:" << contact_state_msg_.collision1_name()
                << "   other geom:" << contact_state_msg_.collision2_name()
                << "         time:" << contact_.time().sec() << ", "
@@ -88,13 +89,13 @@ void BumperScan::on_scan()
         total_wrench_msg_.torque().z(0);
 
         // Obtain contact group
-        unsigned int contactGroupSize = contact_.position_size();
-        contact_state_msg_.wrenches().resize(contactGroupSize);
-        contact_state_msg_.contact_positions().resize(contactGroupSize);
-        contact_state_msg_.contact_normals().resize(contactGroupSize);
-        contact_state_msg_.depths().resize(contactGroupSize);
+        contact_group_size = contact_.position_size();
+        contact_state_msg_.wrenches().resize(contact_group_size);
+        contact_state_msg_.contact_positions().resize(contact_group_size);
+        contact_state_msg_.contact_normals().resize(contact_group_size);
+        contact_state_msg_.depths().resize(contact_group_size);
 
-        for (unsigned int j = 0; j < contactGroupSize; ++j) {
+        for (unsigned int j = 0; j < contact_group_size; ++j) {
             // Calculate force, torque
             contact_force_
                     = frame_rot_.RotateVectorReverse(ignition::math::Vector3d(

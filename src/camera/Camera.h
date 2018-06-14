@@ -15,9 +15,8 @@
  * limitations under the License.
  */
 
-#include <string>
-
 #include <gazebo/plugins/CameraPlugin.hh>
+
 #include "common/GazeboCameraUtils.h"
 
 namespace gazebo { namespace dds {
@@ -30,17 +29,39 @@ public:
      */
     Camera();
 
+    /**
+     * @brief Destructor
+     */
     ~Camera();
 
+    /**
+     * @brief Load the plugin inside Gazebo's system
+     *
+     * @param parent object of Gazebo's sensor
+     * @param sdf object of Gazebo's world
+     */
     void Load(sensors::SensorPtr parent, sdf::ElementPtr sdf) override;
 
 protected:
+
+    /**
+     * @brief Update the controller
+     *
+     * @param image raw information of the current image
+     * @param width width of the current image
+     * @param height height of the current image
+     * @param depth  depth of the current image
+     * @param format format of the current image
+     */
     virtual void OnNewFrame(
             const unsigned char * image,
             unsigned int width,
             unsigned int height,
             unsigned int depth,
             const std::string & format) override;
+
+private:
+    common::Time last_update_time_;
 };
 
 }  // namespace dds

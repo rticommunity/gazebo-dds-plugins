@@ -21,9 +21,7 @@ namespace gazebo { namespace dds {
 
 GZ_REGISTER_SENSOR_PLUGIN(Camera)
 
-Camera::Camera()
-        : CameraPlugin(),
-        GazeboCameraUtils()
+Camera::Camera() : last_update_time_(common::Time(0))
 {
 }
 
@@ -35,6 +33,7 @@ void Camera::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
 {
     CameraPlugin::Load(parent, sdf);
 
+    // CameraPlugin information into GazeboCameraUtils 
     parentSensor_ = parentSensor;
     width_ = width;
     height_ = height;
@@ -42,10 +41,15 @@ void Camera::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     format_ = format;
     camera_ = camera;
     
-    
-    load_sdf(parent, sdf);
-    
-    init();
+    GazeboCameraUtils::load_sdf(parent, sdf);
+    GazeboCameraUtils::init_samples();
+
+    gzmsg << "Starting Camera Plugin"<< std::endl;
+    gzmsg << "* Publications:" << std::endl;
+    gzmsg << "  - " << topic_name_camera_info_ << " [sensor_msgs/msg/CameraInfo]" 
+          << std::endl;
+    gzmsg << "  - " << topic_name_image_ << " [sensor_msgs/msg/Image]" 
+          << std::endl;
 }
 
 void Camera::OnNewFrame(const unsigned char * image,

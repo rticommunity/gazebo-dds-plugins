@@ -30,6 +30,7 @@ connextdds_rtiddsgen_run(
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sensor_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/sensor_msgs/msg/Image.idl"
     INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
+    UNBOUNDED
 )
 
 find_library(CameraPlugin 

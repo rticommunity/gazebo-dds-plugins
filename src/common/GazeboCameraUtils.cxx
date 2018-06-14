@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
-#include "GazeboCameraUtils.h"
 #include "GazeboDdsUtils.cxx"
 #include "Properties.h"
+#include "GazeboCameraUtils.h"
+
+#include <gazebo/rendering/Distortion.hh>
 
 namespace gazebo { namespace dds {
 
@@ -26,15 +28,12 @@ GazeboCameraUtils::GazeboCameraUtils()
           topic_image_(::dds::core::null),
           writer_image_(::dds::core::null),
           topic_camera_info_(::dds::core::null),
-          writer_camera_info_(::dds::core::null)
+          writer_camera_info_(::dds::core::null),
+          last_info_update_time_(common::Time(0)),
+          height_(0),
+          width_(0),
+          skip_(0)
 {
-    last_update_time_ = common::Time(0);
-    last_info_update_time_ = common::Time(0);
-    height_ = 0;
-    width_ = 0;
-    skip_ = 0;
-    format_ = "";
-    initialized_ = false;
 }
 
 GazeboCameraUtils::~GazeboCameraUtils()
@@ -60,11 +59,7 @@ void GazeboCameraUtils::load_sdf(
     utils::get_world_parameter<double>(sdf, distortion_t2_, "distortion_t2", 0);
 
     utils::get_world_parameter<std::string>(
-            sdf, camera_name_, "camera_name", "camera_one");
-    utils::get_world_parameter<std::string>(
             sdf, frame_name_, "frame_name", "/world");
-    utils::get_world_parameter<std::string>(
-            sdf, image_encodings_, "image_encodings", "L8");
 
     utils::get_world_parameter<bool>(sdf, border_crop_, "border_crop", true);
     utils::get_world_parameter<double>(sdf, update_period_, "update_rate", 0);
@@ -99,8 +94,20 @@ void GazeboCameraUtils::load_sdf(
     topic_image_ = ::dds::topic::Topic<sensor_msgs::msg::Image>(
             participant_, topic_name_image_);
 
+    // Change the maximum size of the sequences
+    rti::core::policy::Property::Entry value(
+            { "dds.data_writer.history.memory_manager.fast_pool.pool_"
+              "buffer_max_size",
+              "4096" });
+
+    rti::core::policy::Property property;
+    property.set(value);
+    writer_image_qos_ << property;
+
     writer_image_ = ::dds::pub::DataWriter<sensor_msgs::msg::Image>(
-            ::dds::pub::Publisher(participant_), topic_image_);
+            ::dds::pub::Publisher(participant_),
+            topic_image_,
+            writer_image_qos_);
 }
 void GazeboCameraUtils::load_sdf(
         sensors::SensorPtr parent,
@@ -124,14 +131,14 @@ void GazeboCameraUtils::publish_image(
             sample_image_.header().stamp().sec(sensor_update_time_.sec);
             sample_image_.header().stamp().nanosec(sensor_update_time_.nsec);
 
-            sample_image_.encoding(image_encodings_);
+            sample_image_.encoding(format_);
             sample_image_.height(height_);
             sample_image_.width(width_);
             sample_image_.step(skip_ * width_);
-            
-            // sample_image_.data.resize(step_arg * rows_arg);
-            // memcpy(&sample_image_.data[0], data_arg, step_arg * rows_arg);
-    
+
+            sample_image_.data().resize(skip_ * width_ * height_);
+            memcpy(&sample_image_.data()[0], src, skip_ * width_ * height_);
+
             sample_image_.is_bigendian(0);
 
             writer_image_.write(sample_image_);
@@ -154,12 +161,18 @@ void GazeboCameraUtils::publish_camera_info(common::Time &last_update_time)
     }
 }
 
-void GazeboCameraUtils::init()
+void GazeboCameraUtils::init_samples()
 {
     if (update_period_ > 0.0) {
         update_period_ = 1.0 / update_period_;
     } else {
         update_period_ = 0.0;
+    }
+
+    if (format_ == "R8G8B8" || format_ == "B8G8R8") {
+        skip_ = 3;
+    } else {
+        skip_ = 1;
     }
 
     /// Compute camera_ parameters if set to 0
@@ -178,9 +191,11 @@ void GazeboCameraUtils::init()
         focal_length_ = computed_focal_length;
     }
 
-    ////////////////////
-    // Add distorsion model
-    ///////////////////
+    sample_camera_info_.distortion_model("plumb_bob");
+
+    if(camera_->LensDistortion()){
+        camera_->LensDistortion()->SetCrop(border_crop_);
+    }
 
     // Init camera info sample
     sample_camera_info_.header().frame_id(frame_name_);
@@ -227,10 +242,6 @@ void GazeboCameraUtils::init()
     sample_camera_info_.p()[9] = 0.0;
     sample_camera_info_.p()[10] = 1.0;
     sample_camera_info_.p()[11] = 0.0;
-}
-
-void GazeboCameraUtils::fill_image()
-{
 }
 
 }  // namespace dds

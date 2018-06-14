@@ -30,8 +30,7 @@
 #include "common/Properties.h"
 #include "SkidSteerDrive.h"
 
-namespace gazebo {
-namespace dds {
+namespace gazebo { namespace dds {
 
 enum WHEEL_POSITION_ENUM {
     RIGHT_FRONT = 0,

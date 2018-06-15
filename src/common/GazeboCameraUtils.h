@@ -27,6 +27,7 @@
 
 namespace gazebo { namespace dds {
 
+class MultiCamera;
 class GazeboCameraUtils {
 public:
     /**
@@ -110,6 +111,8 @@ protected:
 
 private:
     common::Time last_info_update_time_;
+
+    friend class MultiCamera;
 };
 
 }  // namespace dds

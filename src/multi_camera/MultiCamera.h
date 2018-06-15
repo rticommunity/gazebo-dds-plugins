@@ -19,15 +19,6 @@
 
 namespace gazebo { namespace dds {
 
-struct CameraInformation {
-    rendering::CameraPtr camera;
-    unsigned int width;
-    unsigned int height;
-    unsigned int depth;
-    std::string format;
-    event::ConnectionPtr new_frame_connection;
-}; 
-
 class MultiCamera : public SensorPlugin
 {
 public:
@@ -44,10 +35,10 @@ public:
     /**
      * @brief Load the plugin inside Gazebo's system
      *
-     * @param parent object of Gazebo's sensor
+     * @param sensor object of Gazebo's sensor
      * @param sdf object of Gazebo's world
      */
-    void Load(sensors::SensorPtr parent, sdf::ElementPtr sdf) override;
+    void Load(sensors::SensorPtr sensor, sdf::ElementPtr sdf) override;
 
 protected:
 
@@ -101,8 +92,8 @@ protected:
 
 private:
     common::Time last_update_time_;
-    sensors::MultiCameraSensorPtr parent_sensor;
-    std::vector<CameraInformation> cameras_;
+    sensors::MultiCameraSensor* parent_sensor_;
+    std::vector<GazeboCameraUtils*> utils;
 };
 
 }  // namespace dds

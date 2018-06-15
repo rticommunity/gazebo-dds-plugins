@@ -16,6 +16,7 @@
  */
 
 #include "common/GazeboDdsUtils.cxx"
+#include <gazebo/sensors/MultiCameraSensor.hh>
 #include "MultiCamera.h"
 
 namespace gazebo { namespace dds {
@@ -30,30 +31,35 @@ MultiCamera::~MultiCamera()
 {
 }
 
-void MultiCamera::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
+void MultiCamera::Load(sensors::SensorPtr sensor, sdf::ElementPtr sdf)
 {
-    // CameraPlugin::Load(parent, sdf);
+    parent_sensor_ = dynamic_cast<sensors::MultiCameraSensor*>(sensor.get());
+    double baseline;
+    GazeboCameraUtils* util;
 
-    // // CameraPlugin information into GazeboCameraUtils
-    // parent_sensor_ = parentSensor;
-    // width_ = width;
-    // height_ = height;
-    // depth_ = depth;
-    // format_ = format;
-    // camera_ = camera;
+    for (unsigned int i = 0; i < parent_sensor_->CameraCount(); ++i){
 
-    // double baseline;
-    // utils::get_world_parameter<double>(sdf, baseline, "hack_baseline", 0);
+        util = new GazeboCameraUtils();
+        util->parent_sensor_ = sensor;
+        util->width_   = parent_sensor_->Camera(i)->ImageWidth();
+        util->height_  = parent_sensor_->Camera(i)->ImageHeight();
+        util->depth_   = parent_sensor_->Camera(i)->ImageDepth();
+        util->format_  = parent_sensor_->Camera(i)->ImageFormat();
+        util->camera_  = parent_sensor_->Camera(i);
 
-    // GazeboCameraUtils::load_sdf(parent, sdf, baseline);
-    // GazeboCameraUtils::init_samples();
+        if (util->camera_->Name().find("left") != std::string::npos){
+            util->load_sdf(sensor, sdf, 0.0);
+        }
+        else if (util->camera_->Name().find("right") != std::string::npos){
+            utils::get_world_parameter<double>(sdf, baseline, "hack_baseline", 0);
+            util->load_sdf(sensor, sdf, baseline);
+        }
 
-    // gzmsg << "Starting MultiCamera Plugin" << std::endl;
-    // gzmsg << "* Publications:" << std::endl;
-    // gzmsg << "  - " << topic_name_camera_info_
-    //       << " [sensor_msgs/msg/CameraInfo]" << std::endl;
-    // gzmsg << "  - " << topic_name_image_ << " [sensor_msgs/msg/Image]"
-    //       << std::endl;
+        util->init_samples();
+        utils.push_back(util);
+    }
+
+    parent_sensor_->SetActive(true);
 }
 
 void MultiCamera::on_new_frame(

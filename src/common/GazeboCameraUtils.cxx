@@ -43,14 +43,13 @@ GazeboCameraUtils::~GazeboCameraUtils()
 void GazeboCameraUtils::load_sdf(
         sensors::SensorPtr parent,
         sdf::ElementPtr sdf,
-        const std::string &camera_name)
+        double hack_baseline)
 {
     // Obtain information of the plugin from loaded world
     utils::get_world_parameter<double>(sdf, cx_prime_, "cx_prime", 0);
     utils::get_world_parameter<double>(sdf, cx_, "cx", 0);
     utils::get_world_parameter<double>(sdf, cy_, "cy", 0);
     utils::get_world_parameter<double>(sdf, focal_length_, "focal_length", 0);
-    utils::get_world_parameter<double>(sdf, hack_baseline_, "hack_baseline", 0);
 
     utils::get_world_parameter<double>(sdf, distortion_k1_, "distortion_k1", 0);
     utils::get_world_parameter<double>(sdf, distortion_k2_, "distortion_k2", 0);
@@ -63,6 +62,7 @@ void GazeboCameraUtils::load_sdf(
 
     utils::get_world_parameter<bool>(sdf, border_crop_, "border_crop", true);
     utils::get_world_parameter<double>(sdf, update_period_, "update_rate", 0);
+    hack_baseline_ = hack_baseline;
 
     // Obtain the domain id from loaded world
     int domain_id;
@@ -109,37 +109,20 @@ void GazeboCameraUtils::load_sdf(
             topic_image_,
             writer_image_qos_);
 }
-void GazeboCameraUtils::load_sdf(
-        sensors::SensorPtr parent,
-        sdf::ElementPtr sdf,
-        const std::string &camera_name,
-        double hack_baseline)
-{
-    load_sdf(parent, sdf, camera_name);
-
-    hack_baseline_ = hack_baseline;
-}
 
 void GazeboCameraUtils::publish_image(
-        const unsigned char *src,
+        const unsigned char * raw_image,
         common::Time &last_update_time)
 {
     sensor_update_time_ = last_update_time;
     if (height_ > 0 && width_ > 0) {
         if (sensor_update_time_ - last_info_update_time_ >= update_period_) {
-            sample_image_.header().frame_id(frame_name_);
             sample_image_.header().stamp().sec(sensor_update_time_.sec);
             sample_image_.header().stamp().nanosec(sensor_update_time_.nsec);
 
-            sample_image_.encoding(format_);
-            sample_image_.height(height_);
-            sample_image_.width(width_);
-            sample_image_.step(skip_ * width_);
-
-            sample_image_.data().resize(skip_ * width_ * height_);
-            memcpy(&sample_image_.data()[0], src, skip_ * width_ * height_);
-
-            sample_image_.is_bigendian(0);
+            memcpy(&sample_image_.data()[0],
+                   raw_image,
+                   skip_ * width_ * height_);
 
             writer_image_.write(sample_image_);
         }
@@ -149,7 +132,7 @@ void GazeboCameraUtils::publish_image(
 void GazeboCameraUtils::publish_camera_info(common::Time &last_update_time)
 {
     if (height_ > 0 && width_ > 0) {
-        sensor_update_time_ = parentSensor_->LastMeasurementTime();
+        sensor_update_time_ = parent_sensor_->LastMeasurementTime();
         if (sensor_update_time_ - last_info_update_time_ >= update_period_) {
             sample_camera_info_.header().stamp().sec(sensor_update_time_.sec);
             sample_camera_info_.header().stamp().nanosec(
@@ -175,13 +158,16 @@ void GazeboCameraUtils::init_samples()
         skip_ = 1;
     }
 
-    /// Compute camera_ parameters if set to 0
-    if (cx_prime_ == 0)
+    /// Calculate camera information
+    if (cx_prime_ == 0) {
         cx_prime_ = (static_cast<double>(width_) + 1.0) / 2.0;
-    if (cx_ == 0)
+    }
+    if (cx_ == 0) {
         cx_ = (static_cast<double>(width_) + 1.0) / 2.0;
-    if (cy_ == 0)
+    }
+    if (cy_ == 0) {
         cy_ = (static_cast<double>(height_) + 1.0) / 2.0;
+    }
 
     double hfov = camera_->HFOV().Radian();
     double computed_focal_length
@@ -193,7 +179,7 @@ void GazeboCameraUtils::init_samples()
 
     sample_camera_info_.distortion_model("plumb_bob");
 
-    if(camera_->LensDistortion()){
+    if (camera_->LensDistortion()) {
         camera_->LensDistortion()->SetCrop(border_crop_);
     }
 
@@ -203,6 +189,7 @@ void GazeboCameraUtils::init_samples()
     sample_camera_info_.height(height_);
     sample_camera_info_.width(width_);
 
+    // Set distortion
     sample_camera_info_.d().resize(5);
     sample_camera_info_.d()[0] = distortion_k1_;
     sample_camera_info_.d()[1] = distortion_k2_;
@@ -210,6 +197,7 @@ void GazeboCameraUtils::init_samples()
     sample_camera_info_.d()[3] = distortion_t2_;
     sample_camera_info_.d()[4] = distortion_k3_;
 
+    // Set camera matrix
     sample_camera_info_.k()[0] = focal_length_;
     sample_camera_info_.k()[1] = 0.0;
     sample_camera_info_.k()[2] = cx_;
@@ -220,6 +208,7 @@ void GazeboCameraUtils::init_samples()
     sample_camera_info_.k()[7] = 0.0;
     sample_camera_info_.k()[8] = 1.0;
 
+    // Set rectification
     sample_camera_info_.r()[0] = 1.0;
     sample_camera_info_.r()[1] = 0.0;
     sample_camera_info_.r()[2] = 0.0;
@@ -230,6 +219,7 @@ void GazeboCameraUtils::init_samples()
     sample_camera_info_.r()[7] = 0.0;
     sample_camera_info_.r()[8] = 1.0;
 
+    // Set projection matrix
     sample_camera_info_.p()[0] = focal_length_;
     sample_camera_info_.p()[1] = 0.0;
     sample_camera_info_.p()[2] = cx_;
@@ -242,6 +232,16 @@ void GazeboCameraUtils::init_samples()
     sample_camera_info_.p()[9] = 0.0;
     sample_camera_info_.p()[10] = 1.0;
     sample_camera_info_.p()[11] = 0.0;
+
+    // Init sample image
+    sample_image_.header().frame_id(frame_name_);
+    sample_image_.encoding(format_);
+    sample_image_.height(height_);
+    sample_image_.width(width_);
+    sample_image_.step(skip_ * width_);
+    sample_image_.is_bigendian(0);
+
+    sample_image_.data().resize(skip_ * width_ * height_);
 }
 
 }  // namespace dds

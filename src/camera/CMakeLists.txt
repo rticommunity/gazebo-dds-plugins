@@ -41,8 +41,6 @@ find_library(CameraPlugin
 add_library(DdsCameraPlugin MODULE 
     Camera.cxx 
     Camera.h
-    ${CMAKE_SOURCE_DIR}/src/common/GazeboCameraUtils.cxx
-    ${CMAKE_SOURCE_DIR}/src/common/GazeboCameraUtils.h
     ${Time_CXX11_SOURCES}
     ${Header_CXX11_SOURCES}
     ${RegionOfInterest_CXX11_SOURCES}

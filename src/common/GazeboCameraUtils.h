@@ -39,24 +39,39 @@ public:
      */
     ~GazeboCameraUtils();
 
+    /**
+     * @brief Load the plugin inside Gazebo's system
+     *
+     * @param parent object of Gazebo's sensor
+     * @param sdf object of Gazebo's world
+     * @param hack_baseline camera baseline
+     */
     void load_sdf(
             sensors::SensorPtr parent,
             sdf::ElementPtr sdf,
-            const std::string &camera_name = "");
-
-    void load_sdf(
-            sensors::SensorPtr parent,
-            sdf::ElementPtr sdf,
-            const std::string &camera_name,
-            double hack_baseline);
+            double hack_baseline = 0);
 
 protected:
+    /**
+     * @brief Publish image sample
+     * 
+     * @param raw_image current raw image 
+     * @param last_update_time last time that the sensor was updated
+     */
     void publish_image(
-            const unsigned char *_src,
+            const unsigned char * raw_image,
             common::Time &last_update_time);
 
+    /**
+     * @brief Publish camera info sample
+     * 
+     * @param last_update_time last time that the sensor was updated
+     */
     void publish_camera_info(common::Time &last_update_time);
 
+    /**
+     * @brief Initialize the information of the samples
+     */
     void init_samples();
 
 protected:
@@ -89,7 +104,7 @@ protected:
     unsigned int width_;
     unsigned int height_;
     unsigned int depth_;
-    sensors::SensorPtr parentSensor_;
+    sensors::SensorPtr parent_sensor_;
     rendering::CameraPtr camera_;
     common::Time sensor_update_time_;
 

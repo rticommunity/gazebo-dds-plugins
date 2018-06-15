@@ -1,3 +1,6 @@
+#ifndef GAZEBO_DDS_UTILS_H
+#define GAZEBO_DDS_UTILS_H
+
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
 
@@ -53,3 +56,5 @@ common::Time get_sim_time(physics::WorldPtr world)
 }  // namespace utils
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // GAZEBO_DDS_UTILS_H

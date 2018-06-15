@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include "common/GazeboDdsUtils.cxx"
 #include "Camera.h"
 
 namespace gazebo { namespace dds {
@@ -33,32 +34,38 @@ void Camera::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
 {
     CameraPlugin::Load(parent, sdf);
 
-    // CameraPlugin information into GazeboCameraUtils 
-    parentSensor_ = parentSensor;
+    // CameraPlugin information into GazeboCameraUtils
+    parent_sensor_ = parentSensor;
     width_ = width;
     height_ = height;
     depth_ = depth;
     format_ = format;
     camera_ = camera;
-    
-    GazeboCameraUtils::load_sdf(parent, sdf);
+
+    double baseline;
+    utils::get_world_parameter<double>(sdf, baseline, "hack_baseline", 0);
+
+    GazeboCameraUtils::load_sdf(parent, sdf, baseline);
     GazeboCameraUtils::init_samples();
 
-    gzmsg << "Starting Camera Plugin"<< std::endl;
+    gzmsg << "Starting Camera Plugin" << std::endl;
     gzmsg << "* Publications:" << std::endl;
-    gzmsg << "  - " << topic_name_camera_info_ << " [sensor_msgs/msg/CameraInfo]" 
-          << std::endl;
-    gzmsg << "  - " << topic_name_image_ << " [sensor_msgs/msg/Image]" 
+    gzmsg << "  - " << topic_name_camera_info_
+          << " [sensor_msgs/msg/CameraInfo]" << std::endl;
+    gzmsg << "  - " << topic_name_image_ << " [sensor_msgs/msg/Image]"
           << std::endl;
 }
 
-void Camera::OnNewFrame(const unsigned char * image,
-    unsigned int width, unsigned int height, unsigned int depth,
-    const std::string & format)
+void Camera::OnNewFrame(
+        const unsigned char *image,
+        unsigned int width,
+        unsigned int height,
+        unsigned int depth,
+        const std::string &format)
 {
-    common::Time sensor_update_time = parentSensor_->LastMeasurementTime();
+    common::Time sensor_update_time = parent_sensor_->LastMeasurementTime();
 
-    if (sensor_update_time - this->last_update_time_ >= this->update_period_){
+    if (sensor_update_time - this->last_update_time_ >= this->update_period_) {
         publish_image(image, sensor_update_time);
         publish_camera_info(sensor_update_time);
         last_update_time_ = sensor_update_time;

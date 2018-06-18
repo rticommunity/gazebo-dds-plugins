@@ -33,9 +33,9 @@ connextdds_rtiddsgen_run(
     UNBOUNDED
 )
 
-add_library(DdsMultiCameraPlugin MODULE 
-    MultiCamera.cxx 
-    MultiCamera.h
+add_library(DdsStereoCameraPlugin MODULE 
+    StereoCamera.cxx 
+    StereoCamera.h
     ${Time_CXX11_SOURCES}
     ${Header_CXX11_SOURCES}
     ${RegionOfInterest_CXX11_SOURCES}
@@ -43,13 +43,13 @@ add_library(DdsMultiCameraPlugin MODULE
     ${Image_CXX11_SOURCES}
 )
 
-target_link_libraries(DdsMultiCameraPlugin 
+target_link_libraries(DdsStereoCameraPlugin 
     ${GAZEBO_LIBRARIES}  
     ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_STATIC}
     ${CONNEXTDDS_EXTERNAL_LIBS}
 )
 
-target_include_directories(DdsMultiCameraPlugin PRIVATE 
+target_include_directories(DdsStereoCameraPlugin PRIVATE 
     ${CONNEXTDDS_INCLUDE_DIRS} 
     ${GAZEBO_INCLUDE_DIRS} 
     ${SDF_INCLUDE_DIRS}
@@ -57,5 +57,5 @@ target_include_directories(DdsMultiCameraPlugin PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
 
-target_compile_definitions(DdsMultiCameraPlugin PRIVATE 
+target_compile_definitions(DdsStereoCameraPlugin PRIVATE 
     ${CONNEXTDDS_DEFINITIONS})

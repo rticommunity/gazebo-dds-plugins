@@ -17,20 +17,20 @@
 
 #include "common/GazeboCameraUtils.h"
 
-namespace gazebo { namespace dds {
+namespace gazebo {
+namespace dds {
 
-class MultiCamera : public SensorPlugin
-{
+class StereoCamera : public SensorPlugin {
 public:
     /**
      * @brief Constructor
      */
-    MultiCamera();
+    StereoCamera();
 
     /**
      * @brief Destructor
      */
-    ~MultiCamera();
+    ~StereoCamera();
 
     /**
      * @brief Load the plugin inside Gazebo's system
@@ -41,7 +41,6 @@ public:
     void Load(sensors::SensorPtr sensor, sdf::ElementPtr sdf) override;
 
 protected:
-
     /**
      * @brief Update the controller
      *
@@ -52,11 +51,8 @@ protected:
      * @param format format of the current image
      */
     virtual void on_new_frame(
-            const unsigned char * image,
-            unsigned int width,
-            unsigned int height,
-            unsigned int depth,
-            const std::string & format);
+            const unsigned char *image,
+            GazeboCameraUtils &camera_utils);
 
     /**
      * @brief Update the controller of the camera left
@@ -68,12 +64,12 @@ protected:
      * @param format format of the current image
      */
     virtual void on_new_frame_left(
-            const unsigned char * image,
+            const unsigned char *image,
             unsigned int width,
             unsigned int height,
             unsigned int depth,
-            const std::string & format);            
-    
+            const std::string &format);
+
     /**
      * @brief Update the controller of the camera right
      *
@@ -84,16 +80,25 @@ protected:
      * @param format format of the current image
      */
     virtual void on_new_frame_right(
-            const unsigned char * image,
+            const unsigned char *image,
             unsigned int width,
             unsigned int height,
             unsigned int depth,
-            const std::string & format);   
+            const std::string &format);
+
+private:
+    void init_camera(
+            rendering::CameraPtr camera,
+            GazeboCameraUtils &camera_utils);
 
 private:
     common::Time last_update_time_;
-    sensors::MultiCameraSensor* parent_sensor_;
-    std::vector<GazeboCameraUtils*> utils;
+    sensors::MultiCameraSensor * parent_sensor_;
+    std::vector<GazeboCameraUtils *> utils_;
+    GazeboCameraUtils camera_left_;
+    GazeboCameraUtils camera_right_;
+    sensors::SensorPtr sensor_;
+    sdf::ElementPtr sdf_;
 };
 
 }  // namespace dds

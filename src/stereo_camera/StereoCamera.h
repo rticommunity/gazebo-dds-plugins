@@ -17,8 +17,9 @@
 
 #include "common/GazeboCameraUtils.h"
 
-namespace gazebo {
-namespace dds {
+namespace gazebo { namespace dds {
+
+const int CAMERA_NUMBER = 2;
 
 class StereoCamera : public SensorPlugin {
 public:
@@ -87,13 +88,19 @@ protected:
             const std::string &format);
 
 private:
+    /**
+     * @brief Initialize the camera information
+     *
+     * @param camera CameraPtr that contain the camera's information
+     * @param camera_utils object that will contain the information of the
+     * camera
+     */
     void init_camera(
             rendering::CameraPtr camera,
             GazeboCameraUtils &camera_utils);
 
 private:
-    common::Time last_update_time_;
-    sensors::MultiCameraSensor * parent_sensor_;
+    sensors::MultiCameraSensor *parent_sensor_;
     std::vector<GazeboCameraUtils *> utils_;
     GazeboCameraUtils camera_left_;
     GazeboCameraUtils camera_right_;

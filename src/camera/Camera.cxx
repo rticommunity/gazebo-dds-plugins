@@ -23,7 +23,7 @@ namespace gazebo { namespace dds {
 
 GZ_REGISTER_SENSOR_PLUGIN(Camera)
 
-Camera::Camera() : last_update_time_(common::Time(0))
+Camera::Camera()
 {
 }
 
@@ -49,7 +49,7 @@ void Camera::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     GazeboCameraUtils::load_sdf(parent, sdf, baseline);
     GazeboCameraUtils::init_samples();
 
-    gzmsg << "Starting Camera Plugin" << std::endl;
+    gzmsg << "Starting camera plugin" << std::endl;
     gzmsg << "* Publications:" << std::endl;
     gzmsg << "  - " << topic_name_camera_info_
           << " [sensor_msgs/msg/CameraInfo]" << std::endl;

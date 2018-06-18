@@ -59,9 +59,6 @@ protected:
             unsigned int height,
             unsigned int depth,
             const std::string & format) override;
-
-private:
-    common::Time last_update_time_;
 };
 
 }  // namespace dds

@@ -157,7 +157,7 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     this->update_connection_ = event::Events::ConnectWorldUpdateBegin(
             boost::bind(&DiffDrive::update_model, this));
 
-    gzmsg << "Starting Differential drive Plugin" << std::endl;
+    gzmsg << "Starting differential drive plugin" << std::endl;
     gzmsg << "* Publications:" << std::endl;
     gzmsg << "  - " << topic_name_odometry << " [nav_msgs/msg/Odometry]"
           << std::endl;

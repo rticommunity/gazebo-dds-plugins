@@ -33,6 +33,7 @@ GazeboCameraUtils::GazeboCameraUtils()
           topic_camera_info_(::dds::core::null),
           writer_camera_info_(::dds::core::null),
           last_info_update_time_(common::Time(0)),
+          last_update_time_(common::Time(0)),
           height_(0),
           width_(0),
           skip_(0)

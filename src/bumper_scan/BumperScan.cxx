@@ -66,7 +66,7 @@ void BumperScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     sensor_connection_
             = sensor_->ConnectUpdated(std::bind(&BumperScan::on_scan, this));
 
-    gzmsg << "Starting Bumper plugin" << std::endl;
+    gzmsg << "Starting bumper plugin" << std::endl;
     gzmsg << "* Publications:" << std::endl;
     gzmsg << "  - " << topic_name << " [gazebo_msgs/msg/ContactsState]" 
           << std::endl;

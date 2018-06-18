@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-#include "StereoCamera.h"
-#include "common/GazeboCameraUtils.cxx"
-#include "common/GazeboDdsUtils.cxx"
 #include <gazebo/sensors/MultiCameraSensor.hh>
 
-namespace gazebo {
-namespace dds {
+#include "common/GazeboCameraUtils.cxx"
+#include "common/GazeboDdsUtils.cxx"
+#include "StereoCamera.h"
+
+namespace gazebo { namespace dds {
 
 GZ_REGISTER_SENSOR_PLUGIN(StereoCamera)
 
-StereoCamera::StereoCamera() : last_update_time_(common::Time(0))
+StereoCamera::StereoCamera()
 {
 }
 
@@ -39,7 +39,11 @@ void StereoCamera::Load(sensors::SensorPtr sensor, sdf::ElementPtr sdf)
     sensor_ = sensor;
     sdf_ = sdf;
 
-    for (unsigned int i = 0; i < parent_sensor_->CameraCount(); ++i) {
+    if (parent_sensor_->CameraCount() != CAMERA_NUMBER) {
+        gzthrow("Stereo camera plugin needs to have 2 camera");
+    }
+
+    for (unsigned int i = 0; i < CAMERA_NUMBER; ++i) {
         if (parent_sensor_->Camera(i)->Name().find("left")
             != std::string::npos) {
             init_camera(parent_sensor_->Camera(i), camera_left_);
@@ -50,7 +54,17 @@ void StereoCamera::Load(sensors::SensorPtr sensor, sdf::ElementPtr sdf)
         }
     }
 
-    parent_sensor_->SetActive(true);
+    gzmsg << "Starting stereo camera plugin" << std::endl;
+    gzmsg << "* Publications:" << std::endl;
+    gzmsg << "  - " << camera_left_.topic_name_camera_info_
+          << " [sensor_msgs/msg/CameraInfo]" << std::endl;
+    gzmsg << "  - " << camera_left_.topic_name_image_ << " [sensor_msgs/msg/Image]"
+          << std::endl;
+    gzmsg << "  - " << camera_right_.topic_name_camera_info_
+          << " [sensor_msgs/msg/CameraInfo]" << std::endl;
+    gzmsg << "  - " << camera_right_.topic_name_image_ << " [sensor_msgs/msg/Image]"
+          << std::endl;
+
 }
 
 void StereoCamera::on_new_frame(
@@ -59,10 +73,10 @@ void StereoCamera::on_new_frame(
 {
     common::Time sensor_update_time = parent_sensor_->LastMeasurementTime();
 
-    if (sensor_update_time - last_update_time_ >= camera_utils.update_period_) {
+    if (sensor_update_time - camera_utils.last_update_time_ >= camera_utils.update_period_) {
         camera_utils.publish_image(image, sensor_update_time);
         camera_utils.publish_camera_info(sensor_update_time);
-        last_update_time_ = sensor_update_time;
+        camera_utils.last_update_time_ = sensor_update_time;
     }
 }
 
@@ -90,6 +104,7 @@ void StereoCamera::init_camera(
         rendering::CameraPtr camera,
         GazeboCameraUtils &camera_utils)
 {
+    // Initialize the information of the camera
     double baseline;
     camera_utils.parent_sensor_ = sensor_;
     camera_utils.width_ = camera->ImageWidth();
@@ -98,6 +113,7 @@ void StereoCamera::init_camera(
     camera_utils.format_ = camera->ImageFormat();
     camera_utils.camera_ = camera;
 
+    // Load the sdf information of the plugin
     if (camera_utils.camera_->Name().find("left") != std::string::npos) {
         camera_utils.load_sdf(sensor_, sdf_, 0.0);
         camera_utils.new_frame_connection_

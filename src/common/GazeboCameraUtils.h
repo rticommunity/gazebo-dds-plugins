@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+#ifndef GAZEBO_CAMERA_UTILS_H
+#define GAZEBO_CAMERA_UTILS_H
+
 #include <gazebo/common/Time.hh>
 #include <gazebo/plugins/CameraPlugin.hh>
 
@@ -27,7 +30,7 @@
 
 namespace gazebo { namespace dds {
 
-class MultiCamera;
+class StereoCamera;
 class GazeboCameraUtils {
 public:
     /**
@@ -107,13 +110,16 @@ protected:
     unsigned int depth_;
     sensors::SensorPtr parent_sensor_;
     rendering::CameraPtr camera_;
+    event::ConnectionPtr new_frame_connection_;
     common::Time sensor_update_time_;
 
 private:
     common::Time last_info_update_time_;
 
-    friend class MultiCamera;
+    friend class StereoCamera;
 };
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // GAZEBO_CAMERA_UTILS_H

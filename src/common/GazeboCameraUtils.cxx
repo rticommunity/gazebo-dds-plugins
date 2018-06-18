@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+#ifndef GAZEBO_CAMERA_UTILS_CXX
+#define GAZEBO_CAMERA_UTILS_CXX
+
 #include "GazeboDdsUtils.cxx"
 #include "Properties.h"
 #include "GazeboCameraUtils.h"
@@ -81,6 +84,10 @@ void GazeboCameraUtils::load_sdf(
             "topic_name_camera_info",
             "camera_info");
 
+    auto index = camera_->Name().find_last_of("::");
+    std::string camera_name = camera_->Name().substr(++index);
+    topic_name_camera_info_ = camera_name+ "/"+ topic_name_camera_info_;
+
     topic_camera_info_ = ::dds::topic::Topic<sensor_msgs::msg::CameraInfo>(
             participant_, topic_name_camera_info_);
 
@@ -90,6 +97,8 @@ void GazeboCameraUtils::load_sdf(
     // Obtain image topic name from loaded world
     utils::get_world_parameter<std::string>(
             sdf, topic_name_image_, "topic_name_image", "image");
+
+    topic_name_image_ = camera_name+ "/"+ topic_name_image_;
 
     topic_image_ = ::dds::topic::Topic<sensor_msgs::msg::Image>(
             participant_, topic_name_image_);
@@ -246,3 +255,5 @@ void GazeboCameraUtils::init_samples()
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // GAZEBO_CAMERA_UTILS_CXX

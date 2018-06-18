@@ -16,6 +16,7 @@
  */
 
 #include "common/GazeboDdsUtils.cxx"
+#include "common/GazeboCameraUtils.cxx"
 #include "Camera.h"
 
 namespace gazebo { namespace dds {
@@ -64,8 +65,8 @@ void Camera::OnNewFrame(
         const std::string &format)
 {
     common::Time sensor_update_time = parent_sensor_->LastMeasurementTime();
-
-    if (sensor_update_time - this->last_update_time_ >= this->update_period_) {
+ 
+    if (sensor_update_time - last_update_time_ >= update_period_) {
         publish_image(image, sensor_update_time);
         publish_camera_info(sensor_update_time);
         last_update_time_ = sensor_update_time;

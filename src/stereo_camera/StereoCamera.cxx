@@ -54,17 +54,18 @@ void StereoCamera::Load(sensors::SensorPtr sensor, sdf::ElementPtr sdf)
         }
     }
 
+    parent_sensor_->SetActive(true);
+
     gzmsg << "Starting stereo camera plugin" << std::endl;
     gzmsg << "* Publications:" << std::endl;
     gzmsg << "  - " << camera_left_.topic_name_camera_info_
           << " [sensor_msgs/msg/CameraInfo]" << std::endl;
-    gzmsg << "  - " << camera_left_.topic_name_image_ << " [sensor_msgs/msg/Image]"
-          << std::endl;
+    gzmsg << "  - " << camera_left_.topic_name_image_
+          << " [sensor_msgs/msg/Image]" << std::endl;
     gzmsg << "  - " << camera_right_.topic_name_camera_info_
           << " [sensor_msgs/msg/CameraInfo]" << std::endl;
-    gzmsg << "  - " << camera_right_.topic_name_image_ << " [sensor_msgs/msg/Image]"
-          << std::endl;
-
+    gzmsg << "  - " << camera_right_.topic_name_image_
+          << " [sensor_msgs/msg/Image]" << std::endl;
 }
 
 void StereoCamera::on_new_frame(
@@ -73,7 +74,8 @@ void StereoCamera::on_new_frame(
 {
     common::Time sensor_update_time = parent_sensor_->LastMeasurementTime();
 
-    if (sensor_update_time - camera_utils.last_update_time_ >= camera_utils.update_period_) {
+    if (sensor_update_time - camera_utils.last_update_time_
+        >= camera_utils.update_period_) {
         camera_utils.publish_image(image, sensor_update_time);
         camera_utils.publish_camera_info(sensor_update_time);
         camera_utils.last_update_time_ = sensor_update_time;
@@ -117,7 +119,7 @@ void StereoCamera::init_camera(
     if (camera_utils.camera_->Name().find("left") != std::string::npos) {
         camera_utils.load_sdf(sensor_, sdf_, 0.0);
         camera_utils.new_frame_connection_
-                = camera->ConnectNewImageFrame(std::bind(
+                = camera_utils.camera_->ConnectNewImageFrame(std::bind(
                         &StereoCamera::on_new_frame_left,
                         this,
                         std::placeholders::_1,
@@ -130,7 +132,7 @@ void StereoCamera::init_camera(
         utils::get_world_parameter<double>(sdf_, baseline, "hack_baseline", 0);
         camera_utils.load_sdf(sensor_, sdf_, baseline);
         camera_utils.new_frame_connection_
-                = camera->ConnectNewImageFrame(std::bind(
+                = camera_utils.camera_->ConnectNewImageFrame(std::bind(
                         &StereoCamera::on_new_frame_right,
                         this,
                         std::placeholders::_1,

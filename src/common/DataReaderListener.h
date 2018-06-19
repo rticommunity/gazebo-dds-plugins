@@ -1,3 +1,6 @@
+#ifndef DATA_READER_LISTENER_H
+#define DATA_READER_LISTENER_H
+
 #include <dds/sub/ddssub.hpp>
 
 namespace gazebo { namespace dds {
@@ -25,3 +28,5 @@ private:
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // DATA_READER_LISTENER_H

@@ -1,6 +1,9 @@
 #include <dds/core/ddscore.hpp>
 #include <dds/pub/ddspub.hpp>
 
+#ifndef DATA_WRITER_LISTENER_H
+#define DATA_WRITER_LISTENER_H
+
 namespace gazebo { namespace dds {
 
 template <typename T>
@@ -38,3 +41,5 @@ private:
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // DATA_WRITER_LISTENER_H

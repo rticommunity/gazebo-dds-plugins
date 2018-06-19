@@ -1,5 +1,8 @@
 #include "DataWriterListener.h"
 
+#ifndef DATA_WRITER_LISTENER_CXX
+#define DATA_WRITER_LISTENER_CXX
+
 namespace gazebo { namespace dds {
 
 template <typename T>
@@ -29,3 +32,5 @@ void DataWriterListener<T>::on_publication_matched(
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // DATA_WRITER_LISTENER_CXX

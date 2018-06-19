@@ -1,3 +1,6 @@
+#ifndef DATA_READER_LISTENER_CXX
+#define DATA_READER_LISTENER_CXX
+
 #include "DataReaderListener.h"
 
 namespace gazebo { namespace dds {
@@ -24,3 +27,5 @@ void DataReaderListener<T>::on_data_available(::dds::sub::DataReader<T> &reader)
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // DATA_READER_LISTENER_CXX

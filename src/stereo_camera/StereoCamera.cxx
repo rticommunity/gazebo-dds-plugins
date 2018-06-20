@@ -40,7 +40,7 @@ void StereoCamera::Load(sensors::SensorPtr sensor, sdf::ElementPtr sdf)
     sdf_ = sdf;
 
     if (parent_sensor_->CameraCount() != CAMERA_NUMBER) {
-        gzthrow("Stereo camera plugin needs to have 2 camera");
+        gzthrow("Stereo camera plugin needs to have two cameras");
     }
 
     for (unsigned int i = 0; i < CAMERA_NUMBER; ++i) {

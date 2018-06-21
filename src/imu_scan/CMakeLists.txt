@@ -56,4 +56,5 @@ target_include_directories(DdsImuPlugin PRIVATE
 )
 
 target_compile_definitions(DdsImuPlugin PRIVATE 
-    ${CONNEXTDDS_DEFINITIONS})
+    ${CONNEXTDDS_DEFINITIONS}
+)

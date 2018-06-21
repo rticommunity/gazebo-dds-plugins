@@ -107,3 +107,23 @@ target_include_directories(DdsDiffDrivePlugin PRIVATE
 
 target_compile_definitions(DdsDiffDrivePlugin PRIVATE 
     ${CONNEXTDDS_DEFINITIONS})
+
+add_executable (diffdrivepublisher
+    DiffDrivePublisher.cxx 
+    ${Twist_CXX11_SOURCES} 
+    ${Vector3_CXX11_SOURCES}
+)
+
+target_link_libraries(diffdrivepublisher 
+    ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_STATIC}
+    ${CONNEXTDDS_EXTERNAL_LIBS}    
+)
+target_include_directories(diffdrivepublisher PRIVATE 
+    ${CONNEXTDDS_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_BINARY_DIR}
+    "${CMAKE_SOURCE_DIR}/src"
+)
+
+target_compile_definitions(diffdrivepublisher PRIVATE 
+    ${CONNEXTDDS_DEFINITIONS}
+)

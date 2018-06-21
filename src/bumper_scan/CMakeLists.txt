@@ -70,4 +70,5 @@ target_include_directories(DdsBumperScanPlugin PRIVATE
 )
 
 target_compile_definitions(DdsBumperScanPlugin PRIVATE 
-    ${CONNEXTDDS_DEFINITIONS})
+    ${CONNEXTDDS_DEFINITIONS}
+)

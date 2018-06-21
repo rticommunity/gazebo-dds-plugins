@@ -64,5 +64,6 @@ target_include_directories(DdsCameraPlugin PRIVATE
 )
 
 target_compile_definitions(DdsCameraPlugin PRIVATE 
-    ${CONNEXTDDS_DEFINITIONS})
+    ${CONNEXTDDS_DEFINITIONS}
+)
     

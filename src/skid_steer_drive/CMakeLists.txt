@@ -106,4 +106,5 @@ target_include_directories(DdsSkidSteerDrivePlugin PRIVATE
 )
 
 target_compile_definitions(DdsSkidSteerDrivePlugin PRIVATE 
-    ${CONNEXTDDS_DEFINITIONS})
+    ${CONNEXTDDS_DEFINITIONS}
+)

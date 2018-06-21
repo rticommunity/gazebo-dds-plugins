@@ -35,23 +35,22 @@ target_include_directories(DdsElevatorPlugin PRIVATE
 target_compile_definitions(DdsElevatorPlugin PRIVATE 
     ${CONNEXTDDS_DEFINITIONS})
 
-add_executable (ElevatorPublisher 
+add_executable (elevatorpublisher 
     ElevatorPublisher.cxx 
     ${Int32_CXX11_SOURCES} 
 )
 
-target_link_libraries(ElevatorPublisher 
-    ${GAZEBO_LIBRARIES} 
+target_link_libraries(elevatorpublisher 
     ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_STATIC}
     ${CONNEXTDDS_EXTERNAL_LIBS} 
 )
 
-target_include_directories(ElevatorPublisher PRIVATE 
+target_include_directories(elevatorpublisher PRIVATE 
     ${CONNEXTDDS_INCLUDE_DIRS}
-    ${GAZEBO_INCLUDE_DIRS}
-    ${SDF_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR}
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_compile_definitions(ElevatorPublisher PRIVATE 
-    ${CONNEXTDDS_DEFINITIONS})
+
+target_compile_definitions(elevatorpublisher PRIVATE 
+    ${CONNEXTDDS_DEFINITIONS}
+)

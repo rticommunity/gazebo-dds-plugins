@@ -58,4 +58,5 @@ target_include_directories(DdsStereoCameraPlugin PRIVATE
 )
 
 target_compile_definitions(DdsStereoCameraPlugin PRIVATE 
-    ${CONNEXTDDS_DEFINITIONS})
+    ${CONNEXTDDS_DEFINITIONS}
+)

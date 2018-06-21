@@ -49,4 +49,5 @@ target_include_directories(DdsLaserPlugin PRIVATE
 )
 
 target_compile_definitions(DdsLaserPlugin PRIVATE 
-    ${CONNEXTDDS_DEFINITIONS})
+    ${CONNEXTDDS_DEFINITIONS}
+)

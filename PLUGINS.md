@@ -10,12 +10,12 @@ $ export GAZEBO_PLUGIN_PATH=$HOME/dds-gazebo-plugins/build/src/:$GAZEBO_PLUGIN_P
 ## Plugins
 
 ### Bumper scan
-Implements a gazebo contact sensor. Its information is:
+Implements a contact sensor. Its information is:
 * Publications 
     * [gazebo_msgs/msg/ContactsState] - Send the state of the contact sensor
 
 #### How to run
-You will only need one terminal to run this plugin. You have to run gazebo with the specific world.
+You will only need one terminal to run this plugin. You have to run Gazebo with the specific world.
 
 ```
 $ gazebo resources/worlds/BumperSensor.world --verbose
@@ -23,13 +23,13 @@ $ gazebo resources/worlds/BumperSensor.world --verbose
 <hr/> 
 
 ### Camera
-Implements a gazebo camera. Its information is:
+Implements a camera. Its information is:
 * Publications 
     * [sensor_msgs/msg/CameraInfo] - Send the information of the camera 
     * [sensor_msgs/msg/Image] - Send raw image captured by the camera
 
 #### How to run
-You will only need one terminal to run this plugin. You have to run gazebo with the specific world.
+You will only need one terminal to run this plugin. You have to run Gazebo with the specific world.
 
 ```
 $ gazebo resources/worlds/Camera.world --verbose
@@ -38,19 +38,19 @@ $ gazebo resources/worlds/Camera.world --verbose
 <hr/> 
 
 ### Differential drive
-Let us control a differential drive robot. Its information is:
+Its allows us control a differential drive robot. Its information is:
 * Publications 
     * [nav_msgs/msg/Odometry] - Send the information of the odometry sensor
     * [sensor_msgs/msg/JointState] - Send the state of the joints of the robot
 * Subscriptions
     * [geometry_msgs/msg/Twist] - Recieve the next velocity and rotation velocity
 
-##### How to run
+#### How to run
 You will need two terminals to run this plugin. 
 
 **First terminal**
 
-You have to run gazebo with the specific world.
+You have to run Gazebo with the specific world.
 
 ```
 $ gazebo resources/worlds/DifferentialDrive.world --verbose
@@ -64,18 +64,18 @@ $HOME/dds-gazebo-plugins/build/src/diff_drive/diffdrivepublisher <domain id> <to
 <hr/> 
 
 ### Elevator
-Let us control an elevator. Its information is:
+Its allows us control an elevator. Its information is:
 * Subscriptions
     * [std_msgs/msg/Int32] - Recieve the next floor of the elevator
 
 **Example world:** resource/worlds/Elevator.world
 
-##### How to run
+#### How to run
 You will need two terminals to run this plugin. 
 
 **First terminal**
 
-You need to export the library folder of Gazebo before run gazebo with the specific world.
+You need to export the library folder of Gazebo before run Gazebo with the specific world.
 
 ```
 $ export GAZEBO_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/gazebo-7/plugins:$GAZEBO_PLUGIN_PATH
@@ -87,37 +87,50 @@ The plugin contains an example publisher to send information to the elevator. Yo
 ```
 $HOME/dds-gazebo-plugins/build/src/elevator/elevatorpublisher <domain id> <topic name> <next floor>
 ```
+<hr/> 
 
 ### Imu scan
-A few details about that sensor
-
-**Example world:** resource/worlds/ImuSensor.world
+Implements an imu ( inertial measurement unit ) sensor. Its information is:
+* Publications 
+    * [sensor_msgs/msg/Imu] - Send the information of the imu sensor
 
 #### How to run
-To run this plugin you will need 2 terminals.
+You will only need one terminal to run this plugin. You have to run Gazebo with the specific world.
+
+```
+$ gazebo resource/worlds/ImuSensor.world --verbose
+```
+
+<hr/> 
 
 ### Laser scan
-A few details about that sensor
-
-**Example world:** resource/worlds/LaserSensor.world
+Implements a laser sensor. Its information is:
+* Publications 
+    * [sensor_msgs/msg/LaserScanMsg] - Send the information of the laser sensor
 
 #### How to run
-To run this plugin you will need 2 terminals.
+You will only need one terminal to run this plugin. You have to run Gazebo with the specific world.
+
+```
+$ gazebo resource/worlds/LaserSensor.world --verbose
+```
+
+<hr/> 
 
 ### Skid steer drive
-Let us control a skid  drive robot. Its information is:
+Its allows us control a skid drive robot. Its information is:
 * Publications 
     * [nav_msgs/msg/Odometry] - Send the information of the odometry sensor
     * [sensor_msgs/msg/JointState] - Send the state of the joints of the robot
 * Subscriptions
     * [geometry_msgs/msg/Twist] - Recieve the next velocity and rotation velocity
 
-##### How to run
+#### How to run
 You will need two terminals to run this plugin. 
 
 **First terminal**
 
-You have to run gazebo with the specific world.
+You have to run Gazebo with the specific world.
 
 ```
 $ gazebo resources/worlds/DifferentialDrive.world --verbose
@@ -128,15 +141,16 @@ The plugin contains an example publisher to send information to the robot. You n
 ```
 $HOME/dds-gazebo-plugins/build/src/diff_drive/diffdrivepublisher <domain id> <topic name> <linear velocity axis x> <angular velocity axis z>
 ```
+<hr/> 
 
 ### Stereo camera
-Implements a gazebo stereo camera. Its information is:
+Implements a stereo camera. Its information is:
 * Publications 
     * [sensor_msgs/msg/CameraInfo] - Send the information of the camera 
     * [sensor_msgs/msg/Image] - Send raw image captured by the camera
 
 #### How to run
-You will only need one terminal to run this plugin. You have to run gazebo with the specific world.
+You will only need one terminal to run this plugin. You have to run Gazebo with the specific world.
 
 ```
 $ gazebo resources/worlds/Camera.world --verbose

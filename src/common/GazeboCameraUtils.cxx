@@ -89,8 +89,13 @@ void GazeboCameraUtils::load_sdf(
     std::string camera_name = camera_->Name().substr(++index);
     topic_name_camera_info_ = camera_name+ "/"+ topic_name_camera_info_;
 
-    topic_camera_info_ = ::dds::topic::Topic<sensor_msgs::msg::CameraInfo>(
+    topic_camera_info_ = ::dds::topic::find<
+            ::dds::topic::Topic<sensor_msgs::msg::CameraInfo>>(
             participant_, topic_name_camera_info_);
+    if (topic_camera_info_ == ::dds::core::null) {
+        topic_camera_info_ = ::dds::topic::Topic<sensor_msgs::msg::CameraInfo>(
+                participant_, topic_name_camera_info_);
+    }
 
     writer_camera_info_ = ::dds::pub::DataWriter<sensor_msgs::msg::CameraInfo>(
             ::dds::pub::Publisher(participant_), topic_camera_info_);
@@ -103,6 +108,14 @@ void GazeboCameraUtils::load_sdf(
 
     topic_image_ = ::dds::topic::Topic<sensor_msgs::msg::Image>(
             participant_, topic_name_image_);
+
+    topic_image_
+            = ::dds::topic::find<::dds::topic::Topic<sensor_msgs::msg::Image>>(
+                    participant_, topic_name_image_);
+    if (topic_image_ == ::dds::core::null) {
+        topic_image_ = ::dds::topic::Topic<sensor_msgs::msg::Image>(
+                participant_, topic_name_image_);
+    }
 
     // Change the maximum size of the sequences
     rti::core::policy::Property::Entry value(

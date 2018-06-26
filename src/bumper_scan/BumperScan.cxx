@@ -57,8 +57,13 @@ void BumperScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "bumper_scan");
 
-    topic_ = ::dds::topic::Topic<gazebo_msgs::msg::ContactsState>(
+    topic_ = ::dds::topic::find<
+            ::dds::topic::Topic<gazebo_msgs::msg::ContactsState>>(
             participant_, topic_name);
+    if (topic_ == ::dds::core::null) {
+        topic_ = ::dds::topic::Topic<gazebo_msgs::msg::ContactsState>(
+                participant_, topic_name);
+    }
 
     writer_ = ::dds::pub::DataWriter<gazebo_msgs::msg::ContactsState>(
             ::dds::pub::Publisher(participant_), topic_);

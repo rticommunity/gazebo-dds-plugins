@@ -54,8 +54,12 @@ void Elevator::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "elevator");
 
-    topic_ = ::dds::topic::Topic<std_msgs::msg::Int32>(
+    topic_ = ::dds::topic::find<::dds::topic::Topic<std_msgs::msg::Int32>>(
             participant_, topic_name);
+    if (topic_ == ::dds::core::null) {
+        topic_ = ::dds::topic::Topic<std_msgs::msg::Int32>(
+                participant_, topic_name);
+    }
 
     rti::core::policy::Property::Entry value(
             { "dds.data_reader.history.depth", "1" });

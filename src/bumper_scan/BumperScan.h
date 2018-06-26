@@ -20,7 +20,7 @@
 #include <gazebo/plugins/ContactPlugin.hh>
 
 #include <dds/core/ddscore.hpp>
-#include <dds/domain/find.hpp>
+#include <dds/dds.hpp>
 #include <dds/pub/ddspub.hpp>
 
 #include "gazebo_msgs/msg/ContactState.hpp"

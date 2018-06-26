@@ -81,8 +81,12 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "ImuScan");
 
-    topic_ = ::dds::topic::Topic<sensor_msgs::msg::Imu>(
+    topic_ = ::dds::topic::find<::dds::topic::Topic<sensor_msgs::msg::Imu>>(
             participant_, topic_name);
+    if (topic_ == ::dds::core::null) {
+        topic_ = ::dds::topic::Topic<sensor_msgs::msg::Imu>(
+                participant_, topic_name);
+    }
 
     writer_ = ::dds::pub::DataWriter<sensor_msgs::msg::Imu>(
             ::dds::pub::Publisher(participant_), topic_);

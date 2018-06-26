@@ -61,8 +61,13 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "laserScan");
 
-    topic_ = ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg>(
+    topic_ = ::dds::topic::find<
+            ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg>>(
             participant_, topic_name);
+    if (topic_ == ::dds::core::null) {
+        topic_ = ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg>(
+                participant_, topic_name);
+    }
 
     // Change the maximum size of the sequences
     rti::core::policy::Property::Entry value(

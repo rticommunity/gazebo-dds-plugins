@@ -119,8 +119,13 @@ void SkidSteerDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name_odometry, "topic_name_odometry", "OdometryState");
 
-    topic_odometry_ = ::dds::topic::Topic<nav_msgs::msg::Odometry>(
-            participant_, topic_name_odometry);
+    topic_odometry_
+            = ::dds::topic::find<::dds::topic::Topic<nav_msgs::msg::Odometry>>(
+                    participant_, topic_name_odometry);
+    if (topic_odometry_ == ::dds::core::null) {
+        topic_odometry_ = ::dds::topic::Topic<nav_msgs::msg::Odometry>(
+                participant_, topic_name_odometry);
+    }
 
     writer_odometry_ = ::dds::pub::DataWriter<nav_msgs::msg::Odometry>(
             ::dds::pub::Publisher(participant_), topic_odometry_);
@@ -130,8 +135,13 @@ void SkidSteerDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name_joint, "topic_name_joint", "JointState");
 
-    topic_joint_state_ = ::dds::topic::Topic<sensor_msgs::msg::JointState>(
+    topic_joint_state_ = ::dds::topic::find<
+            ::dds::topic::Topic<sensor_msgs::msg::JointState>>(
             participant_, topic_name_joint);
+    if (topic_joint_state_ == ::dds::core::null) {
+        topic_joint_state_ = ::dds::topic::Topic<sensor_msgs::msg::JointState>(
+                participant_, topic_name_joint);
+    }
 
     writer_joint_state_ = ::dds::pub::DataWriter<sensor_msgs::msg::JointState>(
             ::dds::pub::Publisher(participant_), topic_joint_state_);
@@ -141,8 +151,13 @@ void SkidSteerDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name_twist, "topic_name_twist", "cmd_vel");
 
-    topic_twist_ = ::dds::topic::Topic<geometry_msgs::msg::Twist>(
+    topic_twist_ = ::dds::topic::find<
+            ::dds::topic::Topic<geometry_msgs::msg::Twist>>(
             participant_, topic_name_twist);
+    if (topic_twist_ == ::dds::core::null) {
+        topic_twist_ = ::dds::topic::Topic<geometry_msgs::msg::Twist>(
+                participant_, topic_name_twist);
+    }
 
     rti::core::policy::Property::Entry value(
             { "dds.data_reader.history.depth", "1" });

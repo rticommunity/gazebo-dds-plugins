@@ -18,7 +18,7 @@
 #include <gazebo/plugins/ElevatorPlugin.hh>
 
 #include <dds/core/ddscore.hpp>
-#include <dds/domain/find.hpp>
+#include <dds/dds.hpp>
 #include <dds/sub/ddssub.hpp>
 
 #include "std_msgs/msg/Int32.hpp"

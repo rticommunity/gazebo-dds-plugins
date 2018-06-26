@@ -30,7 +30,7 @@
 #include <gazebo/physics/physics.hh>
 
 #include <dds/core/ddscore.hpp>
-#include <dds/domain/find.hpp>
+#include <dds/dds.hpp>
 #include <dds/pub/ddspub.hpp>
 #include <dds/sub/ddssub.hpp>
 

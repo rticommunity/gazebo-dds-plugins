@@ -19,7 +19,7 @@
 #include <gazebo/plugins/RayPlugin.hh>
 
 #include <dds/core/ddscore.hpp>
-#include <dds/domain/find.hpp>
+#include <dds/dds.hpp>
 #include <dds/pub/ddspub.hpp>
 
 #include "sensor_msgs/msg/LaserScanMsg.hpp"

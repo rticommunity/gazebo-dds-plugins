@@ -47,7 +47,7 @@ void publisher_main(int domain_id, std::string topic_name, int floor)
 
 int main(int argc, char *argv[])
 {
-    if (argc < 5) {
+    if (argc < 4) {
         std::cerr << "Missing arguments." << std::endl
                   << "Template: elevatorpublisher <domain id> <topic name> "
                      "<floor>"

@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     if (argc < 5) {
         std::cerr << "Missing arguments." << std::endl
                   << "Template: diffdrivepublisher <domain id> <topic name> "
-                     "<linear> <angular>"
+                     "<linear velocity in axis x> <angular velocity in axis z>"
                   << std::endl;
         return -1;
     }

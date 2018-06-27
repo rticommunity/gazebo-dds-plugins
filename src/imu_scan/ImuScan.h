@@ -74,6 +74,7 @@ private:
     ::dds::domain::DomainParticipant participant_;
     ::dds::topic::Topic<sensor_msgs::msg::Imu> topic_;
     ::dds::pub::DataWriter<sensor_msgs::msg::Imu> writer_;
+    ::dds::core::QosProvider qos_provider_;
     sensor_msgs::msg::Imu sample_;
     double gaussian_noise_;
     unsigned int seed_;

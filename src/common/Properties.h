@@ -21,5 +21,7 @@
 
 const std::string DOMAIN_ID_PROPERTY_NAME = "domain_id";
 const std::string TOPIC_NAME_PROPERTY_NAME = "topic_name";
+const std::string QOS_PROFILE_FILE_PROPERTY_NAME = "qos_profile_file";
+const std::string QOS_PROFILE_PROPERTY_NAME = "qos_profile";
 
 #endif  // PROPERTIES_H

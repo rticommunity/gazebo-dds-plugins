@@ -36,6 +36,7 @@ ImuScan::ImuScan()
           participant_(::dds::core::null),
           topic_(::dds::core::null),
           writer_(::dds::core::null),
+          qos_provider_(::dds::core::null),
           seed_(0)
 {
 }
@@ -66,6 +67,17 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
                << offset_.Rot().Yaw() << std::endl;
     }
 
+    // Obtain the qos profile information from loaded world
+    std::string qos_profile_file;
+    utils::get_world_parameter<std::string>(
+            sdf, qos_profile_file, QOS_PROFILE_FILE_PROPERTY_NAME.c_str(), "");
+
+    qos_provider_= ::dds::core::QosProvider(qos_profile_file);
+    
+    std::string qos_profile;
+    utils::get_world_parameter<std::string>(
+            sdf, qos_profile, QOS_PROFILE_PROPERTY_NAME.c_str(), "");
+
     // Obtain the domain id from loaded world
     int domain_id;
     utils::get_world_parameter<int>(
@@ -73,7 +85,11 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
 
     participant_ = ::dds::domain::find(domain_id);
     if (participant_ == ::dds::core::null) {
-        participant_ = ::dds::domain::DomainParticipant(domain_id);
+        participant_ = ::dds::domain::DomainParticipant(
+                domain_id, qos_provider_.participant_qos(qos_profile));
+    }
+    else{
+        participant_.qos(qos_provider_.participant_qos(qos_profile));
     }
 
     // Obtain the topic name from loaded world
@@ -85,11 +101,17 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
             participant_, topic_name);
     if (topic_ == ::dds::core::null) {
         topic_ = ::dds::topic::Topic<sensor_msgs::msg::Imu>(
-                participant_, topic_name);
+                participant_, topic_name, qos_provider_.topic_qos(qos_profile));
+    }
+    else{
+        topic_.qos(qos_provider_.topic_qos(qos_profile));
     }
 
     writer_ = ::dds::pub::DataWriter<sensor_msgs::msg::Imu>(
-            ::dds::pub::Publisher(participant_), topic_);
+            ::dds::pub::Publisher(
+                    participant_, qos_provider_.publisher_qos(qos_profile)),
+            topic_,
+            qos_provider_.datawriter_qos(qos_profile));
 
     // Generate gazebo topic name
     std::string gazebo_topic_name = "/gazebo/" + sensor_->ScopedName() + "/imu";

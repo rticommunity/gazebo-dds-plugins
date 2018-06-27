@@ -35,7 +35,7 @@ add_library(DdsLaserPlugin MODULE
 
 target_link_libraries(DdsLaserPlugin 
     ${GAZEBO_LIBRARIES}  
-    ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_STATIC}
+    ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS} 
     ${RayPlugin}
 )

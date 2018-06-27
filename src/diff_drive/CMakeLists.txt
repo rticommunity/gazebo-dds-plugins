@@ -93,7 +93,7 @@ add_library(DdsDiffDrivePlugin MODULE
 
 target_link_libraries(DdsDiffDrivePlugin 
     ${GAZEBO_LIBRARIES}
-    ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_STATIC}
+    ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS}
 )
 
@@ -115,7 +115,7 @@ add_executable (diffdrivepublisher
 )
 
 target_link_libraries(diffdrivepublisher 
-    ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_STATIC}
+    ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS}    
 )
 target_include_directories(diffdrivepublisher PRIVATE 

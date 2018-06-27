@@ -50,7 +50,7 @@ add_library(DdsCameraPlugin MODULE
 
 target_link_libraries(DdsCameraPlugin 
     ${GAZEBO_LIBRARIES}  
-    ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_STATIC}
+    ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS}
     ${CameraPlugin}
 )

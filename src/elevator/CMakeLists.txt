@@ -19,7 +19,7 @@ add_library(DdsElevatorPlugin MODULE
 
 target_link_libraries(DdsElevatorPlugin 
     ${GAZEBO_LIBRARIES}
-    ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_STATIC}
+    ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS}
     ${ElevatorPlugin}
 )
@@ -41,7 +41,7 @@ add_executable (elevatorpublisher
 )
 
 target_link_libraries(elevatorpublisher 
-    ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_STATIC}
+    ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS} 
 )
 

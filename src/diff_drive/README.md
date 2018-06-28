@@ -1,5 +1,5 @@
 # Differential drive plugin
-Its allows us control a differential drive robot. It contains some publishers and one subscriber:
+It allows us to manage a differential drive robot and obtain its information. It contains some publishers and one subscriber:
 * Publications 
     * [nav_msgs/msg/Odometry] - Send the information of the odometry sensor
     * [sensor_msgs/msg/JointState] - Send the state of the joints of the robot
@@ -11,7 +11,13 @@ You will need two terminals to run this plugin.
 
 **First terminal**
 
-You have to run Gazebo with the specific world.
+In case we have not added the path where libraries are located to the envionment variable GAZEBO_PLUGIN_PATH,
+we have to add it via the following command:
+
+```
+$ export GAZEBO_PLUGIN_PATH=$HOME/dds-gazebo-plugins/build/src/:$GAZEBO_PLUGIN_PATH
+```
+Once the environment variable is set, we can execute Gazebo with its specific world.
 
 ```
 $ gazebo $HOME/dds-gazebo-plugins/resources/worlds/DifferentialDrive.world --verbose

@@ -1,5 +1,5 @@
 # Elevator plugin
-Its allows us control an elevator. It contains the following subscriber.
+It allows us to manage an elevator. It contains the following subscriber:
 * Subscriptions
     * [std_msgs/msg/Int32] - Recieve the next floor of the elevator
 
@@ -8,10 +8,15 @@ You will need two terminals to run this plugin.
 
 **First terminal**
 
-You need to export the library folder of Gazebo before run Gazebo with the specific world.
+In case we have not added the path where libraries are located to the envionment variable GAZEBO_PLUGIN_PATH,
+we have to add it via the following command:
 
 ```
-$ export GAZEBO_PLUGIN_PATH=/usr/lib/<Gazebo folder> /plugins:$GAZEBO_PLUGIN_PATH
+$ export GAZEBO_PLUGIN_PATH=$HOME/dds-gazebo-plugins/build/src/:$GAZEBO_PLUGIN_PATH
+```
+Once the environment variable is set, we can execute Gazebo with its specific world.
+
+```
 $ gazebo $HOME/dds-gazebo-plugins/resources/worlds/Elevator.world --verbose
 ```
 **Second terminal**

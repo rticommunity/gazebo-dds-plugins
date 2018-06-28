@@ -4,6 +4,11 @@
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
 
+#include <rti/domain/find.hpp>
+#include <dds/core/ddscore.hpp>
+
+#include "Properties.h"
+
 namespace gazebo { namespace dds { namespace utils {
 
 template <class T>
@@ -42,6 +47,29 @@ gazebo::physics::JointPtr get_joint(
 
     return joint;
 }
+
+void create_participant(
+        int domain_id,
+        ::dds::domain::DomainParticipant & participant,
+        ::dds::core::QosProvider & qos_provider,
+        const std::string & qos_profile)
+{
+    std::string participant_name = std::to_string(domain_id) +"::"+ qos_profile;
+
+    participant = rti::domain::find_participant_by_name(participant_name);
+    if (participant == ::dds::core::null) {
+        ::dds::domain::qos::DomainParticipantQos participant_qos
+            = qos_provider.participant_qos();
+
+        rti::core::policy::EntityName entity_name(participant_name);
+
+        participant_qos << entity_name;
+
+        participant = ::dds::domain::DomainParticipant(
+                domain_id, participant_qos);
+    }
+}
+
 
 common::Time get_sim_time(physics::WorldPtr world)
 {

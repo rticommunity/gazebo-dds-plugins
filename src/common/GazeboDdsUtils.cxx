@@ -4,14 +4,16 @@
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
 
+#include <dds/dds.hpp>
 #include <rti/domain/find.hpp>
 #include <dds/core/ddscore.hpp>
+#include <dds/pub/ddspub.hpp>
 
 #include "Properties.h"
 
 namespace gazebo { namespace dds { namespace utils {
 
-template <class T>
+template <typename T>
 void get_world_parameter(
         sdf::ElementPtr sdf,
         T &tag_variable,
@@ -31,7 +33,7 @@ gazebo::physics::JointPtr get_joint(
         sdf::ElementPtr sdf,
         gazebo::physics::ModelPtr parent,
         const char *tag_name,
-        const std::string &joint_default_name)
+        const std::string & joint_default_name)
 {
     std::string joint_name;
     get_world_parameter<std::string>(
@@ -70,6 +72,47 @@ void create_participant(
     }
 }
 
+template <typename T>
+void create_topic(
+        ::dds::domain::DomainParticipant & participant,
+        ::dds::topic::Topic<T> & topic,
+        const std::string & topic_name)
+{
+    topic = ::dds::topic::find<::dds::topic::Topic<T>>(participant, topic_name);
+    if (topic == ::dds::core::null) {
+        topic = ::dds::topic::Topic<T>(
+                participant, topic_name);
+    }
+}
+
+template <typename T>
+void create_writer(
+        ::dds::pub::DataWriter<T> & writer,
+        ::dds::domain::DomainParticipant & participant,
+        ::dds::topic::Topic<T> & topic,
+        ::dds::core::QosProvider & qos_provider)
+{
+    writer = ::dds::pub::DataWriter<T>(
+            ::dds::pub::Publisher(
+                    participant, qos_provider.publisher_qos()),
+            topic,
+            qos_provider.datawriter_qos());
+}
+
+template <typename T>
+void create_writer(
+        ::dds::pub::DataWriter<T> & writer,
+        ::dds::domain::DomainParticipant & participant,
+        ::dds::topic::Topic<T> & topic,
+        ::dds::pub::qos::DataWriterQos & data_writer_qos,
+        ::dds::pub::qos::PublisherQos & publisher_qos)
+{
+    writer = ::dds::pub::DataWriter<T>(
+            ::dds::pub::Publisher(
+                    participant, publisher_qos),
+            topic,
+            data_writer_qos);
+}
 
 common::Time get_sim_time(physics::WorldPtr world)
 {

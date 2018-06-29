@@ -104,71 +104,84 @@ void SkidSteerDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     joints_[LEFT_REAR]->SetParam("fmax", 0, wheel_torque_);
     joints_[RIGHT_REAR]->SetParam("fmax", 0, wheel_torque_);
 
+    // Obtain the qos profile information from loaded world
+    std::string qos_profile_file;
+    utils::get_world_parameter<std::string>(
+            sdf, qos_profile_file, QOS_PROFILE_FILE_PROPERTY_NAME.c_str(), "");
+
+    std::string qos_profile;
+    utils::get_world_parameter<std::string>(
+            sdf, qos_profile, QOS_PROFILE_PROPERTY_NAME.c_str(), "");
+    
+    ::dds::core::QosProvider qos_provider(::dds::core::null);
+    if(qos_profile_file != "" || qos_profile !=""){
+        qos_provider
+            = ::dds::core::QosProvider(qos_profile_file, qos_profile);
+    }
+    else{
+        qos_provider
+            = ::dds::core::QosProvider::Default();
+    }
+
     // Obtain the domain id from loaded world
     int domain_id;
     utils::get_world_parameter<int>(
             sdf, domain_id, DOMAIN_ID_PROPERTY_NAME.c_str(), 0);
 
-    participant_ = ::dds::domain::find(domain_id);
-    if (participant_ == ::dds::core::null) {
-        participant_ = ::dds::domain::DomainParticipant(domain_id);
-    }
+    utils::create_participant(
+            domain_id, participant_, qos_provider, qos_profile);
 
     // Obtain odometry topic name from loaded world
     std::string topic_name_odometry;
     utils::get_world_parameter<std::string>(
             sdf, topic_name_odometry, "topic_name_odometry", "OdometryState");
 
-    topic_odometry_
-            = ::dds::topic::find<::dds::topic::Topic<nav_msgs::msg::Odometry>>(
-                    participant_, topic_name_odometry);
-    if (topic_odometry_ == ::dds::core::null) {
-        topic_odometry_ = ::dds::topic::Topic<nav_msgs::msg::Odometry>(
-                participant_, topic_name_odometry);
-    }
+    utils::create_topic<nav_msgs::msg::Odometry>(
+            participant_, topic_odometry_, topic_name_odometry);
 
-    writer_odometry_ = ::dds::pub::DataWriter<nav_msgs::msg::Odometry>(
-            ::dds::pub::Publisher(participant_), topic_odometry_);
+    utils::create_datawriter<nav_msgs::msg::Odometry>(
+            writer_odometry_, participant_, topic_odometry_, qos_provider);
 
     // Obtain jointState topic name from loaded world
     std::string topic_name_joint;
     utils::get_world_parameter<std::string>(
             sdf, topic_name_joint, "topic_name_joint", "JointState");
 
-    topic_joint_state_ = ::dds::topic::find<
-            ::dds::topic::Topic<sensor_msgs::msg::JointState>>(
-            participant_, topic_name_joint);
-    if (topic_joint_state_ == ::dds::core::null) {
-        topic_joint_state_ = ::dds::topic::Topic<sensor_msgs::msg::JointState>(
-                participant_, topic_name_joint);
-    }
+    utils::create_topic<sensor_msgs::msg::JointState>(
+            participant_, topic_joint_state_, topic_name_joint);
 
-    writer_joint_state_ = ::dds::pub::DataWriter<sensor_msgs::msg::JointState>(
-            ::dds::pub::Publisher(participant_), topic_joint_state_);
+    utils::create_datawriter<sensor_msgs::msg::JointState>(
+            writer_joint_state_,
+            participant_,
+            topic_joint_state_,
+            qos_provider);
 
     // Obtain twist topic name from loaded world
     std::string topic_name_twist;
     utils::get_world_parameter<std::string>(
             sdf, topic_name_twist, "topic_name_twist", "cmd_vel");
 
-    topic_twist_ = ::dds::topic::find<
-            ::dds::topic::Topic<geometry_msgs::msg::Twist>>(
-            participant_, topic_name_twist);
-    if (topic_twist_ == ::dds::core::null) {
-        topic_twist_ = ::dds::topic::Topic<geometry_msgs::msg::Twist>(
-                participant_, topic_name_twist);
-    }
+    utils::create_topic<geometry_msgs::msg::Twist>(
+            participant_, topic_twist_, topic_name_twist);
+
+    ::dds::sub::qos::DataReaderQos data_reader_qos
+            = qos_provider.datareader_qos();
+    ::dds::sub::qos::SubscriberQos subscriber_qos
+            = qos_provider.subscriber_qos();
 
     rti::core::policy::Property::Entry value(
             { "dds.data_reader.history.depth", "1" });
 
     rti::core::policy::Property property;
     property.set(value);
-    data_reader_qos_ << property;
-    reader_ = ::dds::sub::DataReader<geometry_msgs::msg::Twist>(
-            ::dds::sub::Subscriber(participant_),
+    data_reader_qos << property;
+
+    utils::create_datareader<geometry_msgs::msg::Twist>(
+            reader_,
+            participant_,
             topic_twist_,
-            data_reader_qos_);
+            data_reader_qos,
+            subscriber_qos);
 
     // Init samples
     joint_state_sample_.name().resize(WHEEL_NUMBER);

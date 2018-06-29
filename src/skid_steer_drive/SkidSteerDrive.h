@@ -118,7 +118,6 @@ private:
     ::dds::topic::Topic<geometry_msgs::msg::Twist> topic_twist_;
     ::dds::pub::DataWriter<nav_msgs::msg::Odometry> writer_odometry_;
     ::dds::pub::DataWriter<sensor_msgs::msg::JointState> writer_joint_state_;
-    ::dds::sub::qos::DataReaderQos data_reader_qos_;
     ::dds::sub::DataReader<geometry_msgs::msg::Twist> reader_;
     ::dds::sub::LoanedSamples<geometry_msgs::msg::Twist> twist_samples_;
     nav_msgs::msg::Odometry odometry_sample_;

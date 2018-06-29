@@ -39,36 +39,55 @@ void Elevator::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
 {
     ElevatorPlugin::Load(parent, sdf);
 
+    // Obtain the qos profile information from loaded world
+    std::string qos_profile_file;
+    utils::get_world_parameter<std::string>(
+            sdf, qos_profile_file, QOS_PROFILE_FILE_PROPERTY_NAME.c_str(), "");
+
+    std::string qos_profile;
+    utils::get_world_parameter<std::string>(
+            sdf, qos_profile, QOS_PROFILE_PROPERTY_NAME.c_str(), "");
+
+    ::dds::core::QosProvider qos_provider(::dds::core::null);
+    if(qos_profile_file != "" || qos_profile !=""){
+        qos_provider
+            = ::dds::core::QosProvider(qos_profile_file, qos_profile);
+    }
+    else{
+        qos_provider
+            = ::dds::core::QosProvider::Default();
+    }
+
     // Obtain the domain id from loaded world
     int domain_id;
     utils::get_world_parameter<int>(
             sdf, domain_id, DOMAIN_ID_PROPERTY_NAME.c_str(), 0);
 
-    participant_ = ::dds::domain::find(domain_id);
-    if (participant_ == ::dds::core::null) {
-        participant_ = ::dds::domain::DomainParticipant(domain_id);
-    }
+    utils::create_participant(
+            domain_id, participant_, qos_provider, qos_profile);
 
     // Obtain topic name from loaded world
     std::string topic_name;
     utils::get_world_parameter<std::string>(
             sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "elevator");
 
-    topic_ = ::dds::topic::find<::dds::topic::Topic<std_msgs::msg::Int32>>(
-            participant_, topic_name);
-    if (topic_ == ::dds::core::null) {
-        topic_ = ::dds::topic::Topic<std_msgs::msg::Int32>(
-                participant_, topic_name);
-    }
+    utils::create_topic<std_msgs::msg::Int32>(participant_, topic_, topic_name);
 
+    ::dds::sub::qos::DataReaderQos data_reader_qos
+            = qos_provider.datareader_qos();
+    ::dds::sub::qos::SubscriberQos subscriber_qos
+            = qos_provider.subscriber_qos();
+
+    // Change the maximum size of the sequences
     rti::core::policy::Property::Entry value(
-            { "dds.data_reader.history.depth", "1" });
+        { "dds.data_reader.history.depth", "1" });
 
     rti::core::policy::Property property;
     property.set(value);
-    data_reader_qos_ << property;
-    reader_ = ::dds::sub::DataReader<std_msgs::msg::Int32>(
-            ::dds::sub::Subscriber(participant_), topic_, data_reader_qos_);
+    data_reader_qos << property;
+
+    utils::create_datareader<std_msgs::msg::Int32>(
+            reader_, participant_, topic_, data_reader_qos, subscriber_qos);
 
     reader_.listener(
             new DataReaderListener<std_msgs::msg::Int32>(

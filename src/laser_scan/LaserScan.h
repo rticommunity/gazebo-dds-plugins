@@ -57,7 +57,6 @@ private:
     sensors::SensorPtr sensor_;
     ::dds::domain::DomainParticipant participant_;
     ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg> topic_;
-    ::dds::pub::qos::DataWriterQos data_writer_qos_;
     ::dds::pub::DataWriter<sensor_msgs::msg::LaserScanMsg> writer_;
     gazebo::transport::NodePtr gazebo_node_;
     gazebo::transport::SubscriberPtr laser_scan_sub_;

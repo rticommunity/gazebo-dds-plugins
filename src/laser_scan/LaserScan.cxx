@@ -46,28 +46,44 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     gazebo_node_ = gazebo::transport::NodePtr(new gazebo::transport::Node());
     gazebo_node_->Init(parent->WorldName());
 
+    // Obtain the qos profile information from loaded world
+    std::string qos_profile_file;
+    utils::get_world_parameter<std::string>(
+            sdf, qos_profile_file, QOS_PROFILE_FILE_PROPERTY_NAME.c_str(), "");
+    
+    std::string qos_profile;
+    utils::get_world_parameter<std::string>(
+            sdf, qos_profile, QOS_PROFILE_PROPERTY_NAME.c_str(), "");
+
+    ::dds::core::QosProvider qos_provider(::dds::core::null);
+    if(qos_profile_file != "" || qos_profile !=""){
+        qos_provider
+            = ::dds::core::QosProvider(qos_profile_file, qos_profile);
+    }
+    else{
+        qos_provider
+            = ::dds::core::QosProvider::Default();
+    }
+
     // Obtain the domain id from loaded world
     int domain_id;
     utils::get_world_parameter<int>(
             sdf, domain_id, DOMAIN_ID_PROPERTY_NAME.c_str(), 0);
 
-    participant_ = ::dds::domain::find(domain_id);
-    if (participant_ == ::dds::core::null) {
-        participant_ = ::dds::domain::DomainParticipant(domain_id);
-    }
+    utils::create_participant(
+            domain_id, participant_, qos_provider, qos_profile);
 
     // Obtain the topic name from loaded world
     std::string topic_name;
     utils::get_world_parameter<std::string>(
             sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "laserScan");
 
-    topic_ = ::dds::topic::find<
-            ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg>>(
-            participant_, topic_name);
-    if (topic_ == ::dds::core::null) {
-        topic_ = ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg>(
-                participant_, topic_name);
-    }
+    utils::create_topic<sensor_msgs::msg::LaserScanMsg>(
+            participant_, topic_, topic_name);
+
+    ::dds::pub::qos::DataWriterQos data_writer_qos
+            = qos_provider.datawriter_qos();
+    ::dds::pub::qos::PublisherQos publisher_qos = qos_provider.publisher_qos();
 
     // Change the maximum size of the sequences
     rti::core::policy::Property::Entry value(
@@ -77,9 +93,10 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
 
     rti::core::policy::Property property;
     property.set(value);
-    data_writer_qos_ << property;
-    writer_ = ::dds::pub::DataWriter<sensor_msgs::msg::LaserScanMsg>(
-            ::dds::pub::Publisher(participant_), topic_, data_writer_qos_);
+    data_writer_qos << property;
+
+    utils::create_datawriter<sensor_msgs::msg::LaserScanMsg>(
+            writer_, participant_, topic_, data_writer_qos, publisher_qos);
 
     this->laser_scan_sub_ = this->gazebo_node_->Subscribe(
             this->sensor_->Topic(), &LaserScan::on_scan, this);

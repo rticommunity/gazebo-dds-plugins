@@ -68,15 +68,32 @@ void GazeboCameraUtils::load_sdf(
     utils::get_world_parameter<double>(sdf, update_period_, "update_rate", 0);
     hack_baseline_ = hack_baseline;
 
+    // Obtain the qos profile information from loaded world
+    std::string qos_profile_file;
+    utils::get_world_parameter<std::string>(
+            sdf, qos_profile_file, QOS_PROFILE_FILE_PROPERTY_NAME.c_str(), "");
+    
+    std::string qos_profile;
+    utils::get_world_parameter<std::string>(
+            sdf, qos_profile, QOS_PROFILE_PROPERTY_NAME.c_str(), "");
+
+    ::dds::core::QosProvider qos_provider(::dds::core::null);
+    if(qos_profile_file != "" || qos_profile !=""){
+        qos_provider
+            = ::dds::core::QosProvider(qos_profile_file, qos_profile);
+    }
+    else{
+        qos_provider
+            = ::dds::core::QosProvider::Default();
+    }
+
     // Obtain the domain id from loaded world
     int domain_id;
     utils::get_world_parameter<int>(
             sdf, domain_id, DOMAIN_ID_PROPERTY_NAME.c_str(), 0);
 
-    participant_ = ::dds::domain::find(domain_id);
-    if (participant_ == ::dds::core::null) {
-        participant_ = ::dds::domain::DomainParticipant(domain_id);
-    }
+    utils::create_participant(
+            domain_id, participant_, qos_provider, qos_profile);
 
     // Obtain camera info topic name from loaded world
     utils::get_world_parameter<std::string>(
@@ -89,33 +106,28 @@ void GazeboCameraUtils::load_sdf(
     std::string camera_name = camera_->Name().substr(++index);
     topic_name_camera_info_ = camera_name+ "/"+ topic_name_camera_info_;
 
-    topic_camera_info_ = ::dds::topic::find<
-            ::dds::topic::Topic<sensor_msgs::msg::CameraInfo>>(
-            participant_, topic_name_camera_info_);
-    if (topic_camera_info_ == ::dds::core::null) {
-        topic_camera_info_ = ::dds::topic::Topic<sensor_msgs::msg::CameraInfo>(
-                participant_, topic_name_camera_info_);
-    }
+    utils::create_topic<sensor_msgs::msg::CameraInfo>(
+            participant_, topic_camera_info_, topic_name_camera_info_);
 
-    writer_camera_info_ = ::dds::pub::DataWriter<sensor_msgs::msg::CameraInfo>(
-            ::dds::pub::Publisher(participant_), topic_camera_info_);
+    utils::create_datawriter<sensor_msgs::msg::CameraInfo>(
+            writer_camera_info_,
+            participant_,
+            topic_camera_info_,
+            qos_provider);
 
     // Obtain image topic name from loaded world
     utils::get_world_parameter<std::string>(
             sdf, topic_name_image_, "topic_name_image", "image");
 
-    topic_name_image_ = camera_name+ "/"+ topic_name_image_;
+    topic_name_image_ = camera_name + "/" + topic_name_image_;
 
-    topic_image_ = ::dds::topic::Topic<sensor_msgs::msg::Image>(
-            participant_, topic_name_image_);
+    utils::create_topic<sensor_msgs::msg::Image>(
+            participant_, topic_image_, topic_name_image_);
 
-    topic_image_
-            = ::dds::topic::find<::dds::topic::Topic<sensor_msgs::msg::Image>>(
-                    participant_, topic_name_image_);
-    if (topic_image_ == ::dds::core::null) {
-        topic_image_ = ::dds::topic::Topic<sensor_msgs::msg::Image>(
-                participant_, topic_name_image_);
-    }
+    ::dds::pub::qos::DataWriterQos writer_image_qos
+            = qos_provider.datawriter_qos();
+    ::dds::pub::qos::PublisherQos publisher_image_qos
+            = qos_provider.publisher_qos();
 
     // Change the maximum size of the sequences
     rti::core::policy::Property::Entry value(
@@ -125,12 +137,14 @@ void GazeboCameraUtils::load_sdf(
 
     rti::core::policy::Property property;
     property.set(value);
-    writer_image_qos_ << property;
+    writer_image_qos << property;
 
-    writer_image_ = ::dds::pub::DataWriter<sensor_msgs::msg::Image>(
-            ::dds::pub::Publisher(participant_),
+    utils::create_datawriter<sensor_msgs::msg::Image>(
+            writer_image_,
+            participant_,
             topic_image_,
-            writer_image_qos_);
+            writer_image_qos,
+            publisher_image_qos);
 }
 
 void GazeboCameraUtils::publish_image(

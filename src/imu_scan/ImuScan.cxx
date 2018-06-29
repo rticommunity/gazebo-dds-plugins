@@ -103,7 +103,7 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
 
     utils::create_topic<sensor_msgs::msg::Imu>(participant_,topic_,topic_name);
 
-    utils::create_writer<sensor_msgs::msg::Imu>(
+    utils::create_datawriter<sensor_msgs::msg::Imu>(
             writer_, participant_, topic_, qos_provider);
 
     // Generate gazebo topic name

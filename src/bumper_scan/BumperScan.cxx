@@ -42,31 +42,43 @@ void BumperScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
 {
     sensor_ = dynamic_cast<gazebo::sensors::ContactSensor *>(parent.get());
 
+    // Obtain the qos profile information from loaded world
+    std::string qos_profile_file;
+    utils::get_world_parameter<std::string>(
+            sdf, qos_profile_file, QOS_PROFILE_FILE_PROPERTY_NAME.c_str(), "");
+  
+    std::string qos_profile;
+    utils::get_world_parameter<std::string>(
+            sdf, qos_profile, QOS_PROFILE_PROPERTY_NAME.c_str(), "");
+
+    ::dds::core::QosProvider qos_provider(::dds::core::null);
+    if(qos_profile_file != "" || qos_profile !=""){
+        qos_provider
+            = ::dds::core::QosProvider(qos_profile_file, qos_profile);
+    }
+    else{
+        qos_provider
+            = ::dds::core::QosProvider::Default();
+    }
+
     // Obtain the domain id from loaded world
     int domain_id;
     utils::get_world_parameter<int>(
             sdf, domain_id, DOMAIN_ID_PROPERTY_NAME.c_str(), 0);
-
-    participant_ = ::dds::domain::find(domain_id);
-    if (participant_ == ::dds::core::null) {
-        participant_ = ::dds::domain::DomainParticipant(domain_id);
-    }
+    
+    utils::create_participant(
+        domain_id, participant_, qos_provider, qos_profile);
 
     // Obtain topic name from loaded world
     std::string topic_name;
     utils::get_world_parameter<std::string>(
             sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "bumper_scan");
 
-    topic_ = ::dds::topic::find<
-            ::dds::topic::Topic<gazebo_msgs::msg::ContactsState>>(
-            participant_, topic_name);
-    if (topic_ == ::dds::core::null) {
-        topic_ = ::dds::topic::Topic<gazebo_msgs::msg::ContactsState>(
-                participant_, topic_name);
-    }
+    utils::create_topic<gazebo_msgs::msg::ContactsState>(
+            participant_, topic_, topic_name);
 
-    writer_ = ::dds::pub::DataWriter<gazebo_msgs::msg::ContactsState>(
-            ::dds::pub::Publisher(participant_), topic_);
+    utils::create_datawriter<gazebo_msgs::msg::ContactsState>(
+            writer_, participant_, topic_, qos_provider);
 
     sensor_connection_
             = sensor_->ConnectUpdated(std::bind(&BumperScan::on_scan, this));

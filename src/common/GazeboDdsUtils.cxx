@@ -8,6 +8,7 @@
 #include <rti/domain/find.hpp>
 #include <dds/core/ddscore.hpp>
 #include <dds/pub/ddspub.hpp>
+#include <dds/sub/ddssub.hpp>
 
 #include "Properties.h"
 
@@ -86,7 +87,7 @@ void create_topic(
 }
 
 template <typename T>
-void create_writer(
+void create_datawriter(
         ::dds::pub::DataWriter<T> & writer,
         ::dds::domain::DomainParticipant & participant,
         ::dds::topic::Topic<T> & topic,
@@ -100,7 +101,7 @@ void create_writer(
 }
 
 template <typename T>
-void create_writer(
+void create_datawriter(
         ::dds::pub::DataWriter<T> & writer,
         ::dds::domain::DomainParticipant & participant,
         ::dds::topic::Topic<T> & topic,
@@ -113,6 +114,36 @@ void create_writer(
             topic,
             data_writer_qos);
 }
+
+template <typename T>
+void create_datareader(
+        ::dds::sub::DataReader<T> & reader,
+        ::dds::domain::DomainParticipant & participant,
+        ::dds::topic::Topic<T> & topic,
+        ::dds::core::QosProvider & qos_provider)
+{
+    reader = ::dds::sub::DataReader<T>(
+            ::dds::sub::Subscriber(
+                    participant, qos_provider.subscriber_qos()),
+            topic,
+            qos_provider.datareader_qos());
+}
+
+template <typename T>
+void create_datareader(
+        ::dds::sub::DataReader<T> & reader,
+        ::dds::domain::DomainParticipant & participant,
+        ::dds::topic::Topic<T> & topic,
+        ::dds::sub::qos::DataReaderQos & data_reader_qos,
+        ::dds::sub::qos::SubscriberQos & subscriber_qos)
+{
+    reader = ::dds::sub::DataReader<T>(
+            ::dds::sub::Subscriber(
+                    participant, subscriber_qos),
+            topic,
+            data_reader_qos);
+}
+
 
 common::Time get_sim_time(physics::WorldPtr world)
 {

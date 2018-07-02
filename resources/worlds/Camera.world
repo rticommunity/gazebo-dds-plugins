@@ -135,7 +135,7 @@
         <frame_name>camera_link</frame_name>
         <domain_id>0</domain_id>
         <!-- <qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</qos_profile_file> -->
-        <!-- <qos_profile>profiles_Library::transient_local_profile</qos_profile> -->
+        <!-- <qos_profile>ExampleLibrary::TransientLocalProfile</qos_profile> -->
         <topic_name_image>image_raw</topic_name_image>
         <topic_name_camera_info>camera_info</topic_name_camera_info>
         <hack_baseline>0.07</hack_baseline>

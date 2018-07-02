@@ -66,7 +66,7 @@ void BumperScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<int>(
             sdf, domain_id, DOMAIN_ID_PROPERTY_NAME.c_str(), 0);
     
-    utils::create_participant(
+    utils::find_domain_participant(
         domain_id, participant_, qos_provider, qos_profile);
 
     // Obtain topic name from loaded world
@@ -74,7 +74,7 @@ void BumperScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "bumper_scan");
 
-    utils::create_topic<gazebo_msgs::msg::ContactsState>(
+    utils::find_topic<gazebo_msgs::msg::ContactsState>(
             participant_, topic_, topic_name);
 
     utils::create_datawriter<gazebo_msgs::msg::ContactsState>(

@@ -316,7 +316,7 @@
       <topic_name_odometry>odom</topic_name_odometry>
       <topic_name_joint>joint</topic_name_joint>
       <!-- <qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</qos_profile_file> -->
-      <!-- <qos_profile>profiles_Library::transient_local_profile</qos_profile> -->
+      <!-- <qos_profile>ExampleLibrary::TransientLocalProfile</qos_profile> -->
       <right_front_joint>right_front</right_front_joint>
       <right_rear_joint>right_rear</right_rear_joint>
       <left_front_joint>left_front</left_front_joint>

@@ -46,13 +46,14 @@ void get_world_parameter(
     }
 }
 
-void create_participant(
+void find_domain_participant(
         int domain_id,
         ::dds::domain::DomainParticipant & participant,
         ::dds::core::QosProvider & qos_provider,
         const std::string & qos_profile)
 {
-    std::string participant_name = std::to_string(domain_id) +"::"+ qos_profile;
+    std::string participant_name
+            = std::to_string(domain_id) + "::" + qos_profile;
 
     participant = rti::domain::find_participant_by_name(participant_name);
     if (participant == ::dds::core::null) {
@@ -69,7 +70,7 @@ void create_participant(
 }
 
 template <typename T>
-void create_topic(
+void find_topic(
         const ::dds::domain::DomainParticipant & participant,
         ::dds::topic::Topic<T> & topic,
         const std::string & topic_name)
@@ -139,6 +140,19 @@ void create_datareader(
             data_reader_qos);
 }
 
+void set_unbounded_sequence_allocated_size(
+        ::dds::pub::qos::DataWriterQos &data_writer_qos,
+        int pool_size)
+{
+    rti::core::policy::Property::Entry value(
+            { "dds.data_writer.history.memory_manager.fast_pool.pool_"
+              "buffer_max_size",
+              std::to_string(pool_size) });
+
+    rti::core::policy::Property property;
+    property.set(value);
+    data_writer_qos << property;
+}
 
 common::Time get_sim_time(physics::WorldPtr world)
 {

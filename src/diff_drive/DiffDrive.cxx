@@ -126,7 +126,7 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<int>(
             sdf, domain_id, DOMAIN_ID_PROPERTY_NAME.c_str(), 0);
 
-    utils::create_participant(
+    utils::find_domain_participant(
             domain_id, participant_, qos_provider, qos_profile);
 
     // Obtain odometry topic name from loaded world
@@ -134,7 +134,7 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name_odometry, "topic_name_odometry", "OdometryState");
 
-    utils::create_topic<nav_msgs::msg::Odometry>(
+    utils::find_topic<nav_msgs::msg::Odometry>(
             participant_, topic_odometry_, topic_name_odometry);
 
     utils::create_datawriter<nav_msgs::msg::Odometry>(
@@ -145,7 +145,7 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name_joint, "topic_name_joint", "JointState");
 
-    utils::create_topic<sensor_msgs::msg::JointState>(
+    utils::find_topic<sensor_msgs::msg::JointState>(
             participant_, topic_joint_state_, topic_name_joint);
 
     utils::create_datawriter<sensor_msgs::msg::JointState>(
@@ -159,7 +159,7 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name_twist, "topic_name_twist", "cmd_vel");
 
-    utils::create_topic<geometry_msgs::msg::Twist>(
+    utils::find_topic<geometry_msgs::msg::Twist>(
             participant_, topic_twist_, topic_name_twist);
 
     ::dds::sub::qos::DataReaderQos data_reader_qos

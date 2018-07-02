@@ -92,7 +92,7 @@ void GazeboCameraUtils::load_sdf(
     utils::get_world_parameter<int>(
             sdf, domain_id, DOMAIN_ID_PROPERTY_NAME.c_str(), 0);
 
-    utils::create_participant(
+    utils::find_domain_participant(
             domain_id, participant_, qos_provider, qos_profile);
 
     // Obtain camera info topic name from loaded world
@@ -106,7 +106,7 @@ void GazeboCameraUtils::load_sdf(
     std::string camera_name = camera_->Name().substr(++index);
     topic_name_camera_info_ = camera_name+ "/"+ topic_name_camera_info_;
 
-    utils::create_topic<sensor_msgs::msg::CameraInfo>(
+    utils::find_topic<sensor_msgs::msg::CameraInfo>(
             participant_, topic_camera_info_, topic_name_camera_info_);
 
     utils::create_datawriter<sensor_msgs::msg::CameraInfo>(
@@ -121,7 +121,7 @@ void GazeboCameraUtils::load_sdf(
 
     topic_name_image_ = camera_name + "/" + topic_name_image_;
 
-    utils::create_topic<sensor_msgs::msg::Image>(
+    utils::find_topic<sensor_msgs::msg::Image>(
             participant_, topic_image_, topic_name_image_);
 
     ::dds::pub::qos::DataWriterQos writer_image_qos
@@ -130,14 +130,7 @@ void GazeboCameraUtils::load_sdf(
             = qos_provider.publisher_qos();
 
     // Change the maximum size of the sequences
-    rti::core::policy::Property::Entry value(
-            { "dds.data_writer.history.memory_manager.fast_pool.pool_"
-              "buffer_max_size",
-              "4096" });
-
-    rti::core::policy::Property property;
-    property.set(value);
-    writer_image_qos << property;
+    utils::set_unbounded_sequence_allocated_size(writer_image_qos, 4096);
 
     utils::create_datawriter<sensor_msgs::msg::Image>(
             writer_image_,

@@ -70,7 +70,7 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<int>(
             sdf, domain_id, DOMAIN_ID_PROPERTY_NAME.c_str(), 0);
 
-    utils::create_participant(
+    utils::find_domain_participant(
             domain_id, participant_, qos_provider, qos_profile);
 
     // Obtain the topic name from loaded world
@@ -78,7 +78,7 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "laserScan");
 
-    utils::create_topic<sensor_msgs::msg::LaserScanMsg>(
+    utils::find_topic<sensor_msgs::msg::LaserScanMsg>(
             participant_, topic_, topic_name);
 
     ::dds::pub::qos::DataWriterQos data_writer_qos
@@ -86,14 +86,7 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     ::dds::pub::qos::PublisherQos publisher_qos = qos_provider.publisher_qos();
 
     // Change the maximum size of the sequences
-    rti::core::policy::Property::Entry value(
-            { "dds.data_writer.history.memory_manager.fast_pool.pool_"
-              "buffer_max_size",
-              "4096" });
-
-    rti::core::policy::Property property;
-    property.set(value);
-    data_writer_qos << property;
+    utils::set_unbounded_sequence_allocated_size(data_writer_qos, 4096);
 
     utils::create_datawriter<sensor_msgs::msg::LaserScanMsg>(
             writer_, participant_, topic_, data_writer_qos, publisher_qos);

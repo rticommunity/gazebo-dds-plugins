@@ -93,7 +93,7 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<int>(
             sdf, domain_id, DOMAIN_ID_PROPERTY_NAME.c_str(), 0);
 
-    utils::create_participant(
+    utils::find_domain_participant(
             domain_id, participant_, qos_provider, qos_profile);
 
     // Obtain the topic name from loaded world
@@ -101,7 +101,7 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "ImuScan");
 
-    utils::create_topic<sensor_msgs::msg::Imu>(participant_,topic_,topic_name);
+    utils::find_topic<sensor_msgs::msg::Imu>(participant_,topic_,topic_name);
 
     utils::create_datawriter<sensor_msgs::msg::Imu>(
             writer_, participant_, topic_, qos_provider);

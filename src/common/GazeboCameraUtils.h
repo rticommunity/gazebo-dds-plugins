@@ -79,6 +79,21 @@ protected:
     void init_samples();
 
 protected:
+    std::string topic_name_image_;
+    std::string topic_name_camera_info_;
+    std::string frame_name_;
+    double update_period_;    
+    std::string format_;
+    unsigned int width_;
+    unsigned int height_;
+    unsigned int depth_;
+    sensors::SensorPtr parent_sensor_;
+    rendering::CameraPtr camera_;
+    event::ConnectionPtr new_frame_connection_;
+    common::Time sensor_update_time_;
+    common::Time last_update_time_;
+
+private:    
     ::dds::domain::DomainParticipant participant_;
     ::dds::topic::Topic<sensor_msgs::msg::Image> topic_image_;
     ::dds::topic::Topic<sensor_msgs::msg::CameraInfo> topic_camera_info_;
@@ -87,11 +102,7 @@ protected:
     ::dds::pub::DataWriter<sensor_msgs::msg::CameraInfo> writer_camera_info_;
     sensor_msgs::msg::Image sample_image_;
     sensor_msgs::msg::CameraInfo sample_camera_info_;
-
-    std::string topic_name_image_;
-    std::string topic_name_camera_info_;
-    std::string frame_name_;
-    double update_period_;
+    common::Time last_info_update_time_;
     double cx_prime_;
     double cx_;
     double cy_;
@@ -103,19 +114,8 @@ protected:
     double distortion_t1_;
     double distortion_t2_;
     bool border_crop_;
-    std::string format_;
     int skip_;
-    unsigned int width_;
-    unsigned int height_;
-    unsigned int depth_;
-    sensors::SensorPtr parent_sensor_;
-    rendering::CameraPtr camera_;
-    event::ConnectionPtr new_frame_connection_;
-    common::Time sensor_update_time_;
-    common::Time last_update_time_;
-private:
-    common::Time last_info_update_time_;
-
+    
     friend class StereoCamera;
 };
 

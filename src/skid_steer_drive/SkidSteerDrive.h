@@ -40,19 +40,19 @@
 
 namespace gazebo { namespace dds {
 
-const int WHEEL_NUMBER = 2;
+const int WHEEL_NUMBER = 4;
 
-class DiffDrive : public ModelPlugin {
+class SkidSteerDrive : public ModelPlugin {
 public:
     /**
      * @brief Constructor
      */
-    DiffDrive();
+    SkidSteerDrive();
 
     /**
      * @brief Destructor
      */
-    ~DiffDrive();
+    ~SkidSteerDrive();
 
     /**
      * @brief Load the plugin inside Gazebo's system
@@ -71,7 +71,7 @@ protected:
     /**
      * @brief Update model
      */
-    void update_model();
+    virtual void update_model();
 
 private:
     /**
@@ -90,11 +90,6 @@ private:
      * msg Message with the new twist of the model
      */
     void get_wheel_velocities(const geometry_msgs::msg::Twist &msg);
-
-    /**
-     * @brief Update odometry when it is in encoder mode
-     */
-    void update_odometry_encoder();
 
     /**
      * @brief Obtain pose3d of the world
@@ -128,25 +123,22 @@ private:
     ::dds::sub::LoanedSamples<geometry_msgs::msg::Twist> twist_samples_;
     nav_msgs::msg::Odometry odometry_sample_;
     sensor_msgs::msg::JointState joint_state_sample_;
-    std::string odom_source_;
+    physics::ModelPtr parent_;
     physics::JointPtr joints_[WHEEL_NUMBER];
+    event::ConnectionPtr update_connection_;
+    common::Time last_update_;
+    common::Time current_time_;
     ignition::math::Quaterniond odometry_orientation_;
-    ignition::math::Vector3d pose_encoder_;
     ignition::math::Pose3d world_pose_;
     ignition::math::Vector3d world_linear_;
-    common::Time last_update_;
-    common::Time last_odom_update_;
-    common::Time current_time_;
-    physics::ModelPtr parent_;
-    event::ConnectionPtr update_connection_;
     double wheel_separation_;
     double wheel_diameter_;
-    double wheel_accel_;
     double wheel_torque_;
     double wheel_speed_[WHEEL_NUMBER];
-    double wheel_speed_instr_[WHEEL_NUMBER];
     double update_period_;
-    bool legacy_mode_;
+    double covariance_x_;
+    double covariance_y_;
+    double covariance_yaw_;
 };
 
 }  // namespace dds

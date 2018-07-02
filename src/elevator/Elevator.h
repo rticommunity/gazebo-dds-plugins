@@ -1,6 +1,6 @@
 /*
  * Copyright 2018 Real-Time Innovations, Inc.
- * Copyright 2012 Open Source Robotics Foundation
+ * Copyright 2015 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,53 +15,49 @@
  * limitations under the License.
  */
 
-#include <gazebo/gazebo.hh>
-#include <gazebo/plugins/RayPlugin.hh>
+#include <gazebo/plugins/ElevatorPlugin.hh>
 
 #include <dds/core/ddscore.hpp>
 #include <dds/domain/find.hpp>
-#include <dds/pub/ddspub.hpp>
+#include <dds/sub/ddssub.hpp>
 
-#include "sensor_msgs/msg/LaserScanMsg.hpp"
+#include "std_msgs/msg/Int32.hpp"
 
 namespace gazebo { namespace dds {
 
-class LaserScan : public RayPlugin {
+class Elevator : public ElevatorPlugin {
+
 public:
     /**
      * @brief Constructor
      */
-    LaserScan();
+    Elevator();
 
     /**
      * @brief Destructor
      */
-    ~LaserScan();
+    virtual ~Elevator();
 
     /**
      * @brief Load the plugin inside Gazebo's system
      *
-     * @param parent object of Gazebo's sensor
+     * @param parent object of Gazebo's model
      * @param sdf object of Gazebo's world
      */
-    void Load(sensors::SensorPtr parent, sdf::ElementPtr sdf) override;
+    void Load(physics::ModelPtr parent, sdf::ElementPtr sdf) override;
 
     /**
-     * @brief Read the current sensor's information
+     * @brief Receives messages to manage the elevator
      *
-     * @param msg current information of the sensor
+     * @param msg current order to the elevator
      */
-    void on_scan(ConstLaserScanStampedPtr &msg);
+    void on_msg(const std_msgs::msg::Int32 & msg);
 
 private:
-    sensors::SensorPtr sensor_;
     ::dds::domain::DomainParticipant participant_;
-    ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg> topic_;
-    ::dds::pub::qos::DataWriterQos data_writer_qos_;
-    ::dds::pub::DataWriter<sensor_msgs::msg::LaserScanMsg> writer_;
-    gazebo::transport::NodePtr gazebo_node_;
-    gazebo::transport::SubscriberPtr laser_scan_sub_;
-    sensor_msgs::msg::LaserScanMsg sample_;
+    ::dds::topic::Topic<std_msgs::msg::Int32> topic_;
+    ::dds::sub::DataReader<std_msgs::msg::Int32> reader_;
+    ::dds::sub::qos::DataReaderQos data_reader_qos_;
 };
 
 }  // namespace dds

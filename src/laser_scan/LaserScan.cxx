@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018 Real-Time Innovations, Inc.
+ * Copyright 2012 Open Source Robotics Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include "common/Properties.h"
 #include "common/GazeboDdsUtils.cxx"
@@ -45,7 +61,8 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "laserScan");
 
-    topic_ = ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg>(participant_, topic_name);
+    topic_ = ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg>(
+            participant_, topic_name);
 
     // Change the maximum size of the sequences
     rti::core::policy::Property::Entry value(
@@ -62,7 +79,10 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     this->laser_scan_sub_ = this->gazebo_node_->Subscribe(
             this->sensor_->Topic(), &LaserScan::on_scan, this);
 
-    gzmsg << "Starting Laser Plugin - Topic name: " << topic_name << std::endl;
+    gzmsg << "Starting Laser Plugin"<< std::endl;
+    gzmsg << "* Publications:" << std::endl;
+    gzmsg << "  - " << topic_name << " [sensor_msgs/msg/LaserScanMsg]" 
+          << std::endl;
 }
 
 void LaserScan::on_scan(ConstLaserScanStampedPtr &msg)

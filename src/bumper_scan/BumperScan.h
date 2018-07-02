@@ -1,6 +1,6 @@
 /*
  * Copyright 2018 Real-Time Innovations, Inc.
- * Copyright 2012 Open Source Robotics Foundation
+ * Copyright 2012 Open Source Robotics Foundation 
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,30 +13,32 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *
+*/
 
 #include <gazebo/gazebo.hh>
-#include <gazebo/plugins/RayPlugin.hh>
+#include <gazebo/plugins/ContactPlugin.hh>
 
 #include <dds/core/ddscore.hpp>
 #include <dds/domain/find.hpp>
 #include <dds/pub/ddspub.hpp>
 
-#include "sensor_msgs/msg/LaserScanMsg.hpp"
+#include "gazebo_msgs/msg/ContactState.hpp"
+#include "gazebo_msgs/msg/ContactsState.hpp"
 
 namespace gazebo { namespace dds {
 
-class LaserScan : public RayPlugin {
+class BumperScan : public ContactPlugin {
 public:
     /**
      * @brief Constructor
      */
-    LaserScan();
+    BumperScan();
 
     /**
      * @brief Destructor
      */
-    ~LaserScan();
+    virtual ~BumperScan();
 
     /**
      * @brief Load the plugin inside Gazebo's system
@@ -46,22 +48,31 @@ public:
      */
     void Load(sensors::SensorPtr parent, sdf::ElementPtr sdf) override;
 
+private:
     /**
-     * @brief Read the current sensor's information
-     *
-     * @param msg current information of the sensor
+     * @brief Publish the current information of the contact sensor 
      */
-    void on_scan(ConstLaserScanStampedPtr &msg);
+    void on_scan();
 
 private:
-    sensors::SensorPtr sensor_;
     ::dds::domain::DomainParticipant participant_;
-    ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg> topic_;
-    ::dds::pub::qos::DataWriterQos data_writer_qos_;
-    ::dds::pub::DataWriter<sensor_msgs::msg::LaserScanMsg> writer_;
-    gazebo::transport::NodePtr gazebo_node_;
-    gazebo::transport::SubscriberPtr laser_scan_sub_;
-    sensor_msgs::msg::LaserScanMsg sample_;
+    ::dds::topic::Topic<gazebo_msgs::msg::ContactsState> topic_;
+    ::dds::pub::DataWriter<gazebo_msgs::msg::ContactsState> writer_;
+    sensors::ContactSensor* sensor_;
+    gazebo_msgs::msg::ContactsState contacts_sample_;
+    gazebo_msgs::msg::ContactState contact_state_msg_;
+    gazebo::msgs::Contact contact_;
+    geometry_msgs::msg::Wrench total_wrench_msg_;
+    geometry_msgs::msg::Wrench wrench_msg_;
+    geometry_msgs::msg::Vector3 contact_position_msg_;
+    geometry_msgs::msg::Vector3 contact_normal_msg_;
+    event::ConnectionPtr sensor_connection_;
+    common::Time current_time_;
+    ignition::math::Quaterniond frame_rot_;
+    ignition::math::Vector3d contact_force_;
+    ignition::math::Vector3d contact_torque_;
+    ignition::math::Vector3d contact_position_;
+    ignition::math::Vector3d contact_normal_;
 };
 
 }  // namespace dds

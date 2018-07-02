@@ -1,7 +1,6 @@
-#ifndef DATA_WRITER_LISTENER_CXX
-#define DATA_WRITER_LISTENER_CXX
-
 #include "DataWriterListener.h"
+
+namespace gazebo { namespace dds {
 
 template <typename T>
 DataWriterListener<T>::DataWriterListener()
@@ -18,8 +17,8 @@ DataWriterListener<T>::DataWriterListener(
 
 template <typename T>
 void DataWriterListener<T>::on_publication_matched(
-        dds::pub::DataWriter<T> &writer,
-        const dds::core::status::PublicationMatchedStatus &status)
+        ::dds::pub::DataWriter<T> &writer,
+        const ::dds::core::status::PublicationMatchedStatus &status)
 {
     if (status.current_count_change() < 0) {
         on_disconnect_();
@@ -28,4 +27,5 @@ void DataWriterListener<T>::on_publication_matched(
     }
 }
 
-#endif  // DATA_WRITER_LISTENER_CXX
+}  // namespace dds
+}  // namespace gazebo

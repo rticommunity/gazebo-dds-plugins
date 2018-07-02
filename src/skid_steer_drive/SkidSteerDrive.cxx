@@ -90,14 +90,26 @@ void SkidSteerDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     last_update_ = utils::get_sim_time(parent_->GetWorld());
 
     // Obtain joints from loaded world
-    joints_[LEFT_FRONT]
-            = utils::get_joint(sdf, parent_, "left_front_joint", "left_front");
-    joints_[RIGHT_FRONT] = utils::get_joint(
-            sdf, parent_, "right_front_joint", "right_front");
-    joints_[LEFT_REAR]
-            = utils::get_joint(sdf, parent_, "left_rear_joint", "left_rear");
-    joints_[RIGHT_REAR]
-            = utils::get_joint(sdf, parent_, "right_rear_joint", "right_rear");
+    std::string joint_name;
+    utils::get_world_parameter<std::string>(
+            sdf, joint_name, "left_front_joint", "left_front");
+
+    joints_[LEFT_FRONT] = parent_->GetJoint(joint_name);
+
+    utils::get_world_parameter<std::string>(
+            sdf, joint_name, "right_front_joint", "right_front");
+
+    joints_[RIGHT_FRONT] = parent->GetJoint(joint_name);
+
+    utils::get_world_parameter<std::string>(
+            sdf, joint_name, "left_rear_joint", "left_rear");
+
+    joints_[LEFT_REAR] = parent->GetJoint(joint_name);
+
+    utils::get_world_parameter<std::string>(
+            sdf, joint_name, "right_rear_joint", "right_rear");
+
+    joints_[RIGHT_REAR] = parent->GetJoint(joint_name);
 
     joints_[LEFT_FRONT]->SetParam("fmax", 0, wheel_torque_);
     joints_[RIGHT_FRONT]->SetParam("fmax", 0, wheel_torque_);

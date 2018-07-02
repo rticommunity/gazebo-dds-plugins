@@ -1,3 +1,19 @@
+/*
+ * Copyright 2018 Real-Time Innovations, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #ifndef GAZEBO_DDS_UTILS_CXX
 #define GAZEBO_DDS_UTILS_CXX
 
@@ -17,38 +33,17 @@ namespace gazebo { namespace dds { namespace utils {
 template <typename T>
 void get_world_parameter(
         sdf::ElementPtr sdf,
-        T &tag_variable,
-        const char *tag_name,
-        const T &default_value)
+        T & tag_variable,
+        const char * element_name,
+        const T & element_default)
 {
-    if (sdf->HasElement(tag_name)) {
-        tag_variable = sdf->Get<T>(tag_name);
+    if (sdf->HasElement(element_name)) {
+        tag_variable = sdf->Get<T>(element_name);
     } else {
-        tag_variable = default_value;
-        gzwarn << "Missing <" << tag_name
+        tag_variable = element_default;
+        gzwarn << "Missing <" << element_name
                << ">, set to default: " << tag_variable << std::endl;
     }
-}
-
-gazebo::physics::JointPtr get_joint(
-        sdf::ElementPtr sdf,
-        gazebo::physics::ModelPtr parent,
-        const char *tag_name,
-        const std::string & joint_default_name)
-{
-    std::string joint_name;
-    get_world_parameter<std::string>(
-            sdf, joint_name, tag_name, joint_default_name);
-    gazebo::physics::JointPtr joint = parent->GetJoint(joint_name);
-
-    if(!joint){
-        char error[200];
-        snprintf(error, 200,
-                 "Couldn't get wheel hinge joint named %s", joint_name.c_str());
-        gzthrow(error);
-    }
-
-    return joint;
 }
 
 void create_participant(

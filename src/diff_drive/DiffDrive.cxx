@@ -88,9 +88,17 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     last_update_ = utils::get_sim_time(parent_->GetWorld());
 
     // Obtain joints from loaded world
-    joints_[LEFT] = utils::get_joint(sdf, parent_, "leftJoint", "left_joint");
-    joints_[RIGHT]
-            = utils::get_joint(sdf, parent_, "rightJoint", "right_joint");
+    std::string joint_name;
+    utils::get_world_parameter<std::string>(
+            sdf, joint_name, "leftJoint", "left_joint");
+
+    joints_[LEFT] = parent_->GetJoint(joint_name);
+
+    utils::get_world_parameter<std::string>(
+            sdf, joint_name, "rightJoint", "right_joint");
+
+    joints_[RIGHT] = parent_->GetJoint(joint_name);
+
     joints_[LEFT]->SetParam("fmax", 0, wheel_torque_);
     joints_[RIGHT]->SetParam("fmax", 0, wheel_torque_);
 

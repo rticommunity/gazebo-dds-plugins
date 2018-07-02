@@ -14,6 +14,7 @@ find_library(ElevatorPlugin
 add_library(DdsElevatorPlugin MODULE 
     Elevator.cxx
     Elevator.h
+    "${CMAKE_SOURCE_DIR}/src/common/DataReaderListener.cxx"
     ${Int32_CXX11_SOURCES}
 )
 

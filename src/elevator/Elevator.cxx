@@ -16,7 +16,7 @@
  */
 
 #include "common/GazeboDdsUtils.cxx"
-#include "common/DataReaderListener.cxx"
+#include "common/DataReaderListener.h"
 #include "common/Properties.h"
 #include "Elevator.h"
 

@@ -258,6 +258,8 @@
       <leftJoint>left_wheel_hinge</leftJoint>
       <rightJoint>right_wheel_hinge</rightJoint>
       <domain_id>0</domain_id>
+      <!-- <qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</qos_profile_file> -->
+      <!-- <qos_profile>profiles_Library::transient_local_profile</qos_profile> -->
       <wheel_separation>0.39</wheel_separation>
       <wheel_diameter>0.15</wheel_diameter>
       <wheel_acceleration>0</wheel_acceleration>

@@ -209,6 +209,8 @@
         <topic>elevator</topic>
         <topic_name>elevator</topic_name>
         <domain_id>0</domain_id>
+        <!-- <qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</qos_profile_file> -->
+        <!-- <qos_profile>profiles_Library::transient_local_profile</qos_profile> -->
       </plugin>
     </model>
 

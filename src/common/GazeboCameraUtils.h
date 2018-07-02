@@ -113,7 +113,6 @@ protected:
     event::ConnectionPtr new_frame_connection_;
     common::Time sensor_update_time_;
     common::Time last_update_time_;
-
 private:
     common::Time last_info_update_time_;
 

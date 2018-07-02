@@ -70,7 +70,7 @@ void create_participant(
 
 template <typename T>
 void create_topic(
-        ::dds::domain::DomainParticipant & participant,
+        const ::dds::domain::DomainParticipant & participant,
         ::dds::topic::Topic<T> & topic,
         const std::string & topic_name)
 {
@@ -84,8 +84,8 @@ void create_topic(
 template <typename T>
 void create_datawriter(
         ::dds::pub::DataWriter<T> & writer,
-        ::dds::domain::DomainParticipant & participant,
-        ::dds::topic::Topic<T> & topic,
+        const ::dds::domain::DomainParticipant & participant,
+        const ::dds::topic::Topic<T> & topic,
         ::dds::core::QosProvider & qos_provider)
 {
     writer = ::dds::pub::DataWriter<T>(
@@ -98,10 +98,10 @@ void create_datawriter(
 template <typename T>
 void create_datawriter(
         ::dds::pub::DataWriter<T> & writer,
-        ::dds::domain::DomainParticipant & participant,
-        ::dds::topic::Topic<T> & topic,
-        ::dds::pub::qos::DataWriterQos & data_writer_qos,
-        ::dds::pub::qos::PublisherQos & publisher_qos)
+        const ::dds::domain::DomainParticipant & participant,
+        const ::dds::topic::Topic<T> & topic,
+        const ::dds::pub::qos::DataWriterQos & data_writer_qos,
+        const ::dds::pub::qos::PublisherQos & publisher_qos)
 {
     writer = ::dds::pub::DataWriter<T>(
             ::dds::pub::Publisher(
@@ -113,8 +113,8 @@ void create_datawriter(
 template <typename T>
 void create_datareader(
         ::dds::sub::DataReader<T> & reader,
-        ::dds::domain::DomainParticipant & participant,
-        ::dds::topic::Topic<T> & topic,
+        const ::dds::domain::DomainParticipant & participant,
+        const ::dds::topic::Topic<T> & topic,
         ::dds::core::QosProvider & qos_provider)
 {
     reader = ::dds::sub::DataReader<T>(
@@ -127,10 +127,10 @@ void create_datareader(
 template <typename T>
 void create_datareader(
         ::dds::sub::DataReader<T> & reader,
-        ::dds::domain::DomainParticipant & participant,
-        ::dds::topic::Topic<T> & topic,
-        ::dds::sub::qos::DataReaderQos & data_reader_qos,
-        ::dds::sub::qos::SubscriberQos & subscriber_qos)
+        const ::dds::domain::DomainParticipant & participant,
+        const ::dds::topic::Topic<T> & topic,
+        const ::dds::sub::qos::DataReaderQos & data_reader_qos,
+        const ::dds::sub::qos::SubscriberQos & subscriber_qos)
 {
     reader = ::dds::sub::DataReader<T>(
             ::dds::sub::Subscriber(

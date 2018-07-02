@@ -147,6 +147,8 @@
           <frame_name>camera_link</frame_name>
           <topic_name_image>image_raw</topic_name_image>
           <topic_name_camera_info>camera_info</topic_name_camera_info>
+          <!-- <qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</qos_profile_file> -->
+          <!-- <qos_profile>profiles_Library::transient_local_profile</qos_profile> -->
           <frameName>left_camera_optical_frame</frameName>
           <hack_baseline>0.07</hack_baseline>
           <distortion_k1>0.0</distortion_k1>

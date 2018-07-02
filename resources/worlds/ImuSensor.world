@@ -54,6 +54,8 @@
             <plugin name="imu_plugin" filename="imu_scan/libDdsImuPlugin.so">
                 <domain_id>0</domain_id>
                 <topic_name>imu_scan</topic_name>
+                <!-- <qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</qos_profile_file> -->
+                <!-- <qos_profile>profiles_Library::transient_local_profile</qos_profile> -->
                 <bodyName>imu_link</bodyName>
                 <gaussian_noise>0.2</gaussian_noise>
                 <rpy_offset>0 0 0</rpy_offset>

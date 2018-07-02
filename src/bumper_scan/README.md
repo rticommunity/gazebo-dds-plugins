@@ -15,5 +15,5 @@ $ export GAZEBO_PLUGIN_PATH=$HOME/dds-gazebo-plugins/build/src/:$GAZEBO_PLUGIN_P
 Once the environment variable is set, we can execute Gazebo with its specific world.
 
 ```
-$ gazebo $HOME/dds-gazebo-plugins/resources/worlds/BumperSensor.world --verbose
+$ gazebo dds-gazebo-plugins/resources/worlds/BumperSensor.world --verbose
 ```

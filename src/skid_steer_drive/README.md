@@ -20,11 +20,11 @@ $ export GAZEBO_PLUGIN_PATH=$HOME/dds-gazebo-plugins/build/src/:$GAZEBO_PLUGIN_P
 Once the environment variable is set, we can execute Gazebo with its specific world.
 
 ```
-$ gazebo $HOME/dds-gazebo-plugins/resources/worlds/SkidSteerDrive.world --verbose
+$ gazebo dds-gazebo-plugins/resources/worlds/SkidSteerDrive.world --verbose
 ```
 **Second terminal**
 
 The plugin contains an example publisher to send information to the robot. You need to run this publisher to move it. You will use the same publisher that you use with the differential drive
 ```
-$HOME/dds-gazebo-plugins/build/src/diff_drive/diffdrivepublisher <domain id> <topic name> <linear velocity axis x> <angular velocity axis z>
+$ dds-gazebo-plugins/build/src/diff_drive/diffdrivepublisher <domain id> <topic name> <linear velocity axis x> <angular velocity axis z>
 ```

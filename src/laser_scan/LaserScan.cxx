@@ -78,7 +78,7 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "laserScan");
 
-    utils::find_topic<sensor_msgs::msg::LaserScanMsg>(
+    utils::find_topic<sensor_msgs::msg::LaserScan>(
             participant_, topic_, topic_name);
 
     ::dds::pub::qos::DataWriterQos data_writer_qos
@@ -88,7 +88,7 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     // Change the maximum size of the sequences
     utils::set_unbounded_sequence_allocated_size(data_writer_qos, 4096);
 
-    utils::create_datawriter<sensor_msgs::msg::LaserScanMsg>(
+    utils::create_datawriter<sensor_msgs::msg::LaserScan>(
             writer_, participant_, topic_, data_writer_qos, publisher_qos);
 
     this->laser_scan_sub_ = this->gazebo_node_->Subscribe(
@@ -96,40 +96,23 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
 
     gzmsg << "Starting laser plugin"<< std::endl;
     gzmsg << "* Publications:" << std::endl;
-    gzmsg << "  - " << topic_name << " [sensor_msgs/msg/LaserScanMsg]" 
+    gzmsg << "  - " << topic_name << " [sensor_msgs/msg/LaserScan]" 
           << std::endl;
 }
 
 void LaserScan::on_scan(ConstLaserScanStampedPtr &msg)
 {
-    sample_.laser_id(sensor_->Id());
     sample_.header().stamp().sec(msg->time().sec());
     sample_.header().stamp().nanosec(msg->time().nsec());
     sample_.header().frame_id(sensor_->ParentName());
 
-    sample_.world_pose().position().x(msg->scan().world_pose().position().x());
-    sample_.world_pose().position().y(msg->scan().world_pose().position().y());
-    sample_.world_pose().position().z(msg->scan().world_pose().position().z());
-
-    sample_.world_pose().orientation().x(
-            msg->scan().world_pose().orientation().x());
-    sample_.world_pose().orientation().y(
-            msg->scan().world_pose().orientation().y());
-    sample_.world_pose().orientation().z(
-            msg->scan().world_pose().orientation().z());
-    sample_.world_pose().orientation().w(
-            msg->scan().world_pose().orientation().w());
-
     sample_.angle_min(msg->scan().angle_min());
     sample_.angle_max(msg->scan().angle_max());
-    sample_.angle_step(msg->scan().angle_step());
+    sample_.angle_increment(msg->scan().angle_step());
+    sample_.time_increment(0);
+    sample_.scan_time(0);  
     sample_.range_min(msg->scan().range_min());
     sample_.range_max(msg->scan().range_max());
-    sample_.count(msg->scan().count());
-    sample_.vertical_angle_min(msg->scan().vertical_angle_min());
-    sample_.vertical_angle_max(msg->scan().vertical_angle_max());
-    sample_.vertical_angle_step(msg->scan().vertical_angle_step());
-    sample_.vertical_count(msg->scan().vertical_count());
 
     sample_.ranges().resize(msg->scan().ranges_size());
     std::copy(

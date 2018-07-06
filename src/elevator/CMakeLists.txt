@@ -1,11 +1,3 @@
-include(ConnextDdsCodegen)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/std_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/std_msgs/msg/Int32.idl"
-)
-
 find_library(ElevatorPlugin 
     NAMES ElevatorPlugin
     PATHS ${GAZEBO_LIBRARY_DIRS}
@@ -15,7 +7,7 @@ add_library(DdsElevatorPlugin MODULE
     Elevator.cxx
     Elevator.h
     "${CMAKE_SOURCE_DIR}/src/common/DataReaderListener.cxx"
-    ${Int32_CXX11_SOURCES}
+    $<TARGET_OBJECTS:Int32TypeLibrary>
 )
 
 target_link_libraries(DdsElevatorPlugin 
@@ -31,6 +23,7 @@ target_include_directories(DdsElevatorPlugin PRIVATE
     ${SDF_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR}
     "${CMAKE_SOURCE_DIR}/src"
+    "${CMAKE_BINARY_DIR}/src/common"
 )
 
 target_compile_definitions(DdsElevatorPlugin PRIVATE 
@@ -38,7 +31,7 @@ target_compile_definitions(DdsElevatorPlugin PRIVATE
 
 add_executable (elevatorpublisher 
     ElevatorPublisher.cxx 
-    ${Int32_CXX11_SOURCES} 
+    $<TARGET_OBJECTS:Int32TypeLibrary>
 )
 
 target_link_libraries(elevatorpublisher 
@@ -50,6 +43,7 @@ target_include_directories(elevatorpublisher PRIVATE
     ${CONNEXTDDS_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR}
     "${CMAKE_SOURCE_DIR}/src"
+    "${CMAKE_BINARY_DIR}/src/common"
 )
 
 target_compile_definitions(elevatorpublisher PRIVATE 

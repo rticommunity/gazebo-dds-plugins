@@ -1,44 +1,11 @@
-include(ConnextDdsCodegen)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/std_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/std_msgs/msg/Time.idl"
-)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/std_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/std_msgs/msg/Header.idl"
-)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/Quaternion.idl"
-)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/Vector3.idl"
-)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sensor_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/sensor_msgs/msg/Imu.idl"
-    INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
-)
-
 add_library(DdsImuPlugin MODULE 
     ImuScan.cxx 
     ImuScan.h 
-    ${Quaternion_CXX11_SOURCES}
-    ${Vector3_CXX11_SOURCES}
-    ${Time_CXX11_SOURCES}
-    ${Header_CXX11_SOURCES}
-    ${Imu_CXX11_SOURCES}
+    $<TARGET_OBJECTS:QuaternionTypeLibrary>
+    $<TARGET_OBJECTS:Vector3TypeLibrary>
+    $<TARGET_OBJECTS:TimeTypeLibrary>
+    $<TARGET_OBJECTS:HeaderTypeLibrary>
+    $<TARGET_OBJECTS:ImuTypeLibrary>
 )
 
 target_link_libraries(DdsImuPlugin 
@@ -53,6 +20,7 @@ target_include_directories(DdsImuPlugin PRIVATE
     ${SDF_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR}
     "${CMAKE_SOURCE_DIR}/src"
+    "${CMAKE_BINARY_DIR}/src/common"
 )
 
 target_compile_definitions(DdsImuPlugin PRIVATE 

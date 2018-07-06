@@ -7,7 +7,7 @@ macro(connectdds_type_object_library)
         NOT_REPLACE UNBOUNDED IGNORE_ALIGNMENT USE42_ALIGNMENT
         OPTIMIZE_ALIGNMENT NO_TYPECODE DISABLE_PREPROCESSOR STL STANDALONE
     )
-    set(single_value_args LANG OUTPUT_DIRECTORY IDL_FILE VAR PACKAGE OBJECT_LIBRARY_NAME)
+    set(single_value_args LANG OUTPUT_DIRECTORY IDL_FILE VAR PACKAGE OBJECT_LIBRARY_NAME SOURCES)
     set(multi_value_args TYPE_NAMES INCLUDE_DIRS DEFINES EXTRA_ARGS)
 
     cmake_parse_arguments(_OBJLIB
@@ -24,7 +24,7 @@ macro(connectdds_type_object_library)
 
     set(include_dirs "")
     if(_OBJLIB_INCLUDE_DIRS)
-        set(include_dirs "INCLUDE_DIRS ${_OBJLIB_INCLUDE_DIRS}")
+        set(include_dirs "INCLUDE_DIRS")
     endif()
 
     connextdds_rtiddsgen_run(
@@ -32,15 +32,17 @@ macro(connectdds_type_object_library)
         OUTPUT_DIRECTORY ${_OBJLIB_OUTPUT_DIRECTORY}
         IDL_FILE ${_OBJLIB_IDL_FILE}
         ${unbounded}
-        ${include_dirs}
+        # ${include_dirs}
+        INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
     )
 
     add_library( ${_OBJLIB_OBJECT_LIBRARY_NAME} OBJECT
-        ${Time_CXX11_SOURCES}
+        ${${_OBJLIB_SOURCES}}
     )
 
     target_include_directories(${_OBJLIB_OBJECT_LIBRARY_NAME} PRIVATE 
-        ${CONNEXTDDS_INCLUDE_DIRS} 
+        ${CONNEXTDDS_INCLUDE_DIRS}
+        "${CMAKE_BINARY_DIR}/src/common"
     )
 
     target_compile_definitions(${_OBJLIB_OBJECT_LIBRARY_NAME} PRIVATE 

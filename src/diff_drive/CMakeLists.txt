@@ -1,94 +1,18 @@
-include(ConnextDdsCodegen)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/std_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/std_msgs/msg/Time.idl"
-)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/std_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/std_msgs/msg/Header.idl"
-)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/Pose2D.idl"
-)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/Vector3.idl"
-)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/Twist.idl"
-)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/Point.idl"
-)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/Quaternion.idl"
-)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/Pose.idl"
-)    
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/PoseWithCovariance.idl"
-)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/TwistWithCovariance.idl"
-)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/nav_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/nav_msgs/msg/Odometry.idl"
-    INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
-)
-
-connextdds_rtiddsgen_run(
-    LANG C++11
-    OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sensor_msgs/msg"
-    IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/sensor_msgs/msg/JointState.idl"
-    INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
-)
-
 add_library(DdsDiffDrivePlugin MODULE 
     DiffDrive.cxx
     DiffDrive.h
-    ${Time_CXX11_SOURCES}
-    ${Header_CXX11_SOURCES}
-    ${Pose2D_CXX11_SOURCES}
-    ${JointState_CXX11_SOURCES}
-    ${Point_CXX11_SOURCES}
-    ${Quaternion_CXX11_SOURCES}
-    ${Pose_CXX11_SOURCES}
-    ${PoseWithCovariance_CXX11_SOURCES}
-    ${Vector3_CXX11_SOURCES}
-    ${Twist_CXX11_SOURCES}
-    ${TwistWithCovariance_CXX11_SOURCES}
-    ${Odometry_CXX11_SOURCES}
+    $<TARGET_OBJECTS:TimeTypeLibrary>
+    $<TARGET_OBJECTS:HeaderTypeLibrary>
+    $<TARGET_OBJECTS:Pose2DTypeLibrary>
+    $<TARGET_OBJECTS:JointStateTypeLibrary>
+    $<TARGET_OBJECTS:PointTypeLibrary>
+    $<TARGET_OBJECTS:QuaternionTypeLibrary>
+    $<TARGET_OBJECTS:PoseTypeLibrary>
+    $<TARGET_OBJECTS:PoseWithCovarianceTypeLibrary>
+    $<TARGET_OBJECTS:Vector3TypeLibrary>
+    $<TARGET_OBJECTS:TwistTypeLibrary>
+    $<TARGET_OBJECTS:TwistWithCovarianceTypeLibrary>
+    $<TARGET_OBJECTS:OdometryTypeLibrary>
 )
 
 target_link_libraries(DdsDiffDrivePlugin 
@@ -103,6 +27,7 @@ target_include_directories(DdsDiffDrivePlugin PRIVATE
     ${SDF_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR}
     "${CMAKE_SOURCE_DIR}/src"
+    "${CMAKE_BINARY_DIR}/src/common"
 )
 
 target_compile_definitions(DdsDiffDrivePlugin PRIVATE 
@@ -110,8 +35,8 @@ target_compile_definitions(DdsDiffDrivePlugin PRIVATE
 
 add_executable (diffdrivepublisher
     DiffDrivePublisher.cxx 
-    ${Twist_CXX11_SOURCES} 
-    ${Vector3_CXX11_SOURCES}
+    $<TARGET_OBJECTS:Vector3TypeLibrary>
+    $<TARGET_OBJECTS:TwistTypeLibrary>
 )
 
 target_link_libraries(diffdrivepublisher 
@@ -122,6 +47,7 @@ target_include_directories(diffdrivepublisher PRIVATE
     ${CONNEXTDDS_INCLUDE_DIRS}
     ${CMAKE_CURRENT_BINARY_DIR}
     "${CMAKE_SOURCE_DIR}/src"
+    "${CMAKE_BINARY_DIR}/src/common"
 )
 
 target_compile_definitions(diffdrivepublisher PRIVATE 

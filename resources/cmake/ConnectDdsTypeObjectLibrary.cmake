@@ -7,8 +7,12 @@ macro(connectdds_type_object_library)
         NOT_REPLACE UNBOUNDED IGNORE_ALIGNMENT USE42_ALIGNMENT
         OPTIMIZE_ALIGNMENT NO_TYPECODE DISABLE_PREPROCESSOR STL STANDALONE 
     )
-    set(single_value_args LANG OUTPUT_DIRECTORY IDL_FILE VAR PACKAGE OBJECT_LIBRARY_NAME SOURCES DEPENDENCIES)
-    set(multi_value_args TYPE_NAMES INCLUDE_DIRS DEFINES EXTRA_ARGS)
+    set(single_value_args LANG OUTPUT_DIRECTORY IDL_FILE VAR PACKAGE 
+        OBJECT_LIBRARY_NAME SOURCES 
+    )
+    set(multi_value_args 
+        TYPE_NAMES INCLUDE_DIRS DEFINES EXTRA_ARGS DEPENDENCIES
+    )
 
     cmake_parse_arguments(_OBJLIB
         "${options}"
@@ -34,6 +38,10 @@ macro(connectdds_type_object_library)
         ${${_OBJLIB_SOURCES}}
     )
 
+    set_property(TARGET ${_OBJLIB_OBJECT_LIBRARY_NAME} PROPERTY 
+        POSITION_INDEPENDENT_CODE ON
+    )
+
     target_include_directories(${_OBJLIB_OBJECT_LIBRARY_NAME} PRIVATE 
         ${CONNEXTDDS_INCLUDE_DIRS}
         "${CMAKE_BINARY_DIR}/src/common"
@@ -41,6 +49,10 @@ macro(connectdds_type_object_library)
 
     target_compile_definitions(${_OBJLIB_OBJECT_LIBRARY_NAME} PRIVATE 
         ${CONNEXTDDS_DEFINITIONS}
-    )   
+    )
+
+    if(_OBJLIB_DEPENDENCIES)
+        add_dependencies(${_OBJLIB_OBJECT_LIBRARY_NAME} ${_OBJLIB_DEPENDENCIES})
+    endif()
 
 endmacro()

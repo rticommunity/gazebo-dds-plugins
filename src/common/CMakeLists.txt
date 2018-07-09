@@ -38,6 +38,8 @@ connectdds_type_object_library(
     INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
 )
 
+add_dependencies(CameraInfoTypeLibrary HeaderTypeLibrary RegionOfInterestTypeLibrary)
+
 connectdds_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sensor_msgs/msg"
@@ -47,6 +49,8 @@ connectdds_type_object_library(
     INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
     UNBOUNDED
 )
+
+add_dependencies(ImageTypeLibrary HeaderTypeLibrary)
 
 connectdds_type_object_library(
     LANG C++11
@@ -85,6 +89,8 @@ connectdds_type_object_library(
     INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
 )
 
+add_dependencies(ImuTypeLibrary HeaderTypeLibrary Vector3TypeLibrary QuaternionTypeLibrary)
+
 connectdds_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/std_msgs/msg"
@@ -101,6 +107,8 @@ connectdds_type_object_library(
     SOURCES "Wrench_CXX11_SOURCES"
 )
 
+add_dependencies(WrenchTypeLibrary Vector3TypeLibrary)
+
 connectdds_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/gazebo_msgs/msg"
@@ -110,7 +118,7 @@ connectdds_type_object_library(
     INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
 )
 
-add_dependencies(ContactStateTypeLibrary WrenchTypeLibrary)
+add_dependencies(ContactStateTypeLibrary Vector3TypeLibrary WrenchTypeLibrary)
 
 connectdds_type_object_library(
     LANG C++11
@@ -120,6 +128,8 @@ connectdds_type_object_library(
     SOURCES "ContactsState_CXX11_SOURCES"
     INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
 )
+
+add_dependencies(ContactsStateTypeLibrary HeaderTypeLibrary ContactStateTypeLibrary)
 
 connectdds_type_object_library(
     LANG C++11
@@ -136,6 +146,8 @@ connectdds_type_object_library(
     OBJECT_LIBRARY_NAME "TwistTypeLibrary"
     SOURCES "Twist_CXX11_SOURCES"
 )
+
+add_dependencies(TwistTypeLibrary Vector3TypeLibrary)
 
 connectdds_type_object_library(
     LANG C++11
@@ -163,6 +175,8 @@ connectdds_type_object_library(
     SOURCES "PoseWithCovariance_CXX11_SOURCES"
 )
 
+add_dependencies(PoseWithCovarianceTypeLibrary PoseTypeLibrary)
+
 connectdds_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
@@ -170,6 +184,8 @@ connectdds_type_object_library(
     OBJECT_LIBRARY_NAME "TwistWithCovarianceTypeLibrary"
     SOURCES "TwistWithCovariance_CXX11_SOURCES"
 )
+
+add_dependencies(TwistWithCovarianceTypeLibrary TwistTypeLibrary)
 
 connectdds_type_object_library(
     LANG C++11
@@ -180,7 +196,7 @@ connectdds_type_object_library(
     INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
 )
 
-add_dependencies(OdometryTypeLibrary TwistWithCovarianceTypeLibrary)
+add_dependencies(OdometryTypeLibrary HeaderTypeLibrary TwistWithCovarianceTypeLibrary PoseWithCovarianceTypeLibrary)
 
 connectdds_type_object_library(
     LANG C++11
@@ -190,3 +206,5 @@ connectdds_type_object_library(
     SOURCES "JointState_CXX11_SOURCES"
     INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
 )
+
+add_dependencies(JointStateTypeLibrary HeaderTypeLibrary)

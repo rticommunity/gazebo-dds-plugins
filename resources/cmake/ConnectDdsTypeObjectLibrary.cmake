@@ -3,16 +3,11 @@ include(ConnextDdsArgumentChecks)
 include(ConnextDdsCodegen)
 
 macro(connectdds_type_object_library)
-    set(options
-        NOT_REPLACE UNBOUNDED IGNORE_ALIGNMENT USE42_ALIGNMENT
-        OPTIMIZE_ALIGNMENT NO_TYPECODE DISABLE_PREPROCESSOR STL STANDALONE 
-    )
-    set(single_value_args LANG OUTPUT_DIRECTORY IDL_FILE VAR PACKAGE 
+    set(options UNBOUNDED)
+    set(single_value_args LANG OUTPUT_DIRECTORY IDL_FILE 
         OBJECT_LIBRARY_NAME SOURCES 
     )
-    set(multi_value_args 
-        TYPE_NAMES INCLUDE_DIRS DEFINES EXTRA_ARGS DEPENDENCIES
-    )
+    set(multi_value_args INCLUDE_DIRS DEPENDENCIES)
 
     cmake_parse_arguments(_OBJLIB
         "${options}"

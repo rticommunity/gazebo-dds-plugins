@@ -17,6 +17,9 @@
  * limitations under the License.
  */
 
+#ifndef IMU_SCAN_H
+#define IMU_SCAN_H
+
 #include <gazebo/gazebo.hh>
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/common/UpdateInfo.hh>
@@ -80,3 +83,5 @@ private:
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // IMU_SCAN_H

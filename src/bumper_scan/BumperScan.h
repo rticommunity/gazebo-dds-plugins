@@ -16,6 +16,9 @@
  *
 */
 
+#ifndef BUMPER_SCAN_H
+#define BUMPER_SCAN_H
+
 #include <gazebo/gazebo.hh>
 #include <gazebo/plugins/ContactPlugin.hh>
 
@@ -77,3 +80,5 @@ private:
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // BUMPER_SCAN_H

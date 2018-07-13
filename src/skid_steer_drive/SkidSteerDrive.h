@@ -26,6 +26,9 @@
  *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef SKID_STEER_DRIVE_H
+#define SKID_STEER_DRIVE_H
+
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
 
@@ -142,3 +145,5 @@ private:
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // SKID_STEER_DRIVE_H

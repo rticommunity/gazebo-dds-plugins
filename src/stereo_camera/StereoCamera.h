@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+#ifndef STEREO_CAMERA_H
+#define STEREO_CAMERA_H
+
 #include "common/GazeboCameraUtils.hpp"
 
 namespace gazebo { namespace dds {
@@ -110,3 +113,5 @@ private:
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // STEREO_CAMERA_H

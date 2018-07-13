@@ -1,7 +1,7 @@
 include(ConnextDdsCodegen)
 include(ConnectDdsTypeObjectLibrary)
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/std_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/std_msgs/msg/Time.idl"
@@ -9,7 +9,7 @@ connectdds_type_object_library(
     SOURCES "Time_CXX11_SOURCES"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/std_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/std_msgs/msg/Header.idl"
@@ -18,7 +18,7 @@ connectdds_type_object_library(
     DEPENDENCIES "TimeTypeLibrary"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sensor_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/sensor_msgs/msg/RegionOfInterest.idl"
@@ -26,7 +26,7 @@ connectdds_type_object_library(
     SOURCES "RegionOfInterest_CXX11_SOURCES"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sensor_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/sensor_msgs/msg/CameraInfo.idl"
@@ -36,7 +36,7 @@ connectdds_type_object_library(
     INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sensor_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/sensor_msgs/msg/Image.idl"
@@ -47,7 +47,7 @@ connectdds_type_object_library(
     UNBOUNDED
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sensor_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/sensor_msgs/msg/LaserScan.idl"
@@ -58,7 +58,7 @@ connectdds_type_object_library(
     UNBOUNDED
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/Quaternion.idl"
@@ -66,7 +66,7 @@ connectdds_type_object_library(
     SOURCES "Quaternion_CXX11_SOURCES"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/Vector3.idl"
@@ -74,7 +74,7 @@ connectdds_type_object_library(
     SOURCES "Vector3_CXX11_SOURCES"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sensor_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/sensor_msgs/msg/Imu.idl"
@@ -84,7 +84,7 @@ connectdds_type_object_library(
     INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/std_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/std_msgs/msg/Int32.idl"
@@ -92,7 +92,7 @@ connectdds_type_object_library(
     SOURCES "Int32_CXX11_SOURCES"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/Wrench.idl"
@@ -101,7 +101,7 @@ connectdds_type_object_library(
     DEPENDENCIES "Vector3TypeLibrary"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/gazebo_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/gazebo_msgs/msg/ContactState.idl"
@@ -111,7 +111,7 @@ connectdds_type_object_library(
     INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/gazebo_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/gazebo_msgs/msg/ContactsState.idl"
@@ -121,7 +121,7 @@ connectdds_type_object_library(
     INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/Pose2D.idl"
@@ -129,7 +129,7 @@ connectdds_type_object_library(
     SOURCES "Pose2D_CXX11_SOURCES"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/Twist.idl"
@@ -138,7 +138,7 @@ connectdds_type_object_library(
     DEPENDENCIES "Vector3TypeLibrary"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/Point.idl"
@@ -146,7 +146,7 @@ connectdds_type_object_library(
     SOURCES "Point_CXX11_SOURCES"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/Pose.idl"
@@ -155,7 +155,7 @@ connectdds_type_object_library(
     DEPENDENCIES "PointTypeLibrary" "QuaternionTypeLibrary"
 )    
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/PoseWithCovariance.idl"
@@ -164,7 +164,7 @@ connectdds_type_object_library(
     DEPENDENCIES "PoseTypeLibrary"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/geometry_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/geometry_msgs/msg/TwistWithCovariance.idl"
@@ -173,7 +173,7 @@ connectdds_type_object_library(
     DEPENDENCIES "TwistTypeLibrary"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/nav_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/nav_msgs/msg/Odometry.idl"
@@ -183,7 +183,7 @@ connectdds_type_object_library(
     INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/resources/idl/"
 )
 
-connectdds_type_object_library(
+connextdds_add_type_object_library(
     LANG C++11
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sensor_msgs/msg"
     IDL_FILE "${CMAKE_SOURCE_DIR}/resources/idl/sensor_msgs/msg/JointState.idl"

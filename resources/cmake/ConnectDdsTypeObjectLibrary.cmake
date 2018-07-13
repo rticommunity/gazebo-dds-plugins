@@ -2,7 +2,59 @@ include(CMakeParseArguments)
 include(ConnextDdsArgumentChecks)
 include(ConnextDdsCodegen)
 
-macro(connectdds_type_object_library)
+#[[
+
+ConnextDdsAddTypeObjectLibrary
+-----------------
+
+Generate a object file using connextdds_rtiddsgen_run to generate the code of the idl file::
+
+    connextdds_add_type_object_library(
+        LANG <language>
+        OUTPUT_DIRECTORY <dir>
+        IDL_FILE <idl file path>
+        OBJECT_LIBRARY_NAME <library_name>
+        SOURCES <sources>
+        [DEPENDENCIES ...]
+        [INCLUDE_DIRS ...]
+        [UNBOUNDED]
+    )
+
+Arguments:
+
+``IDL_FILE`` (mandatory)
+    The IDL filename that will be used to generate code
+
+``OUTPUT_DIRECTORY`` (mandatory)
+    The directory where to put generated files
+
+``LANG`` (mandatory)
+    The language to generate source files for. Expected values are:
+    C, C++, C++03, C++11, C++/CLI, C# and Java.
+
+``OBJECT_LIBRARY_NAME`` (mandatory)
+    The name of the object file that will be generated
+
+``SOURCES`` (mandatory)
+    The sources of the object file 
+
+``DEPENDENCIES`` (optional)
+    The dependencies of the idl
+
+``INCLUDE_DIRS`` (optional)
+    List of include directories passed to Codegen (-I flag)
+
+``UNBOUNDED`` (optional)
+    Generate type files with unbounded support (``-unboundedSupport``) flag.
+
+Output values:
+
+``<OBJECT_LIBRARY_NAME>``
+    The object file that was generated 
+
+#]]
+
+macro(connextdds_add_type_object_library)
     set(options UNBOUNDED)
     set(single_value_args LANG OUTPUT_DIRECTORY IDL_FILE 
         OBJECT_LIBRARY_NAME SOURCES 

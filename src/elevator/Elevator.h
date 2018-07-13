@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+#ifndef ELEVATOR_H
+#define ELEVATOR_H
+
 #include <gazebo/plugins/ElevatorPlugin.hh>
 
 #include <dds/core/ddscore.hpp>
@@ -62,3 +65,5 @@ private:
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // ELEVATOR_H

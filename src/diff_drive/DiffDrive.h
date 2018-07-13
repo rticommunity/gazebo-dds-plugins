@@ -26,6 +26,9 @@
  *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef DIFF_DRIVE_H
+#define DIFF_DRIVE_H
+
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
 
@@ -150,3 +153,5 @@ private:
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // DIFF_DRIVE_H

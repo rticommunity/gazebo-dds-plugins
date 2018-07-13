@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+#ifndef LASER_SCAN_H
+#define LASER_SCAN_H
+
 #include <gazebo/gazebo.hh>
 #include <gazebo/plugins/RayPlugin.hh>
 
@@ -65,3 +68,5 @@ private:
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // LASER_SCAN_H

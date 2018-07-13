@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+#ifndef CAMERA_H
+#define CAMERA_H
+
 #include <gazebo/plugins/CameraPlugin.hh>
 
 #include "common/GazeboCameraUtils.hpp"
@@ -42,7 +45,7 @@ public:
      */
     void Load(sensors::SensorPtr parent, sdf::ElementPtr sdf) override;
 
-protected:
+private:
 
     /**
      * @brief Update the controller
@@ -63,3 +66,5 @@ protected:
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // CAMERA_H

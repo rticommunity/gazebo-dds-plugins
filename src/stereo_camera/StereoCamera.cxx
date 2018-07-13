@@ -17,7 +17,6 @@
 
 #include <gazebo/sensors/MultiCameraSensor.hh>
 
-#include "common/GazeboCameraUtils.cxx"
 #include "common/GazeboDdsUtils.cxx"
 #include "StereoCamera.h"
 

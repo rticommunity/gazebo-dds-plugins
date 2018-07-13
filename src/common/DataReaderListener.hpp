@@ -29,14 +29,27 @@ public:
      *
      * @param on_data on data callback
      */
-    DataReaderListener(const std::function<void(const T &sample)> &on_data);
+    DataReaderListener(const std::function<void(const T &sample)> &on_data)
+            : on_data_(on_data)
+    {
+    }
 
     /**
      * @brief On data available
      *
      * @param reader datareader that have data available
      */
-    virtual void on_data_available(::dds::sub::DataReader<T>& reader);
+    virtual void on_data_available(::dds::sub::DataReader<T> &reader)
+    {
+        ::dds::sub::LoanedSamples<T> samples = reader.take();
+        for (auto sample : samples) {
+            // If the reference we get is valid data, it means we have actual
+            // data available, otherwise we got metadata.
+            if (sample.info().valid()) {
+                on_data_(sample.data());
+            }
+        }
+    }
 
 private:
     std::function<void(const T &sample)> on_data_;

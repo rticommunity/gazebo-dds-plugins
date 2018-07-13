@@ -6,7 +6,6 @@ find_library(ElevatorPlugin
 add_library(DdsElevatorPlugin MODULE 
     Elevator.cxx
     Elevator.h
-    "${CMAKE_SOURCE_DIR}/src/common/DataReaderListener.cxx"
     $<TARGET_OBJECTS:Int32TypeLibrary>
 )
 
@@ -27,7 +26,8 @@ target_include_directories(DdsElevatorPlugin PRIVATE
 )
 
 target_compile_definitions(DdsElevatorPlugin PRIVATE 
-    ${CONNEXTDDS_DEFINITIONS})
+    ${CONNEXTDDS_DEFINITIONS}
+)
 
 add_executable (elevatorpublisher 
     ElevatorPublisher.cxx 

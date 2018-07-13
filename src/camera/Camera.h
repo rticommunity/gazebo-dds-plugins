@@ -17,7 +17,7 @@
 
 #include <gazebo/plugins/CameraPlugin.hh>
 
-#include "common/GazeboCameraUtils.h"
+#include "common/GazeboCameraUtils.hpp"
 
 namespace gazebo { namespace dds {
 

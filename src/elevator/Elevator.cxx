@@ -16,8 +16,8 @@
  */
 
 #include "common/GazeboDdsUtils.cxx"
-#include "common/DataReaderListener.h"
 #include "common/Properties.h"
+#include "common/DataReaderListener.hpp"
 #include "Elevator.h"
 
 namespace gazebo { namespace dds {

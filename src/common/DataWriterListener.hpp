@@ -28,7 +28,9 @@ public:
     /**
      * @brief Constructor
      */
-    DataWriterListener();
+    DataWriterListener()
+    {
+    }
 
     /**
      * @brief Constructor
@@ -38,7 +40,10 @@ public:
      */
     DataWriterListener(
             const std::function<void()> &on_connect,
-            const std::function<void()> &on_disconnect);
+            const std::function<void()> &on_disconnect)
+            : on_connect_(on_connect), on_disconnect_(on_disconnect)
+    {
+    }
 
     /**
      * @brief On publication matched
@@ -48,7 +53,14 @@ public:
      */
     virtual void on_publication_matched(
             ::dds::pub::DataWriter<T> &writer,
-            const ::dds::core::status::PublicationMatchedStatus &status);
+            const ::dds::core::status::PublicationMatchedStatus &status)
+    {
+        if (status.current_count_change() < 0) {
+            on_disconnect_();
+        } else {
+            on_connect_();
+        }
+    }
 
 private:
     std::function<void()> on_connect_;

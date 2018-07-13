@@ -16,7 +16,6 @@
  */
 
 #include "common/GazeboDdsUtils.cxx"
-#include "common/GazeboCameraUtils.cxx"
 #include "Camera.h"
 
 namespace gazebo { namespace dds {

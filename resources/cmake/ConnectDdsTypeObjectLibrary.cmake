@@ -7,7 +7,7 @@ include(ConnextDdsCodegen)
 ConnextDdsAddTypeObjectLibrary
 -----------------
 
-Generate a object file using connextdds_rtiddsgen_run to generate the code of the idl file::
+Generate a type object library using connextdds_rtiddsgen_run to generate the code of the idl file::
 
     connextdds_add_type_object_library(
         LANG <language>
@@ -20,7 +20,7 @@ Generate a object file using connextdds_rtiddsgen_run to generate the code of th
         [UNBOUNDED]
     )
 
-Arguments:
+Input parameters:
 
 ``IDL_FILE`` (mandatory)
     The IDL filename that will be used to generate code
@@ -47,10 +47,10 @@ Arguments:
 ``UNBOUNDED`` (optional)
     Generate type files with unbounded support (``-unboundedSupport``) flag.
 
-Output values:
+Output parameters:
 
 ``<OBJECT_LIBRARY_NAME>``
-    The object file that was generated 
+    The object library that was generated 
 
 #]]
 

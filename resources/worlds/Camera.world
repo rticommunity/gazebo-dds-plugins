@@ -14,6 +14,9 @@
     See the License for the specific language governing permissions and
     limitations under the License. 
 -->
+<!-- 
+    Copied from: https://github.com/ros-simulation/gazebo_ros_pkgs/blob/kinetic-devel/gazebo_plugins/test/camera/camera.world 
+-->
 
 <?xml version="1.0" ?>
 <sdf version="1.6">
@@ -110,7 +113,7 @@
     <pose>0.0 0.0 0.5 0.0 0.0 0.0</pose>
     <link name="camera_link">
       <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
-    <sensor type="camera" name="camera1">
+    <sensor type="camera" name="camera">
       <update_rate>0.5</update_rate>
       <camera name="head">
         <horizontal_fov>1.3962634</horizontal_fov>

@@ -14,6 +14,9 @@
     See the License for the specific language governing permissions and
     limitations under the License. 
 -->
+<!-- 
+    Copied from: https://github.com/ros-simulation/gazebo_ros_pkgs/blob/kinetic-devel/gazebo_plugins/test/camera/multicamera.world
+-->
 
 <?xml version="1.0" ?>
 <sdf version="1.6">

@@ -15,14 +15,17 @@
  * limitations under the License.
  */
 
+#ifndef LASER_SCAN_H
+#define LASER_SCAN_H
+
 #include <gazebo/gazebo.hh>
 #include <gazebo/plugins/RayPlugin.hh>
 
 #include <dds/core/ddscore.hpp>
-#include <dds/domain/find.hpp>
+#include <dds/dds.hpp>
 #include <dds/pub/ddspub.hpp>
 
-#include "sensor_msgs/msg/LaserScanMsg.hpp"
+#include "sensor_msgs/msg/LaserScan.hpp"
 
 namespace gazebo { namespace dds {
 
@@ -56,13 +59,14 @@ public:
 private:
     sensors::SensorPtr sensor_;
     ::dds::domain::DomainParticipant participant_;
-    ::dds::topic::Topic<sensor_msgs::msg::LaserScanMsg> topic_;
-    ::dds::pub::qos::DataWriterQos data_writer_qos_;
-    ::dds::pub::DataWriter<sensor_msgs::msg::LaserScanMsg> writer_;
+    ::dds::topic::Topic<sensor_msgs::msg::LaserScan> topic_;
+    ::dds::pub::DataWriter<sensor_msgs::msg::LaserScan> writer_;
     gazebo::transport::NodePtr gazebo_node_;
     gazebo::transport::SubscriberPtr laser_scan_sub_;
-    sensor_msgs::msg::LaserScanMsg sample_;
+    sensor_msgs::msg::LaserScan sample_;
 };
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // LASER_SCAN_H

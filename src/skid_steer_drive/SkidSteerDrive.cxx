@@ -30,8 +30,7 @@
 #include "common/Properties.h"
 #include "SkidSteerDrive.h"
 
-namespace gazebo {
-namespace dds {
+namespace gazebo { namespace dds {
 
 enum WHEEL_POSITION_ENUM {
     RIGHT_FRONT = 0,
@@ -91,70 +90,110 @@ void SkidSteerDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     last_update_ = utils::get_sim_time(parent_->GetWorld());
 
     // Obtain joints from loaded world
-    joints_[LEFT_FRONT]
-            = utils::get_joint(sdf, parent_, "left_front_joint", "left_front");
-    joints_[RIGHT_FRONT] = utils::get_joint(
-            sdf, parent_, "right_front_joint", "right_front");
-    joints_[LEFT_REAR]
-            = utils::get_joint(sdf, parent_, "left_rear_joint", "left_rear");
-    joints_[RIGHT_REAR]
-            = utils::get_joint(sdf, parent_, "right_rear_joint", "right_rear");
+    std::string joint_name;
+    utils::get_world_parameter<std::string>(
+            sdf, joint_name, "left_front_joint", "left_front");
+
+    joints_[LEFT_FRONT] = parent_->GetJoint(joint_name);
+
+    utils::get_world_parameter<std::string>(
+            sdf, joint_name, "right_front_joint", "right_front");
+
+    joints_[RIGHT_FRONT] = parent->GetJoint(joint_name);
+
+    utils::get_world_parameter<std::string>(
+            sdf, joint_name, "left_rear_joint", "left_rear");
+
+    joints_[LEFT_REAR] = parent->GetJoint(joint_name);
+
+    utils::get_world_parameter<std::string>(
+            sdf, joint_name, "right_rear_joint", "right_rear");
+
+    joints_[RIGHT_REAR] = parent->GetJoint(joint_name);
 
     joints_[LEFT_FRONT]->SetParam("fmax", 0, wheel_torque_);
     joints_[RIGHT_FRONT]->SetParam("fmax", 0, wheel_torque_);
     joints_[LEFT_REAR]->SetParam("fmax", 0, wheel_torque_);
     joints_[RIGHT_REAR]->SetParam("fmax", 0, wheel_torque_);
 
+    // Obtain the qos profile information from loaded world
+    std::string qos_profile_file;
+    utils::get_world_parameter<std::string>(
+            sdf, qos_profile_file, QOS_PROFILE_FILE_PROPERTY_NAME.c_str(), "");
+
+    std::string qos_profile;
+    utils::get_world_parameter<std::string>(
+            sdf, qos_profile, QOS_PROFILE_PROPERTY_NAME.c_str(), "");
+    
+    ::dds::core::QosProvider qos_provider(::dds::core::null);
+    if(qos_profile_file != "" || qos_profile !=""){
+        qos_provider
+            = ::dds::core::QosProvider(qos_profile_file, qos_profile);
+    }
+    else{
+        qos_provider
+            = ::dds::core::QosProvider::Default();
+    }
+
     // Obtain the domain id from loaded world
     int domain_id;
     utils::get_world_parameter<int>(
             sdf, domain_id, DOMAIN_ID_PROPERTY_NAME.c_str(), 0);
 
-    participant_ = ::dds::domain::find(domain_id);
-    if (participant_ == ::dds::core::null) {
-        participant_ = ::dds::domain::DomainParticipant(domain_id);
-    }
+    utils::find_domain_participant(
+            domain_id, participant_, qos_provider, qos_profile);
 
     // Obtain odometry topic name from loaded world
     std::string topic_name_odometry;
     utils::get_world_parameter<std::string>(
             sdf, topic_name_odometry, "topic_name_odometry", "OdometryState");
 
-    topic_odometry_ = ::dds::topic::Topic<nav_msgs::msg::Odometry>(
-            participant_, topic_name_odometry);
+    utils::find_topic<nav_msgs::msg::Odometry>(
+            participant_, topic_odometry_, topic_name_odometry);
 
-    writer_odometry_ = ::dds::pub::DataWriter<nav_msgs::msg::Odometry>(
-            ::dds::pub::Publisher(participant_), topic_odometry_);
+    utils::create_datawriter<nav_msgs::msg::Odometry>(
+            writer_odometry_, participant_, topic_odometry_, qos_provider);
 
     // Obtain jointState topic name from loaded world
     std::string topic_name_joint;
     utils::get_world_parameter<std::string>(
             sdf, topic_name_joint, "topic_name_joint", "JointState");
 
-    topic_joint_state_ = ::dds::topic::Topic<sensor_msgs::msg::JointState>(
-            participant_, topic_name_joint);
+    utils::find_topic<sensor_msgs::msg::JointState>(
+            participant_, topic_joint_state_, topic_name_joint);
 
-    writer_joint_state_ = ::dds::pub::DataWriter<sensor_msgs::msg::JointState>(
-            ::dds::pub::Publisher(participant_), topic_joint_state_);
+    utils::create_datawriter<sensor_msgs::msg::JointState>(
+            writer_joint_state_,
+            participant_,
+            topic_joint_state_,
+            qos_provider);
 
     // Obtain twist topic name from loaded world
     std::string topic_name_twist;
     utils::get_world_parameter<std::string>(
             sdf, topic_name_twist, "topic_name_twist", "cmd_vel");
 
-    topic_twist_ = ::dds::topic::Topic<geometry_msgs::msg::Twist>(
-            participant_, topic_name_twist);
+    utils::find_topic<geometry_msgs::msg::Twist>(
+            participant_, topic_twist_, topic_name_twist);
+
+    ::dds::sub::qos::DataReaderQos data_reader_qos
+            = qos_provider.datareader_qos();
+    ::dds::sub::qos::SubscriberQos subscriber_qos
+            = qos_provider.subscriber_qos();
 
     rti::core::policy::Property::Entry value(
             { "dds.data_reader.history.depth", "1" });
 
     rti::core::policy::Property property;
     property.set(value);
-    data_reader_qos_ << property;
-    reader_ = ::dds::sub::DataReader<geometry_msgs::msg::Twist>(
-            ::dds::sub::Subscriber(participant_),
+    data_reader_qos << property;
+
+    utils::create_datareader<geometry_msgs::msg::Twist>(
+            reader_,
+            participant_,
             topic_twist_,
-            data_reader_qos_);
+            data_reader_qos,
+            subscriber_qos);
 
     // Init samples
     joint_state_sample_.name().resize(WHEEL_NUMBER);
@@ -168,7 +207,7 @@ void SkidSteerDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     update_connection_ = event::Events::ConnectWorldUpdateBegin(
             boost::bind(&SkidSteerDrive::update_model, this));
 
-    gzmsg << "Starting Skid Steer drive Plugin" << std::endl;
+    gzmsg << "Starting skid steer drive plugin" << std::endl;
     gzmsg << "* Publications:" << std::endl;
     gzmsg << "  - " << topic_name_odometry << " [nav_msgs/msg/Odometry]"
           << std::endl;

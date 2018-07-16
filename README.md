@@ -47,3 +47,16 @@ plugins.
 ```
 $ make
 ```
+
+## List of plugins
+
+This project contains multiple Gazebo plugins. These plugins are:
+
+* ***Bumper scan*** : It allows us to obtain the information a bumper scan. You can obtain more information [here](src/bumper_scan/README.md)
+* ***Camera*** : It allows us to obtain the information of a camera. You can obtain more information [here](src/camera/README.md)
+* ***Differential drive*** : It allows us to manage a differential drive robot and obtain its information. You can obtain more information [here](src/diff_drive/README.md)
+* ***Elevator*** : It allows us to manage an elevator. You can obtain more information [here](src/elevator/README.md)
+* ***Imu scan*** : It allows us to obtain the information of an imu sensor. You can obtain more information [here](src/imu_scan/README.md)
+* ***Laser scan*** : It allows us to obtain the information of a laser sensor. You can obtain more information [here](src/laser_scan/README.md)
+* ***Skid steer drive*** : It allows us to manage a skid steer drive robot and obtain its information. You can obtain more information [here](src/skid_steer_drive/README.md)
+* ***Stereo camera*** : It allows us to manage two synchronized cameras and obtain its information. You can obtain more information [here](src/stereo_camera/README.md)

@@ -1,6 +1,6 @@
 /*
  * Copyright 2018 Real-Time Innovations, Inc.
- * Copyright 2015 Open Source Robotics Foundation
+ * Copyright 2012 Open Source Robotics Foundation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,55 +15,56 @@
  * limitations under the License.
  */
 
-#ifndef ELEVATOR_H
-#define ELEVATOR_H
+#ifndef CAMERA_H
+#define CAMERA_H
 
-#include <gazebo/plugins/ElevatorPlugin.hh>
+#include <gazebo/plugins/CameraPlugin.hh>
 
-#include <dds/core/ddscore.hpp>
-#include <dds/dds.hpp>
-#include <dds/sub/ddssub.hpp>
-
-#include "std_msgs/msg/Int32.hpp"
+#include "common/GazeboCameraUtils.hpp"
 
 namespace gazebo { namespace dds {
 
-class Elevator : public ElevatorPlugin {
-
+class Camera : public CameraPlugin, GazeboCameraUtils
+{
 public:
     /**
      * @brief Constructor
      */
-    Elevator();
+    Camera();
 
     /**
      * @brief Destructor
      */
-    virtual ~Elevator();
+    ~Camera();
 
     /**
      * @brief Load the plugin inside Gazebo's system
      *
-     * @param parent object of Gazebo's model
+     * @param parent object of Gazebo's sensor
      * @param sdf object of Gazebo's world
      */
-    void Load(physics::ModelPtr parent, sdf::ElementPtr sdf) override;
-
-    /**
-     * @brief Receives messages to manage the elevator
-     *
-     * @param msg current order to the elevator
-     */
-    void on_msg(const std_msgs::msg::Int32 & msg);
+    void Load(sensors::SensorPtr parent, sdf::ElementPtr sdf) override;
 
 private:
-    ::dds::domain::DomainParticipant participant_;
-    ::dds::topic::Topic<std_msgs::msg::Int32> topic_;
-    ::dds::sub::DataReader<std_msgs::msg::Int32> reader_;
-    ::dds::sub::qos::DataReaderQos data_reader_qos_;
+
+    /**
+     * @brief Update the controller
+     *
+     * @param image raw information of the current image
+     * @param width width of the current image
+     * @param height height of the current image
+     * @param depth  depth of the current image
+     * @param format format of the current image
+     */
+    virtual void OnNewFrame(
+            const unsigned char * image,
+            unsigned int width,
+            unsigned int height,
+            unsigned int depth,
+            const std::string & format) override;
 };
 
 }  // namespace dds
 }  // namespace gazebo
 
-#endif  // ELEVATOR_H
+#endif  // CAMERA_H

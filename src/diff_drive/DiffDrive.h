@@ -26,11 +26,14 @@
  *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef DIFF_DRIVE_H
+#define DIFF_DRIVE_H
+
 #include <gazebo/common/common.hh>
 #include <gazebo/physics/physics.hh>
 
 #include <dds/core/ddscore.hpp>
-#include <dds/domain/find.hpp>
+#include <dds/dds.hpp>
 #include <dds/pub/ddspub.hpp>
 #include <dds/sub/ddssub.hpp>
 
@@ -123,7 +126,6 @@ private:
     ::dds::topic::Topic<geometry_msgs::msg::Twist> topic_twist_;
     ::dds::pub::DataWriter<nav_msgs::msg::Odometry> writer_odometry_;
     ::dds::pub::DataWriter<sensor_msgs::msg::JointState> writer_joint_state_;
-    ::dds::sub::qos::DataReaderQos data_reader_qos_;
     ::dds::sub::DataReader<geometry_msgs::msg::Twist> reader_;
     ::dds::sub::LoanedSamples<geometry_msgs::msg::Twist> twist_samples_;
     nav_msgs::msg::Odometry odometry_sample_;
@@ -151,3 +153,5 @@ private:
 
 }  // namespace dds
 }  // namespace gazebo
+
+#endif  // DIFF_DRIVE_H

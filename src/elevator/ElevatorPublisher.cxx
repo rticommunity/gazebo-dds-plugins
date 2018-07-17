@@ -18,6 +18,7 @@
 #include <dds/domain/find.hpp>
 #include <dds/pub/ddspub.hpp>
 
+#include "common/DdsUtils.h"
 #include "std_msgs/msg/Int32.hpp"
 
 void publisher_main(int domain_id, std::string topic_name, int floor)
@@ -38,7 +39,12 @@ void publisher_main(int domain_id, std::string topic_name, int floor)
     std_msgs::msg::Int32 sample;
     sample.data(floor);
 
-    rti::util::sleep(dds::core::Duration::from_millisecs(200));
+    // Wait until it has a publication matched
+    dds::core::status::PublicationMatchedStatus pub_status;
+    do {
+        pub_status = writer.publication_matched_status();
+        rti::util::sleep(dds::core::Duration(1));
+    } while (pub_status.current_count() == 0 && !exit_application);
 
     // Write sample
     std::cout << "Sending data..." << std::endl;
@@ -47,6 +53,8 @@ void publisher_main(int domain_id, std::string topic_name, int floor)
 
 int main(int argc, char *argv[])
 {
+    int ret_code = 0;
+
     if (argc < 4) {
         std::cerr << "Missing arguments." << std::endl
                   << "Template: elevatorpublisher <domain id> <topic name> "
@@ -55,14 +63,19 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    // Handle signals (e.g., CTRL+C)
+    setup_signal_handler();
+
     try {
         publisher_main(atoi(argv[1]), std::string(argv[2]), atoi(argv[3]));
     } catch (const std::exception &ex) {
         // This will catch DDS exceptions
         std::cerr << "Exception in publisher_main(): " << ex.what()
                   << std::endl;
-        return -1;
+        ret_code = -1;
     }
 
-    return 0;
+    dds::domain::DomainParticipant::finalize_participant_factory();
+
+    return ret_code;
 }

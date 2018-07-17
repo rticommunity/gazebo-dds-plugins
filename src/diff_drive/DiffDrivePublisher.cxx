@@ -21,6 +21,7 @@
 #include <dds/pub/ddspub.hpp>
 #include <dds/sub/ddssub.hpp>
 
+#include "common/DdsUtils.h"
 #include "geometry_msgs/msg/Twist.hpp"
 
 void publisher_main(
@@ -46,7 +47,12 @@ void publisher_main(
     sample.linear().x(linear_x);
     sample.angular().z(angular_z);
 
-    rti::util::sleep(dds::core::Duration::from_millisecs(200));
+    // Wait until it has a publication matched
+    dds::core::status::PublicationMatchedStatus pub_status;
+    do {
+        pub_status = writer.publication_matched_status();
+        rti::util::sleep(dds::core::Duration(1));
+    } while (pub_status.current_count() == 0 && !exit_application);
 
     // Write sample
     std::cout << "Sending data..." << std::endl;
@@ -55,6 +61,8 @@ void publisher_main(
 
 int main(int argc, char *argv[])
 {
+    int ret_code = 0;
+
     if (argc < 5) {
         std::cerr << "Missing arguments." << std::endl
                   << "Template: diffdrivepublisher <domain id> <topic name> "
@@ -62,6 +70,9 @@ int main(int argc, char *argv[])
                   << std::endl;
         return -1;
     }
+
+    // Handle signals (e.g., CTRL+C)
+    setup_signal_handler();
 
     try {
         publisher_main(
@@ -73,8 +84,10 @@ int main(int argc, char *argv[])
         // This will catch DDS exceptions
         std::cerr << "Exception in publisher_main(): " << ex.what()
                   << std::endl;
-        return -1;
+        ret_code = -1;
     }
 
-    return 0;
+    dds::domain::DomainParticipant::finalize_participant_factory();
+
+    return ret_code;
 }

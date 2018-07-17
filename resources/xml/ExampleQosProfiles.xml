@@ -27,6 +27,16 @@
                 <participant_name>
                     <name>RTI Profiles Example -- Transient Local Profile</name>
                 </participant_name>
+                <discovery>
+                    <initial_peers>
+                        <element>239.255.0.1</element>
+                        <element>8@builtin.udpv4://127.0.0.1</element>
+                        <element>builtin.shmem://</element>
+                    </initial_peers>
+                    <multicast_receive_addresses>
+                        <element>239.255.0.1</element>
+                    </multicast_receive_addresses>
+                </discovery>
             </participant_qos>
 
             <datawriter_qos>

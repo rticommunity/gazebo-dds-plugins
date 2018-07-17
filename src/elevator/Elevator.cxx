@@ -94,6 +94,7 @@ void Elevator::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
                     std::bind(&Elevator::on_msg, this, std::placeholders::_1)),
             ::dds::core::status::StatusMask::data_available());
 
+    gzmsg << std::endl;
     gzmsg << "Starting elevator plugin" << std::endl;
     gzmsg << "* Subscriptions:" << std::endl;
     gzmsg << "  - " << topic_name << " [std_msgs/msg/Int32]" << std::endl;

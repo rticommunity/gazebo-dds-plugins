@@ -128,6 +128,7 @@ void ImuScan::Load(gazebo::sensors::SensorPtr parent, sdf::ElementPtr sdf)
     sample_.linear_acceleration_covariance()[4] = covariance;
     sample_.linear_acceleration_covariance()[8] = covariance;
 
+    gzmsg << std::endl;
     gzmsg << "Starting imu plugin" << std::endl;
     gzmsg << "* Publications:" << std::endl;
     gzmsg << "  - " << topic_name << " [sensor_msgs/msg/Imu]" << std::endl;

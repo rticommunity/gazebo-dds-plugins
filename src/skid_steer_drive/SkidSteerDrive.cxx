@@ -207,6 +207,7 @@ void SkidSteerDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     update_connection_ = event::Events::ConnectWorldUpdateBegin(
             boost::bind(&SkidSteerDrive::update_model, this));
 
+    gzmsg << std::endl;
     gzmsg << "Starting skid steer drive plugin" << std::endl;
     gzmsg << "* Publications:" << std::endl;
     gzmsg << "  - " << topic_name_odometry << " [nav_msgs/msg/Odometry]"

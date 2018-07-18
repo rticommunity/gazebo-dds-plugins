@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "common/GazeboDdsUtils.cxx"
+#include "common/GazeboUtils.hpp"
 #include "Camera.h"
 
 namespace gazebo { namespace dds {

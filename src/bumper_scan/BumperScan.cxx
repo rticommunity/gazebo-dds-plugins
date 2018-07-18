@@ -18,7 +18,8 @@
 
 #include <gazebo/sensors/ContactSensor.hh>
 
-#include "common/GazeboDdsUtils.cxx"
+#include "common/GazeboUtils.hpp"
+#include "common/DdsUtils.hpp"
 #include "common/Properties.h"
 #include "BumperScan.h"
 

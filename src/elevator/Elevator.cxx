@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 
-#include "common/GazeboDdsUtils.cxx"
+#include "common/GazeboUtils.hpp"
+#include "common/DdsUtils.hpp"
 #include "common/Properties.h"
 #include "common/DataReaderListener.hpp"
 #include "Elevator.h"

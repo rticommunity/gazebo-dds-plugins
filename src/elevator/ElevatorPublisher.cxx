@@ -18,7 +18,7 @@
 #include <dds/domain/find.hpp>
 #include <dds/pub/ddspub.hpp>
 
-#include "common/DdsUtils.h"
+#include "common/DdsUtils.hpp"
 #include "std_msgs/msg/Int32.hpp"
 
 void publisher_main(int domain_id, std::string topic_name, int floor)
@@ -40,15 +40,14 @@ void publisher_main(int domain_id, std::string topic_name, int floor)
     sample.data(floor);
 
     // Wait until it has a publication matched
-    dds::core::status::PublicationMatchedStatus pub_status;
-    do {
-        pub_status = writer.publication_matched_status();
-        rti::util::sleep(dds::core::Duration(1));
-    } while (pub_status.current_count() == 0 && !exit_application);
+    gazebo::dds::utils::wait_for_publication_matched(
+            writer, dds::core::Duration(4));
 
     // Write sample
     std::cout << "Sending data..." << std::endl;
     writer.write(sample);
+
+    writer.wait_for_acknowledgments(dds::core::Duration(4));
 }
 
 int main(int argc, char *argv[])
@@ -64,7 +63,7 @@ int main(int argc, char *argv[])
     }
 
     // Handle signals (e.g., CTRL+C)
-    setup_signal_handler();
+    gazebo::dds::utils::setup_signal_handler();
 
     try {
         publisher_main(atoi(argv[1]), std::string(argv[2]), atoi(argv[3]));

@@ -26,7 +26,8 @@
 #include <rti/domain/find.hpp>
 #include <dds/dds.hpp>
 
-#include "common/GazeboDdsUtils.cxx"
+#include "common/GazeboUtils.hpp"
+#include "common/DdsUtils.hpp"
 #include "common/Properties.h"
 #include "ImuScan.h"
 

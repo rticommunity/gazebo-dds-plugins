@@ -17,7 +17,7 @@
 
 #include <gazebo/sensors/MultiCameraSensor.hh>
 
-#include "common/GazeboDdsUtils.cxx"
+#include "common/GazeboUtils.hpp"
 #include "StereoCamera.h"
 
 namespace gazebo { namespace dds {

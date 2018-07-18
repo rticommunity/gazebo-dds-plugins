@@ -26,7 +26,8 @@
  *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "common/GazeboDdsUtils.cxx"
+#include "common/GazeboUtils.hpp"
+#include "common/DdsUtils.hpp"
 #include "common/Properties.h"
 #include "DiffDrive.h"
 

@@ -28,7 +28,7 @@
 
 #include "sensor_msgs/msg/CameraInfo.hpp"
 #include "sensor_msgs/msg/Image.hpp"
-#include "GazeboDdsUtils.cxx"
+#include "DdsUtils.hpp"
 #include "Properties.h"
 
 namespace gazebo { namespace dds {

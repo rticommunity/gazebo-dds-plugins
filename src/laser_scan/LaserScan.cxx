@@ -16,7 +16,8 @@
  */
 
 #include "common/Properties.h"
-#include "common/GazeboDdsUtils.cxx"
+#include "common/GazeboUtils.hpp"
+#include "common/DdsUtils.hpp"
 #include "LaserScan.h"
 
 namespace gazebo { namespace dds {

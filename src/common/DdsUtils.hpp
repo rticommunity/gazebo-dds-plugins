@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-#ifndef GAZEBO_DDS_UTILS_CXX
-#define GAZEBO_DDS_UTILS_CXX
+#ifndef DDS_UTILS_HPP
+#define DDS_UTILS_HPP
 
-#include <gazebo/common/common.hh>
-#include <gazebo/physics/physics.hh>
+#include <csignal>
+#include <iostream>
 
 #include <dds/dds.hpp>
 #include <rti/domain/find.hpp>
@@ -26,24 +26,38 @@
 #include <dds/pub/ddspub.hpp>
 #include <dds/sub/ddssub.hpp>
 
-#include "Properties.h"
-
 namespace gazebo { namespace dds { namespace utils {
 
-template <typename T>
-void get_world_parameter(
-        sdf::ElementPtr sdf,
-        T & tag_variable,
-        const char * element_name,
-        const T & element_default)
+/**
+ * This global variable keeps the main thread sleeping until a signal changes
+ * its value to false.
+ */
+bool exit_application = false;
+/**
+ * This method changes sets exit_service to true. It is triggered by
+ * @param signal Unused int parameters that identifies the captured signal.
+ */
+inline void signal_handler(int signal)
 {
-    if (sdf->HasElement(element_name)) {
-        tag_variable = sdf->Get<T>(element_name);
-    } else {
-        tag_variable = element_default;
-        gzwarn << "Missing <" << element_name
-               << ">, set to default: " << tag_variable << std::endl;
-    }
+    // Log registration of Web Server
+    std::cout << "Received " << std::to_string(signal) << " signal"
+              << std::endl;
+    exit_application = true;
+}
+
+/**
+ * This method registers the signal_handler() with all the exit signals, which
+ * triggers a call to the method if any event happens.
+ */
+inline void setup_signal_handler()
+{
+#ifndef RTI_WIN32
+    signal(SIGHUP,  signal_handler); //Terminal is closed
+    signal(SIGQUIT, signal_handler); //Quit
+#endif
+    signal(SIGTERM, signal_handler); //Terminate
+    signal(SIGINT,  signal_handler); //Interrupt
+    signal(SIGABRT, signal_handler); //Abort
 }
 
 void find_domain_participant(
@@ -154,18 +168,23 @@ void set_unbounded_sequence_allocated_size(
     data_writer_qos << property;
 }
 
-common::Time get_sim_time(physics::WorldPtr world)
+template <typename T>
+void wait_for_publication_matched(
+        const ::dds::pub::DataWriter<T> &writer,
+        const ::dds::core::Duration &duration)
 {
-#if GAZEBO_MAJOR_VERSION >= 8
-    return world->SimTime();
-#else
-    return world->GetSimTime();
-#endif
-}
+    ::dds::core::cond::StatusCondition status_condition(writer);
+    status_condition.enabled_statuses(
+            ::dds::core::status::StatusMask::publication_matched());
 
+    ::dds::core::cond::WaitSet waitset;
+    waitset.attach_condition(status_condition);
+
+    waitset.wait(duration);
+}
 
 }  // namespace utils
 }  // namespace dds
 }  // namespace gazebo
 
-#endif  // GAZEBO_DDS_UTILS_CXX
+#endif // DDS_UTILS_HPP

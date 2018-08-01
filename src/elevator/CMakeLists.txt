@@ -6,7 +6,6 @@ find_library(ElevatorPlugin
 add_library(DdsElevatorPlugin MODULE 
     Elevator.cxx
     Elevator.h
-    $<TARGET_OBJECTS:Int32TypeLibrary>
 )
 
 target_link_libraries(DdsElevatorPlugin 
@@ -14,15 +13,14 @@ target_link_libraries(DdsElevatorPlugin
     ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS}
     ${ElevatorPlugin}
+    rosddstypes
 )
 
 target_include_directories(DdsElevatorPlugin PRIVATE 
     ${CONNEXTDDS_INCLUDE_DIRS}
     ${GAZEBO_INCLUDE_DIRS}
     ${SDF_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_BINARY_DIR}
     "${CMAKE_SOURCE_DIR}/src"
-    "${CMAKE_BINARY_DIR}/src/common"
 )
 
 target_compile_definitions(DdsElevatorPlugin PRIVATE 
@@ -31,19 +29,17 @@ target_compile_definitions(DdsElevatorPlugin PRIVATE
 
 add_executable (elevatorpublisher 
     ElevatorPublisher.cxx 
-    $<TARGET_OBJECTS:Int32TypeLibrary>
 )
 
 target_link_libraries(elevatorpublisher 
     ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS} 
+    rosddstypes
 )
 
 target_include_directories(elevatorpublisher PRIVATE 
     ${CONNEXTDDS_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_BINARY_DIR}
     "${CMAKE_SOURCE_DIR}/src"
-    "${CMAKE_BINARY_DIR}/src/common"
 )
 
 target_compile_definitions(elevatorpublisher PRIVATE 

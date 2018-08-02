@@ -91,12 +91,12 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     // Obtain joints from loaded world
     std::string joint_name;
     utils::get_world_parameter<std::string>(
-            sdf, joint_name, "leftJoint", "left_joint");
+            sdf, joint_name, "left_joint", "left_joint");
 
     joints_[LEFT] = parent_->GetJoint(joint_name);
 
     utils::get_world_parameter<std::string>(
-            sdf, joint_name, "rightJoint", "right_joint");
+            sdf, joint_name, "right_joint", "right_joint");
 
     joints_[RIGHT] = parent_->GetJoint(joint_name);
 

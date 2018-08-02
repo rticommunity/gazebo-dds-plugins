@@ -256,13 +256,12 @@
     </joint>
     <plugin name='differential_drive_controller'
               filename='diff_drive/libDdsDiffDrivePlugin.so'>
-      <alwaysOn>true</alwaysOn>
       <update_rate>2</update_rate>
-      <leftJoint>left_wheel_hinge</leftJoint>
-      <rightJoint>right_wheel_hinge</rightJoint>
-      <domain_id>0</domain_id>
-      <!-- <qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</qos_profile_file> -->
-      <!-- <qos_profile>ExampleLibrary::TransientLocalProfile</qos_profile> -->
+      <left_joint>left_wheel_hinge</left_joint>
+      <right_joint>right_wheel_hinge</right_joint>
+      <dds_domain_id>0</dds_domain_id>
+      <!-- <dds_qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file> -->
+      <!-- <dds_qos_profile>ExampleLibrary::TransientLocalProfile</dds_qos_profile> -->
       <wheel_separation>0.39</wheel_separation>
       <wheel_diameter>0.15</wheel_diameter>
       <wheel_acceleration>0</wheel_acceleration>
@@ -272,7 +271,6 @@
       <topic_name_odometry>odom</topic_name_odometry>
       <topic_name_joint>joint</topic_name_joint>
       <odometryFrame>odom</odometryFrame>
-      <robotBaseFrame>chassis</robotBaseFrame>
       <legacy_mode>true</legacy_mode>
     </plugin>
   </model>

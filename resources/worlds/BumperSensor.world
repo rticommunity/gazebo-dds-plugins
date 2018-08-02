@@ -162,11 +162,10 @@
                         <collision>my_box_geom</collision>
                     </contact>
                     <plugin name="box_bumper_controller" filename="bumper_scan/libDdsBumperScanPlugin.so">
-                        <alwaysOn>1</alwaysOn>
                         <topic_name>bumper_scan</topic_name>
-                        <domain_id>0</domain_id>
-                        <!-- <qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</qos_profile_file> -->
-                        <!-- <qos_profile>ExampleLibrary::TransientLocalProfile</qos_profile> -->
+                        <dds_domain_id>0</dds_domain_id>
+                        <!-- <dds_qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file> -->
+                        <!-- <dds_qos_profile>ExampleLibrary::TransientLocalProfile</dds_qos_profile> -->
                     </plugin>
                 </sensor>
                 <gravity>1</gravity>

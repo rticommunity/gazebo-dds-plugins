@@ -20,6 +20,7 @@
 #include <dds/domain/find.hpp>
 #include <dds/pub/ddspub.hpp>
 
+#include "common/CommandLineParser.hpp"
 #include "common/DdsUtils.hpp"
 #include "geometry_msgs/msg/Twist.hpp"
 
@@ -60,24 +61,30 @@ void publisher_main(
 int main(int argc, char *argv[])
 {
     int ret_code = 0;
+    CommandLineParser cmd_parser(argc, argv);
 
-    if (argc < 5) {
-        std::cerr << "Missing arguments." << std::endl
-                  << "Template: diffdrivepublisher <domain id> <topic name> "
-                     "<linear velocity in axis x> <angular velocity in axis z>"
-                  << std::endl;
-        return -1;
+    if (cmd_parser.has_flag("-h") ) {
+        std::cout<< "Usage: diffdrivepublisher [options]" <<std::endl
+                 << "Generic options:" <<std::endl
+                 << "-help                           - Prints this page and exits" <<std::endl
+                 << "-d                              - Sets the domainId (default 226)" <<std::endl
+                 << "-t                              - Sets the topic name" <<std::endl
+                 << "-s                              - Sets information of the sample" <<std::endl;
+        return 0;
     }
 
     // Handle signals (e.g., CTRL+C)
     gazebo::dds::utils::setup_signal_handler();
 
     try {
+        std::vector<std::string> sample_information
+                = cmd_parser.get_values("-s");
+
         publisher_main(
-                atoi(argv[1]),
-                std::string(argv[2]),
-                atof(argv[3]),
-                atof(argv[4]));
+                atoi(cmd_parser.get_value("-d").c_str()),
+                std::string(cmd_parser.get_value("-t")),
+                atof(sample_information[0].c_str()),
+                atof(sample_information[1].c_str()));
     } catch (const std::exception &ex) {
         // This will catch DDS exceptions
         std::cerr << "Exception in publisher_main(): " << ex.what()

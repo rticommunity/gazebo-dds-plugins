@@ -61,15 +61,19 @@ void publisher_main(
 int main(int argc, char *argv[])
 {
     int ret_code = 0;
-    CommandLineParser cmd_parser(argc, argv);
 
-    if (cmd_parser.has_flag("-h") ) {
-        std::cout<< "Usage: diffdrivepublisher [options]" <<std::endl
-                 << "Generic options:" <<std::endl
-                 << "-help                           - Prints this page and exits" <<std::endl
-                 << "-d                              - Sets the domainId (default 226)" <<std::endl
-                 << "-t                              - Sets the topic name" <<std::endl
-                 << "-s                              - Sets information of the sample" <<std::endl;
+    gazebo::dds::utils::CommandLineParser cmd_parser(argc, argv);
+
+    if (cmd_parser.has_flag("-h")) {
+        std::cout << "Usage: diffdrivepublisher [options]" << std::endl
+                  << "Generic options:" << std::endl
+                  << "\t-h                      - Prints this page and exits"
+                  << std::endl
+                  << "\t-d <domain id>          - Sets the domainId (default 0)"
+                  << std::endl
+                  << "\t-t <topic name>         - Sets the topic name (default topic_name) " << std::endl
+                  << "\t-s <sample information> - Sets information of the sample (default 0, 0)"
+                  << std::endl;
         return 0;
     }
 
@@ -85,6 +89,7 @@ int main(int argc, char *argv[])
                 std::string(cmd_parser.get_value("-t")),
                 atof(sample_information[0].c_str()),
                 atof(sample_information[1].c_str()));
+
     } catch (const std::exception &ex) {
         // This will catch DDS exceptions
         std::cerr << "Exception in publisher_main(): " << ex.what()

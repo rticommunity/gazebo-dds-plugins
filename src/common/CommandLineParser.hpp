@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
+#ifndef COMMAND_LINE_PARSER_HPP
+#define COMMAND_LINE_PARSER_HPP
+
 #include <iostream>
 #include <map>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+
+namespace gazebo { namespace dds { namespace utils {
 
 class CommandLineParser {
 public:
@@ -27,9 +32,14 @@ public:
      */
     CommandLineParser(int argc, char *argv[])
     {
-        for (int i = 1; i+1 < argc; i = i + 2) {
-            argument_map_.insert(
-                    std::pair<std::string, std::string>(argv[i], argv[i + 1]));
+        for (int i = 1; i < argc; i++) {
+            if (argv[i][0] == '-' && i + 1 < argc && argv[i + 1][0] != '-') {
+                argument_map_.insert(std::pair<std::string, std::string>(
+                        argv[i], argv[i + 1]));
+            } else if (argv[i][0] == '-') {
+                argument_map_.insert(
+                        std::pair<std::string, std::string>(argv[i], ""));
+            }
         }
     }
 
@@ -50,15 +60,28 @@ public:
 
     std::vector<std::string> get_values(std::string key_value)
     {
-        std::istringstream buffer(get_value("-s"));
-        std::istream_iterator<std::string> beg(buffer), end;
+        std::string values = get_value(key_value);
 
-        return std::vector<std::string>(beg, end);
+        // Process values
+        std::size_t found;
+        found = values.find("(");
+        if (found != std::string::npos)
+            values.erase(found, 1);
+
+        found = values.find(")");
+        if (found != std::string::npos)
+            values.erase(found, 1);
+
+        std::istringstream buffer(values);
+        std::istream_iterator<std::string> it_begin(buffer), it_end;
+
+        return std::vector<std::string>(it_begin, it_end);
     }
 
     bool has_flag(std::string key_value)
     {
         bool result = false;
+
         if (argument_map_.find(key_value) != argument_map_.end()) {
             result = true;
         }
@@ -69,3 +92,9 @@ public:
 private:
     std::map<std::string, std::string> argument_map_;
 };
+
+}  // namespace utils
+}  // namespace dds
+}  // namespace gazebo
+
+#endif  // COMMAND_LINE_PARSER_HPP

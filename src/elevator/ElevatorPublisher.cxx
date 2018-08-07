@@ -18,6 +18,7 @@
 #include <dds/domain/find.hpp>
 #include <dds/pub/ddspub.hpp>
 
+#include "common/CommandLineParser.hpp"
 #include "common/DdsUtils.hpp"
 #include "std_msgs/msg/Int32.hpp"
 
@@ -54,23 +55,43 @@ int main(int argc, char *argv[])
 {
     int ret_code = 0;
 
-    if (argc < 4) {
-        std::cerr << "Missing arguments." << std::endl
-                  << "Template: elevatorpublisher <domain id> <topic name> "
-                     "<floor>"
-                  << std::endl;
-        return -1;
-    }
+    gazebo::dds::utils::CommandLineParser cmd_parser(argc, argv);
 
+    if (cmd_parser.has_flag("-h")) {
+        std::cout << "Usage: elevatorpublisher [options]" << std::endl
+                  << "Generic options:" << std::endl
+                  << "\t-h                      - Prints this page and exits"
+                  << std::endl
+                  << "\t-d <domain id>          - Sets the domainId (default 0)"
+                  << std::endl
+                  << "\t-t <topic name>         - Sets the topic name"
+                  << std::endl
+                  << "\t-s <sample information> - Sets information of the "
+                     "sample (default 0)"
+                  << std::endl;
+        return 0;
+    }
     // Handle signals (e.g., CTRL+C)
     gazebo::dds::utils::setup_signal_handler();
 
     try {
-        publisher_main(atoi(argv[1]), std::string(argv[2]), atoi(argv[3]));
+        // Check arguments
+        int domain_id = 0;
+        if (cmd_parser.has_flag("-d")) {
+            domain_id = atoi(cmd_parser.get_value("-d").c_str());
+        }
+
+        int floor = 0;
+        if (cmd_parser.has_flag("-s")) {
+            floor = atoi(cmd_parser.get_value("-s").c_str());
+        }
+
+        publisher_main(
+                domain_id, std::string(cmd_parser.get_value("-t")), floor);
+
     } catch (const std::exception &ex) {
-        // This will catch DDS exceptions
-        std::cerr << "Exception in publisher_main(): " << ex.what()
-                  << std::endl;
+        // This will catch DDS and CommandLineParser exceptions
+        std::cerr << ex.what() << std::endl;
         ret_code = -1;
     }
 

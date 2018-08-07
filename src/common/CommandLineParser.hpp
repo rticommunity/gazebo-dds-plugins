@@ -19,8 +19,6 @@
 
 #include <iostream>
 #include <map>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string>
 
 namespace gazebo { namespace dds { namespace utils {
@@ -52,10 +50,19 @@ public:
 
     std::string get_value(std::string key_value)
     {
-        if (argument_map_.find(key_value) != argument_map_.end())
-            return argument_map_[key_value];
+        if (argument_map_.find(key_value) == argument_map_.end()) {
+            throw std::runtime_error(
+                    std::string("CommandLineParser: Error in parameter '")
+                    + key_value + "'");
+        } else if (argument_map_[key_value] == "" && key_value != "-h") {
+            throw std::runtime_error(
+                    std::string(
+                            "CommandLineParser: Missing value for argument '")
+                    + key_value + "'");
+        }
 
-        return "";
+
+        return argument_map_[key_value];
     }
 
     std::vector<std::string> get_values(std::string key_value)

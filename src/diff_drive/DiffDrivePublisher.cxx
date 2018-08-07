@@ -71,8 +71,10 @@ int main(int argc, char *argv[])
                   << std::endl
                   << "\t-d <domain id>          - Sets the domainId (default 0)"
                   << std::endl
-                  << "\t-t <topic name>         - Sets the topic name (default topic_name) " << std::endl
-                  << "\t-s <sample information> - Sets information of the sample (default 0, 0)"
+                  << "\t-t <topic name>         - Sets the topic name"
+                  << std::endl
+                  << "\t-s <sample information> - Sets information of the "
+                     "sample (default 0, 0)"
                   << std::endl;
         return 0;
     }
@@ -81,19 +83,30 @@ int main(int argc, char *argv[])
     gazebo::dds::utils::setup_signal_handler();
 
     try {
-        std::vector<std::string> sample_information
-                = cmd_parser.get_values("-s");
+        // Check arguments
+        int domain_id = 0;
+        if (cmd_parser.has_flag("-d")) {
+            domain_id = atoi(cmd_parser.get_value("-d").c_str());
+        }
+
+        float linear_x = 0.0;
+        float angular_z = 0.0;
+        if (cmd_parser.has_flag("-s")) {
+            std::vector<std::string> sample_information
+                    = cmd_parser.get_values("-s");
+            linear_x = atof(sample_information[0].c_str());
+            angular_z = atof(sample_information[1].c_str());
+        }
 
         publisher_main(
-                atoi(cmd_parser.get_value("-d").c_str()),
+                domain_id,
                 std::string(cmd_parser.get_value("-t")),
-                atof(sample_information[0].c_str()),
-                atof(sample_information[1].c_str()));
+                linear_x,
+                angular_z);
 
     } catch (const std::exception &ex) {
-        // This will catch DDS exceptions
-        std::cerr << "Exception in publisher_main(): " << ex.what()
-                  << std::endl;
+        // This will catch DDS and CommandLineParser exceptions
+        std::cerr << ex.what() << std::endl;
         ret_code = -1;
     }
 

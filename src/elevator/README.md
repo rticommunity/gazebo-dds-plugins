@@ -23,7 +23,9 @@ $ gazebo dds-gazebo-plugins/resources/worlds/Elevator.world --verbose
 ```
 **Second terminal**
 
-The plugin contains an example publisher to send information to the elevator. You need to run this publisher to change its current floor.
+The plugin contains an example publisher to send information to the elevator. You need to run this publisher to change its current floor. 
 ```
-$ dds-gazebo-plugins/build/src/elevator/elevatorpublisher <domain id> <topic name> <next floor>
+$ dds-gazebo-plugins/build/src/elevator/elevatorpublisher -d <domain id> -t <topic name> -s <next floor>
 ```
+
+You can check the help of the publisher with the flag `-h` for more information.

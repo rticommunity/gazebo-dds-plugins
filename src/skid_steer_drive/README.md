@@ -26,5 +26,7 @@ $ gazebo dds-gazebo-plugins/resources/worlds/SkidSteerDrive.world --verbose
 
 The plugin contains an example publisher to send information to the robot. You need to run this publisher to move it. You will use the same publisher that you use with the differential drive
 ```
-$ dds-gazebo-plugins/build/src/diff_drive/diffdrivepublisher <domain id> <topic name> <linear velocity axis x> <angular velocity axis z>
+$ dds-gazebo-plugins/build/src/diff_drive/diffdrivepublisher -d <domain id> -t <topic name> -s "(<linear velocity in axis x> <angular velocity in axis z>)"
 ```
+
+You can check the help of the publisher with the flag `-h` for more information.

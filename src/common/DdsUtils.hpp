@@ -33,6 +33,7 @@ namespace gazebo { namespace dds { namespace utils {
  * its value to false.
  */
 bool exit_application = false;
+
 /**
  * This method changes sets exit_service to true. It is triggered by
  * @param signal Unused int parameters that identifies the captured signal.
@@ -60,6 +61,16 @@ inline void setup_signal_handler()
     signal(SIGABRT, signal_handler); //Abort
 }
 
+/**
+ * @brief Look for an existed domain participant.
+ * If this method doesn't find it, builds it.
+ *
+ * @param domain_id domain id for the domain participant
+ * @param participant the found/built domain participant
+ * @param qos_provider object that contains the loaded profiles
+ * @param qos_profile the name of the profile that will be used 
+ * in the domain participant
+ */
 void find_domain_participant(
         int domain_id,
         ::dds::domain::DomainParticipant & participant,
@@ -83,6 +94,14 @@ void find_domain_participant(
     }
 }
 
+/**
+ * @brief Look for an existed topic.
+ * If this method doesn't find it, builds it.
+ *
+ * @param participant domain participant that the topic will use.
+ * @param topic the found/built topic
+ * @param topic_name name that the topic will have.
+ */
 template <typename T>
 void find_topic(
         const ::dds::domain::DomainParticipant & participant,
@@ -96,6 +115,14 @@ void find_topic(
     }
 }
 
+/**
+ * @brief Create a data writer
+ *
+ * @param writer the created data writer
+ * @param participant domain participant that the data writer will use.
+ * @param topic topic that the data writer will use.
+ * @param qos_provider object that contains the loaded profiles
+ */
 template <typename T>
 void create_datawriter(
         ::dds::pub::DataWriter<T> & writer,
@@ -110,6 +137,15 @@ void create_datawriter(
             qos_provider.datawriter_qos());
 }
 
+/**
+ * @brief Create a data writer
+ *
+ * @param writer the created data writer
+ * @param participant domain participant that the data writer will use.
+ * @param topic topic that the data writer will use.
+ * @param data_writer_qos qos of the data writer
+ * @param publisher_qos qos of the publisher
+ */
 template <typename T>
 void create_datawriter(
         ::dds::pub::DataWriter<T> & writer,
@@ -125,6 +161,14 @@ void create_datawriter(
             data_writer_qos);
 }
 
+/**
+ * @brief Create a data reader
+ *
+ * @param writer the created data reader
+ * @param participant domain participant that the data reader will use.
+ * @param topic topic that the data reader will use.
+ * @param qos_provider object that contains the loaded profiles
+ */
 template <typename T>
 void create_datareader(
         ::dds::sub::DataReader<T> & reader,
@@ -139,6 +183,15 @@ void create_datareader(
             qos_provider.datareader_qos());
 }
 
+/**
+ * @brief Create a data reader
+ *
+ * @param reader the created data reader
+ * @param participant domain participant that the data reader will use.
+ * @param topic topic that the data reader will use.
+ * @param data_reader_qos qos of the data reader
+ * @param subscriber_qos qos of the subscriber
+ */
 template <typename T>
 void create_datareader(
         ::dds::sub::DataReader<T> & reader,
@@ -154,6 +207,12 @@ void create_datareader(
             data_reader_qos);
 }
 
+/**
+ * @brief Set the buffer size for the unbounded sequence.
+ *
+ * @param data_writer_qos qos that will set the buffer size
+ * @param pool_size size of the buffer that will be used
+ */
 void set_unbounded_sequence_allocated_size(
         ::dds::pub::qos::DataWriterQos &data_writer_qos,
         int pool_size)
@@ -168,6 +227,12 @@ void set_unbounded_sequence_allocated_size(
     data_writer_qos << property;
 }
 
+/**
+ * @brief Wait for publication matched
+ *
+ * @param writer data writer that will wait until a publication matched
+ * @param duration time of wait
+ */
 template <typename T>
 void wait_for_publication_matched(
         const ::dds::pub::DataWriter<T> &writer,

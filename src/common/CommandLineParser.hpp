@@ -48,6 +48,12 @@ public:
     {
     }
 
+    /**
+     * @brief Get value of a specific key
+     *
+     * @param key_value key that will be looked for on the map.
+     * @return string that contains the value of the key
+     */
     std::string get_value(std::string key_value)
     {
         if (argument_map_.find(key_value) == argument_map_.end()) {
@@ -61,10 +67,15 @@ public:
                     + key_value + "'");
         }
 
-
         return argument_map_[key_value];
     }
 
+    /**
+     * @brief Get the values of a specific key
+     *
+     * @param key_value key that will be looked for on the map.
+     * @return vector that contains all the values of the key
+     */
     std::vector<std::string> get_values(std::string key_value)
     {
         std::string values = get_value(key_value);
@@ -85,6 +96,12 @@ public:
         return std::vector<std::string>(it_begin, it_end);
     }
 
+    /**
+     * @brief Check if the key exist
+     *
+     * @param key_value key that will be checked.
+     * @return if the key exist or not
+     */
     bool has_flag(std::string key_value)
     {
         bool result = false;

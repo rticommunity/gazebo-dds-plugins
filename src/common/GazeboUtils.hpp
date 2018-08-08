@@ -24,6 +24,14 @@
 
 namespace gazebo { namespace dds { namespace utils {
 
+/**
+ * @brief Obtain a specific parameter from the world 
+ * 
+ * @param sdf object that contains the information of the world
+ * @param tag_variable variable that will contain the value of the parameter
+ * @param element_name name of the parameter from the world
+ * @param element_default default value for the parameter
+ */
 template <typename T>
 void get_world_parameter(
         sdf::ElementPtr sdf,
@@ -40,6 +48,12 @@ void get_world_parameter(
     }
 }
 
+/**
+ * @brief Obtain the current time of the simulation
+ * 
+ * @param world world pointer that will be used to obtain the time.
+ * @return the current time of the simulation
+ */
 common::Time get_sim_time(physics::WorldPtr world)
 {
 #if GAZEBO_MAJOR_VERSION >= 8

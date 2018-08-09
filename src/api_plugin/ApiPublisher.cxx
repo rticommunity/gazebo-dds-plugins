@@ -28,55 +28,30 @@
 #include "gazebo_msgs/srv/DeleteModel_Request.hpp"
 
 void publisher_main(
-        int domain_id,
-        std::string service_name)
+        const dds::domain::DomainParticipant &participant,
+        std::string service_name,
+        std::string model_name)
 {
-    // Find a DomainParticipant
-    dds::domain::DomainParticipant participant(dds::domain::find(domain_id));
-    if (participant == dds::core::null) {
-        participant = dds::domain::DomainParticipant(domain_id);
-    }
-
-    rti::request::RequesterParams requester_params(participant);
-    auto qos_provider = dds::core::QosProvider::Default();
-    requester_params.service_name(service_name);
-
     rti::request::Requester<
             gazebo_msgs::srv::DeleteModel_Request,
             gazebo_msgs::srv::Default_Response>
-            requester(requester_params);
+            requester(::dds::core::null);
+
+    gazebo::dds::utils::create_requester<gazebo_msgs::srv::DeleteModel_Request,
+            gazebo_msgs::srv::Default_Response>
+            (requester, participant, service_name);
 
     while (rti::request::matched_replier_count(requester) == 0) {
-            rti::util::sleep(dds::core::Duration::from_millisecs(100));
-        }
-
-    // Send the request
-    auto request_id =
-            requester.send_request(gazebo_msgs::srv::DeleteModel_Request("object_1"));
-
-    // Receive replies
-    const auto MAX_WAIT = dds::core::Duration::from_secs(5);
-
-    bool in_progress = true;
-    while(in_progress) {
-        auto replies = requester.receive_replies(MAX_WAIT);
-
-        /* When receive_replies times out,
-            * it returns an empty reply collection
-            */
-        if (replies.length() == 0) {
-            throw std::runtime_error("Timed out waiting for replies");
-            return;
-        }
-
-        for (const auto& reply : replies) {
-            if (reply.info().valid()) {
-                std::cout << reply.data().status_message() << std::endl;
-            }
-        }
+        rti::util::sleep(dds::core::Duration::from_millisecs(100));
     }
-    // Write sample
-    std::cout << "Sending data..." << std::endl;
+    
+    gazebo_msgs::srv::DeleteModel_Request request(model_name);
+
+    gazebo_msgs::srv::Default_Response reply = gazebo::dds::utils::call_service<
+            gazebo_msgs::srv::DeleteModel_Request,
+            gazebo_msgs::srv::Default_Response>(requester, request);
+
+    std::cout << reply.status_message() << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -92,10 +67,10 @@ int main(int argc, char *argv[])
                   << std::endl
                   << "\t-d <domain id>          - Sets the domainId (default 0)"
                   << std::endl
-                  << "\t-t <topic name>         - Sets the topic name"
+                  << "\t-s <service name>         - Sets the service name"
                   << std::endl
-                  << "\t-s <sample information> - Sets information of the "
-                     "sample (default 0, 0)"
+                  << "\t-i <sample information> - Sets information of the "
+                     "sample"
                   << std::endl;
         return 0;
     }
@@ -110,9 +85,19 @@ int main(int argc, char *argv[])
             domain_id = atoi(cmd_parser.get_value("-d").c_str());
         }
 
+        std::string service_name = std::string(cmd_parser.get_value("-s"));
+
+        // Find a DomainParticipant
+        dds::domain::DomainParticipant participant(
+                dds::domain::find(domain_id));
+        if (participant == dds::core::null) {
+            participant = dds::domain::DomainParticipant(domain_id);
+        }
+
         publisher_main(
-                domain_id,
-                std::string(cmd_parser.get_value("-t")));
+                participant,
+                service_name,
+                std::string(cmd_parser.get_value("-i")));
 
     } catch (const std::exception &ex) {
         // This will catch DDS and CommandLineParser exceptions

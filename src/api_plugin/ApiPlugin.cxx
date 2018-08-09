@@ -41,7 +41,7 @@ ApiPlugin::~ApiPlugin()
 
 void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
 {
-    parent_=parent;
+    world_=parent;
 
     // Obtain the qos profile information from loaded world
     std::string qos_profile_file;
@@ -75,12 +75,10 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
     utils::get_world_parameter<std::string>(
             sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "force_torque_wrench");
 
-    rti::request::ReplierParams replier_params(participant_);
-    replier_params.service_name("TestService");
-    
-    replier_ = rti::request::Replier<
+    utils::create_replier<
             gazebo_msgs::srv::DeleteModel_Request,
-            gazebo_msgs::srv::Default_Response>(replier_params);
+            gazebo_msgs::srv::Default_Response>(
+            replier_, participant_, "delete_model");
 
     replier_.listener(&listener_);
 
@@ -95,11 +93,20 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
 }
 
 gazebo_msgs::srv::Default_Response ApiPlugin::delete_model(gazebo_msgs::srv::DeleteModel_Request request){
-    std::cout<< request.mode_name() << " deleted..."<<std::endl;
-    gazebo_msgs::srv::Default_Response reply;
+    #if GAZEBO_MAJOR_VERSION >= 8
+    gazebo::physics::ModelPtr model = world_->ModelByName(request.model_name());
+    #else
+    gazebo::physics::ModelPtr model = world_->GetModel(request.model_name());
+    #endif
 
-    reply.success(true); 
-    reply.status_message("Message from ApiPlugin"); 
+    gazebo_msgs::srv::Default_Response reply;
+    if(model){
+        std::cout<< request.model_name() << " deleted..."<<std::endl;
+        world_->RemoveModel(model);
+
+        reply.success(true); 
+        reply.status_message("DeleteModel: successfully deleted model"); 
+    }
 
     return reply;
 }

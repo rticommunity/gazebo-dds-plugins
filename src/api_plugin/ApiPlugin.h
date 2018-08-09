@@ -26,7 +26,6 @@
 #include <dds/sub/ddssub.hpp>
 #include <rti/request/rtirequest.hpp>
 
-#include "geometry_msgs/msg/Wrench.hpp"
 #include "gazebo_msgs/srv/Default_Response.hpp"
 #include "gazebo_msgs/srv/DeleteModel_Request.hpp"
 
@@ -70,7 +69,7 @@ private:
             gazebo_msgs::srv::Default_Response>
             listener_;
 
-    physics::WorldPtr parent_;
+    physics::WorldPtr world_;
 };
 
 }  // namespace dds

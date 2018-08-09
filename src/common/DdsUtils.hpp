@@ -22,6 +22,7 @@
 
 #include <dds/dds.hpp>
 #include <rti/domain/find.hpp>
+#include <rti/request/rtirequest.hpp>
 #include <dds/core/ddscore.hpp>
 #include <dds/pub/ddspub.hpp>
 #include <dds/sub/ddssub.hpp>
@@ -205,6 +206,83 @@ void create_datareader(
                     participant, subscriber_qos),
             topic,
             data_reader_qos);
+}
+
+/**
+ * @brief Create a requester
+ *
+ * @param requester the created requester
+ * @param participant domain participant that the requester will use.
+ * @param service_name service name that the requester will use.
+ */
+template <typename T, typename T2>
+void create_requester(
+        rti::request::Requester<T,T2> & requester,
+        const ::dds::domain::DomainParticipant & participant,
+        const std::string & service_name)
+{
+    rti::request::RequesterParams requester_params(participant);
+    requester_params.service_name(service_name);
+
+    requester = rti::request::Requester<T,T2>(requester_params);
+}
+
+/**
+ * @brief Create a replier
+ *
+ * @param replier the created replier
+ * @param participant domain participant that the replier will use.
+ * @param service_name service name that the replier will use.
+ */
+template <typename T, typename T2>
+void create_replier(
+        rti::request::Replier<T,T2> & replier,
+        const ::dds::domain::DomainParticipant & participant,
+        const std::string & service_name)
+{
+    rti::request::ReplierParams replier_params(participant);
+    replier_params.service_name(service_name);
+    
+    replier = rti::request::Replier<T,T2>(replier_params);
+}
+
+/**
+ * @brief Call a service 
+ *
+ * @param requester object that will call the service
+ * @param request message that the requester will send to the replier
+ */
+template <typename T, typename T2>
+T2 call_service(
+        rti::request::Requester<T,T2> & requester,
+        T & request)
+{
+    T2 result_reply;
+
+    // Send the request
+    requester.send_request(request);
+
+    // Receive replies
+    const ::dds::core::Duration MAX_WAIT = ::dds::core::Duration::from_secs(2);
+
+    bool in_progress = true;
+    while (in_progress) {
+        auto replies = requester.receive_replies(MAX_WAIT);
+
+        if (replies.length() == 0) {
+            throw std::runtime_error("Timed out waiting for replies");
+            return result_reply;
+        }
+
+        for (const auto &reply : replies) {
+            if (reply.info().valid()) {
+                result_reply = reply.data();
+                in_progress = false;
+            }
+        }
+    }
+
+    return result_reply;
 }
 
 /**

@@ -259,6 +259,10 @@ T2 call_service(
 {
     T2 result_reply;
 
+    while (rti::request::matched_replier_count(requester) == 0) {
+        rti::util::sleep(::dds::core::Duration::from_millisecs(100));
+    }
+
     // Send the request
     requester.send_request(request);
 

@@ -70,11 +70,7 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
     utils::find_domain_participant(
             domain_id, participant_, qos_provider, qos_profile);
 
-    // Obtain the topic name from loaded world
-    std::string topic_name;
-    utils::get_world_parameter<std::string>(
-            sdf, topic_name, TOPIC_NAME_PROPERTY_NAME.c_str(), "force_torque_wrench");
-
+    // Create services
     utils::create_replier<
             gazebo_msgs::srv::DeleteModel_Request,
             gazebo_msgs::srv::Default_Response>(
@@ -84,11 +80,8 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
 
     gzmsg << std::endl;
     gzmsg << "Starting Api plugin"<< std::endl;
-    gzmsg << "* Publications:" << std::endl;
-    gzmsg << "  - " << topic_name << " [gazebo_msgs/msg/LinkStates]"
-          << std::endl;
-    gzmsg << "* Subscritions:" << std::endl;
-    gzmsg << "  - " << topic_name << " [geometry_msgs/msg/Wrench]" 
+    gzmsg << "* Services:" << std::endl;
+    gzmsg << "  - " << " [gazebo_msgs/msg/LinkStates]"
           << std::endl;
 }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include <cstdlib>
+#include <unordered_map>
 
 #include <dds/core/ddscore.hpp>
 #include <dds/domain/find.hpp>
@@ -26,8 +26,9 @@
 
 #include "gazebo_msgs/srv/Default_Response.hpp"
 #include "gazebo_msgs/srv/DeleteModel_Request.hpp"
+#include "gazebo_msgs/srv/DeleteLight_Request.hpp"
 
-void publisher_main(
+void delete_model(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
         std::string model_name)
@@ -41,10 +42,6 @@ void publisher_main(
             gazebo_msgs::srv::Default_Response>
             (requester, participant, service_name);
 
-    while (rti::request::matched_replier_count(requester) == 0) {
-        rti::util::sleep(dds::core::Duration::from_millisecs(100));
-    }
-    
     gazebo_msgs::srv::DeleteModel_Request request(model_name);
 
     gazebo_msgs::srv::Default_Response reply = gazebo::dds::utils::call_service<
@@ -54,9 +51,47 @@ void publisher_main(
     std::cout << reply.status_message() << std::endl;
 }
 
+void delete_light(
+        const dds::domain::DomainParticipant &participant,
+        std::string service_name,
+        std::string light_name)
+{
+    rti::request::Requester<
+            gazebo_msgs::srv::DeleteLight_Request,
+            gazebo_msgs::srv::Default_Response>
+            requester(::dds::core::null);
+
+    gazebo::dds::utils::create_requester<gazebo_msgs::srv::DeleteLight_Request,
+            gazebo_msgs::srv::Default_Response>
+            (requester, participant, service_name);
+
+    gazebo_msgs::srv::DeleteLight_Request request(light_name);
+
+    gazebo_msgs::srv::Default_Response reply = gazebo::dds::utils::call_service<
+            gazebo_msgs::srv::DeleteLight_Request,
+            gazebo_msgs::srv::Default_Response>(requester, request);
+
+    std::cout << reply.status_message() << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
     int ret_code = 0;
+
+    // Set of the unordered_map of functions
+    std::unordered_map<
+            std::string,
+            std::function<void(
+                    const dds::domain::DomainParticipant &,
+                    const std::string &,
+                    const std::string &)>>
+            service_map;
+
+    service_map["delete_model"] = std::bind(
+                    &delete_model,
+                    std::placeholders::_1,
+                    std::placeholders::_2,
+                    std::placeholders::_3);
 
     gazebo::dds::utils::CommandLineParser cmd_parser(argc, argv);
 
@@ -94,8 +129,7 @@ int main(int argc, char *argv[])
             participant = dds::domain::DomainParticipant(domain_id);
         }
 
-        publisher_main(
-                participant,
+        service_map[service_name](participant,
                 service_name,
                 std::string(cmd_parser.get_value("-i")));
 

@@ -28,6 +28,11 @@
 
 #include "gazebo_msgs/srv/Default_Response.hpp"
 #include "gazebo_msgs/srv/DeleteModel_Request.hpp"
+#include "gazebo_msgs/srv/DeleteLight_Request.hpp"
+#include "gazebo_msgs/srv/GetLightProperties_Request.hpp"
+#include "gazebo_msgs/srv/GetLightProperties_Response.hpp"
+#include "gazebo_msgs/srv/GetWorldProperties_Request.hpp"
+#include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
 
 #include "common/ReplierListener.hpp"
 
@@ -53,7 +58,17 @@ public:
      */
     void Load(physics::WorldPtr parent, sdf::ElementPtr sdf) override;
 
-    gazebo_msgs::srv::Default_Response delete_model(gazebo_msgs::srv::DeleteModel_Request);
+    gazebo_msgs::srv::Default_Response
+            delete_model(gazebo_msgs::srv::DeleteModel_Request);
+
+    gazebo_msgs::srv::Default_Response
+            delete_light(gazebo_msgs::srv::DeleteLight_Request request);
+
+    gazebo_msgs::srv::GetLightProperties_Response get_light_properties(
+            gazebo_msgs::srv::GetLightProperties_Request request);
+
+    gazebo_msgs::srv::GetWorldProperties_Response get_world_properties(
+            gazebo_msgs::srv::GetWorldProperties_Request request);
 
 private:
     ::dds::domain::DomainParticipant participant_;
@@ -61,13 +76,46 @@ private:
     rti::request::Replier<
             gazebo_msgs::srv::DeleteModel_Request,
             gazebo_msgs::srv::Default_Response>
-            replier_;
+            delete_model_replier_;
 
-    ::dds::sub::LoanedSamples<gazebo_msgs::srv::DeleteModel_Request> requests_;
+    ::dds::sub::LoanedSamples<gazebo_msgs::srv::DeleteModel_Request> delete_model_requests_;
     ReplierListener<
             gazebo_msgs::srv::DeleteModel_Request,
             gazebo_msgs::srv::Default_Response>
-            listener_;
+            delete_model_listener_;
+
+    rti::request::Replier<
+            gazebo_msgs::srv::DeleteLight_Request,
+            gazebo_msgs::srv::Default_Response>
+            delete_light_replier_;
+
+    ::dds::sub::LoanedSamples<gazebo_msgs::srv::DeleteLight_Request> delete_light_requests_;
+    ReplierListener<
+            gazebo_msgs::srv::DeleteLight_Request,
+            gazebo_msgs::srv::Default_Response>
+            delete_light_listener_;
+
+    rti::request::Replier<
+            gazebo_msgs::srv::GetLightProperties_Request,
+            gazebo_msgs::srv::GetLightProperties_Response>
+            get_light_properties_replier_;
+
+    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetLightProperties_Request> get_light_properties_requests_;
+    ReplierListener<
+            gazebo_msgs::srv::GetLightProperties_Request,
+            gazebo_msgs::srv::GetLightProperties_Response>
+            get_light_properties_listener_;
+
+    rti::request::Replier<
+            gazebo_msgs::srv::GetWorldProperties_Request,
+            gazebo_msgs::srv::GetWorldProperties_Response>
+            get_world_properties_replier_;
+
+    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetWorldProperties_Request> get_world_properties_requests_;
+    ReplierListener<
+            gazebo_msgs::srv::GetWorldProperties_Request,
+            gazebo_msgs::srv::GetWorldProperties_Response>
+            get_world_properties_listener_;
 
     physics::WorldPtr world_;
 };

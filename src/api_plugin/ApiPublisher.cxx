@@ -25,8 +25,12 @@
 #include "common/DdsUtils.hpp"
 
 #include "gazebo_msgs/srv/Default_Response.hpp"
-#include "gazebo_msgs/srv/DeleteModel_Request.hpp"
 #include "gazebo_msgs/srv/DeleteLight_Request.hpp"
+#include "gazebo_msgs/srv/DeleteModel_Request.hpp"
+#include "gazebo_msgs/srv/GetLightProperties_Request.hpp"
+#include "gazebo_msgs/srv/GetLightProperties_Response.hpp"
+#include "gazebo_msgs/srv/GetWorldProperties_Request.hpp"
+#include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
 
 void delete_model(
         const dds::domain::DomainParticipant &participant,
@@ -38,9 +42,10 @@ void delete_model(
             gazebo_msgs::srv::Default_Response>
             requester(::dds::core::null);
 
-    gazebo::dds::utils::create_requester<gazebo_msgs::srv::DeleteModel_Request,
-            gazebo_msgs::srv::Default_Response>
-            (requester, participant, service_name);
+    gazebo::dds::utils::create_requester<
+            gazebo_msgs::srv::DeleteModel_Request,
+            gazebo_msgs::srv::Default_Response>(
+            requester, participant, service_name);
 
     gazebo_msgs::srv::DeleteModel_Request request(model_name);
 
@@ -61,9 +66,10 @@ void delete_light(
             gazebo_msgs::srv::Default_Response>
             requester(::dds::core::null);
 
-    gazebo::dds::utils::create_requester<gazebo_msgs::srv::DeleteLight_Request,
-            gazebo_msgs::srv::Default_Response>
-            (requester, participant, service_name);
+    gazebo::dds::utils::create_requester<
+            gazebo_msgs::srv::DeleteLight_Request,
+            gazebo_msgs::srv::Default_Response>(
+            requester, participant, service_name);
 
     gazebo_msgs::srv::DeleteLight_Request request(light_name);
 
@@ -72,6 +78,58 @@ void delete_light(
             gazebo_msgs::srv::Default_Response>(requester, request);
 
     std::cout << reply.status_message() << std::endl;
+}
+
+void get_light_properties(
+        const dds::domain::DomainParticipant &participant,
+        std::string service_name,
+        std::string light_name)
+{
+    rti::request::Requester<
+            gazebo_msgs::srv::GetLightProperties_Request,
+            gazebo_msgs::srv::GetLightProperties_Response>
+            requester(::dds::core::null);
+
+    gazebo::dds::utils::create_requester<
+            gazebo_msgs::srv::GetLightProperties_Request,
+            gazebo_msgs::srv::GetLightProperties_Response>(
+            requester, participant, service_name);
+
+    gazebo_msgs::srv::GetLightProperties_Request request(light_name);
+
+    gazebo_msgs::srv::GetLightProperties_Response reply
+            = gazebo::dds::utils::call_service<
+                    gazebo_msgs::srv::GetLightProperties_Request,
+                    gazebo_msgs::srv::GetLightProperties_Response>(
+                    requester, request);
+
+    std::cout << reply << std::endl;
+}
+
+void get_world_properties(
+        const dds::domain::DomainParticipant &participant,
+        std::string service_name,
+        std::string world_name)
+{
+    rti::request::Requester<
+            gazebo_msgs::srv::GetWorldProperties_Request,
+            gazebo_msgs::srv::GetWorldProperties_Response>
+            requester(::dds::core::null);
+
+    gazebo::dds::utils::create_requester<
+            gazebo_msgs::srv::GetWorldProperties_Request,
+            gazebo_msgs::srv::GetWorldProperties_Response>(
+            requester, participant, service_name);
+
+    gazebo_msgs::srv::GetWorldProperties_Request request(world_name);
+
+    gazebo_msgs::srv::GetWorldProperties_Response reply
+            = gazebo::dds::utils::call_service<
+                    gazebo_msgs::srv::GetWorldProperties_Request,
+                    gazebo_msgs::srv::GetWorldProperties_Response>(
+                    requester, request);
+
+    std::cout << reply << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -88,10 +146,28 @@ int main(int argc, char *argv[])
             service_map;
 
     service_map["delete_model"] = std::bind(
-                    &delete_model,
-                    std::placeholders::_1,
-                    std::placeholders::_2,
-                    std::placeholders::_3);
+            &delete_model,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3);
+
+    service_map["delete_light"] = std::bind(
+            &delete_light,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3);
+
+    service_map["get_light_properties"] = std::bind(
+            &get_light_properties,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3);
+    
+    service_map["get_world_properties"] = std::bind(
+            &get_world_properties,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3);
 
     gazebo::dds::utils::CommandLineParser cmd_parser(argc, argv);
 
@@ -129,7 +205,8 @@ int main(int argc, char *argv[])
             participant = dds::domain::DomainParticipant(domain_id);
         }
 
-        service_map[service_name](participant,
+        service_map[service_name](
+                participant,
                 service_name,
                 std::string(cmd_parser.get_value("-i")));
 

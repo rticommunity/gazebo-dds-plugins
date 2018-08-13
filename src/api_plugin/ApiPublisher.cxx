@@ -32,26 +32,33 @@
 #include "gazebo_msgs/srv/GetWorldProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
 
-void delete_model(
+template <typename T, typename T2>
+T2 send_request(
         const dds::domain::DomainParticipant &participant,
-        std::string service_name,
-        std::string model_name)
+        const std::string &service_name,
+        T &request)
 {
-    rti::request::Requester<
-            gazebo_msgs::srv::DeleteModel_Request,
-            gazebo_msgs::srv::Default_Response>
-            requester(::dds::core::null);
+    rti::request::Requester<T, T2> requester(::dds::core::null);
 
-    gazebo::dds::utils::create_requester<
-            gazebo_msgs::srv::DeleteModel_Request,
-            gazebo_msgs::srv::Default_Response>(
+    gazebo::dds::utils::create_requester<T, T2>(
             requester, participant, service_name);
 
+    T2 reply = gazebo::dds::utils::call_service<T, T2>(requester, request);
+
+    return reply;
+}
+
+void delete_model(
+        const dds::domain::DomainParticipant &participant,
+        const std::string &service_name,
+        const std::string &model_name)
+{
     gazebo_msgs::srv::DeleteModel_Request request(model_name);
 
-    gazebo_msgs::srv::Default_Response reply = gazebo::dds::utils::call_service<
+    gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::DeleteModel_Request,
-            gazebo_msgs::srv::Default_Response>(requester, request);
+            gazebo_msgs::srv::Default_Response>(
+            participant, service_name, request);
 
     std::cout << reply.status_message() << std::endl;
 }
@@ -61,21 +68,12 @@ void delete_light(
         std::string service_name,
         std::string light_name)
 {
-    rti::request::Requester<
-            gazebo_msgs::srv::DeleteLight_Request,
-            gazebo_msgs::srv::Default_Response>
-            requester(::dds::core::null);
-
-    gazebo::dds::utils::create_requester<
-            gazebo_msgs::srv::DeleteLight_Request,
-            gazebo_msgs::srv::Default_Response>(
-            requester, participant, service_name);
-
     gazebo_msgs::srv::DeleteLight_Request request(light_name);
 
-    gazebo_msgs::srv::Default_Response reply = gazebo::dds::utils::call_service<
+    gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::DeleteLight_Request,
-            gazebo_msgs::srv::Default_Response>(requester, request);
+            gazebo_msgs::srv::Default_Response>(
+            participant, service_name, request);
 
     std::cout << reply.status_message() << std::endl;
 }
@@ -85,23 +83,12 @@ void get_light_properties(
         std::string service_name,
         std::string light_name)
 {
-    rti::request::Requester<
-            gazebo_msgs::srv::GetLightProperties_Request,
-            gazebo_msgs::srv::GetLightProperties_Response>
-            requester(::dds::core::null);
-
-    gazebo::dds::utils::create_requester<
-            gazebo_msgs::srv::GetLightProperties_Request,
-            gazebo_msgs::srv::GetLightProperties_Response>(
-            requester, participant, service_name);
-
     gazebo_msgs::srv::GetLightProperties_Request request(light_name);
 
-    gazebo_msgs::srv::GetLightProperties_Response reply
-            = gazebo::dds::utils::call_service<
-                    gazebo_msgs::srv::GetLightProperties_Request,
-                    gazebo_msgs::srv::GetLightProperties_Response>(
-                    requester, request);
+    gazebo_msgs::srv::Default_Response reply = send_request<
+            gazebo_msgs::srv::GetLightProperties_Request,
+            gazebo_msgs::srv::GetLightProperties_Response>(
+            participant, service_name, request);
 
     std::cout << reply << std::endl;
 }
@@ -111,23 +98,12 @@ void get_world_properties(
         std::string service_name,
         std::string world_name)
 {
-    rti::request::Requester<
-            gazebo_msgs::srv::GetWorldProperties_Request,
-            gazebo_msgs::srv::GetWorldProperties_Response>
-            requester(::dds::core::null);
-
-    gazebo::dds::utils::create_requester<
-            gazebo_msgs::srv::GetWorldProperties_Request,
-            gazebo_msgs::srv::GetWorldProperties_Response>(
-            requester, participant, service_name);
-
     gazebo_msgs::srv::GetWorldProperties_Request request(world_name);
 
-    gazebo_msgs::srv::GetWorldProperties_Response reply
-            = gazebo::dds::utils::call_service<
-                    gazebo_msgs::srv::GetWorldProperties_Request,
-                    gazebo_msgs::srv::GetWorldProperties_Response>(
-                    requester, request);
+    gazebo_msgs::srv::Default_Response reply = send_request<
+            gazebo_msgs::srv::GetWorldProperties_Request,
+            gazebo_msgs::srv::GetWorldProperties_Response>(
+            participant, service_name, request);
 
     std::cout << reply << std::endl;
 }
@@ -162,7 +138,7 @@ int main(int argc, char *argv[])
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3);
-    
+
     service_map["get_world_properties"] = std::bind(
             &get_world_properties,
             std::placeholders::_1,

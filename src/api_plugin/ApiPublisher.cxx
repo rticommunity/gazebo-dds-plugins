@@ -31,6 +31,10 @@
 #include "gazebo_msgs/srv/GetLightProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetWorldProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
+#include "gazebo_msgs/srv/GetJointProperties_Request.hpp"
+#include "gazebo_msgs/srv/GetJointProperties_Response.hpp"
+#include "gazebo_msgs/srv/GetLinkProperties_Request.hpp"
+#include "gazebo_msgs/srv/GetLinkProperties_Response.hpp"
 
 template <typename T, typename T2>
 T2 send_request(
@@ -85,7 +89,7 @@ void get_light_properties(
 {
     gazebo_msgs::srv::GetLightProperties_Request request(light_name);
 
-    gazebo_msgs::srv::Default_Response reply = send_request<
+    gazebo_msgs::srv::GetLightProperties_Response reply = send_request<
             gazebo_msgs::srv::GetLightProperties_Request,
             gazebo_msgs::srv::GetLightProperties_Response>(
             participant, service_name, request);
@@ -100,9 +104,39 @@ void get_world_properties(
 {
     gazebo_msgs::srv::GetWorldProperties_Request request(world_name);
 
-    gazebo_msgs::srv::Default_Response reply = send_request<
+    gazebo_msgs::srv::GetWorldProperties_Response reply = send_request<
             gazebo_msgs::srv::GetWorldProperties_Request,
             gazebo_msgs::srv::GetWorldProperties_Response>(
+            participant, service_name, request);
+
+    std::cout << reply << std::endl;
+}
+
+void get_joint_properties(
+        const dds::domain::DomainParticipant &participant,
+        std::string service_name,
+        std::string joint_name)
+{
+    gazebo_msgs::srv::GetJointProperties_Request request(joint_name);
+
+    gazebo_msgs::srv::GetJointProperties_Response reply = send_request<
+            gazebo_msgs::srv::GetJointProperties_Request,
+            gazebo_msgs::srv::GetJointProperties_Response>(
+            participant, service_name, request);
+
+    std::cout << reply << std::endl;
+}
+
+void get_link_properties(
+        const dds::domain::DomainParticipant &participant,
+        std::string service_name,
+        std::string link_name)
+{
+    gazebo_msgs::srv::GetLinkProperties_Request request(link_name);
+
+    gazebo_msgs::srv::GetLinkProperties_Response reply = send_request<
+            gazebo_msgs::srv::GetLinkProperties_Request,
+            gazebo_msgs::srv::GetLinkProperties_Response>(
             participant, service_name, request);
 
     std::cout << reply << std::endl;
@@ -141,6 +175,18 @@ int main(int argc, char *argv[])
 
     service_map["get_world_properties"] = std::bind(
             &get_world_properties,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3);
+
+    service_map["get_joint_properties"] = std::bind(
+            &get_joint_properties,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3);
+
+    service_map["get_link_properties"] = std::bind(
+            &get_link_properties,
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3);

@@ -31,6 +31,8 @@ ApiPlugin::ApiPlugin()
           delete_light_replier_(::dds::core::null),
           get_light_properties_replier_(::dds::core::null),
           get_world_properties_replier_(::dds::core::null),
+          get_joint_properties_replier_(::dds::core::null),
+          get_link_properties_replier_(::dds::core::null),
           delete_model_listener_(std::bind(
                   &ApiPlugin::delete_model,
                   this,
@@ -45,6 +47,14 @@ ApiPlugin::ApiPlugin()
                   std::placeholders::_1)),
           get_world_properties_listener_(std::bind(
                   &ApiPlugin::get_world_properties,
+                  this,
+                  std::placeholders::_1)),
+          get_joint_properties_listener_(std::bind(
+                  &ApiPlugin::get_joint_properties,
+                  this,
+                  std::placeholders::_1)),
+          get_link_properties_listener_(std::bind(
+                  &ApiPlugin::get_link_properties,
                   this,
                   std::placeholders::_1))
 {
@@ -114,6 +124,24 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
             "get_world_properties");
 
     get_world_properties_replier_.listener(&get_world_properties_listener_);
+
+    utils::create_replier<
+            gazebo_msgs::srv::GetJointProperties_Request,
+            gazebo_msgs::srv::GetJointProperties_Response>(
+            get_joint_properties_replier_,
+            participant_,
+            "get_joint_properties");
+
+    get_joint_properties_replier_.listener(&get_joint_properties_listener_);
+
+    utils::create_replier<
+            gazebo_msgs::srv::GetLinkProperties_Request,
+            gazebo_msgs::srv::GetLinkProperties_Response>(
+            get_link_properties_replier_,
+            participant_,
+            "get_link_properties");
+
+    get_link_properties_replier_.listener(&get_link_properties_listener_);
 
     gzmsg << std::endl;
     gzmsg << "Starting Api plugin" << std::endl;
@@ -235,6 +263,109 @@ gazebo_msgs::srv::GetWorldProperties_Response ApiPlugin::get_world_properties(
     reply.rendering_enabled(true);
     reply.success(true);
     reply.status_message("GetWorldProperties: got properties");
+
+    return reply;
+}
+
+gazebo_msgs::srv::GetJointProperties_Response ApiPlugin::get_joint_properties(
+        gazebo_msgs::srv::GetJointProperties_Request request)
+{
+    gazebo_msgs::srv::GetJointProperties_Response reply;
+    gazebo::physics::JointPtr joint;
+#if GAZEBO_MAJOR_VERSION >= 8
+    for (unsigned int i = 0; i < world_->ModelCount() && !joint; i ++)
+    {
+        joint = world_->ModelByIndex(i)->GetJoint(request.joint_name());
+#else
+    for (unsigned int i = 0; i < world_->GetModelCount() && !joint; i ++)
+    {
+        joint = world_->GetModel(i)->GetJoint(request.joint_name());
+#endif
+    }
+
+    if (!joint)
+    {
+        reply.success(false);
+        reply.status_message("GetJointProperties: joint not found");
+    }
+    else
+    {
+        reply.damping().resize(1);
+        reply.damping()[0] = joint->GetDamping(0);
+
+        reply.position().clear();
+        reply.position().resize(1);
+        reply.rate().resize(1);
+        
+#if GAZEBO_MAJOR_VERSION >= 8
+        reply.position()[0] = joint->Position(0);
+#else
+        reply.position()[0] = joint->GetAngle(0).Radian();
+#endif
+
+        reply.rate()[0] = joint->GetVelocity(0);
+
+        reply.success(true);
+        reply.status_message("GetJointProperties: got properties");
+    }
+    return reply;
+}
+
+gazebo_msgs::srv::GetLinkProperties_Response ApiPlugin::get_link_properties(
+            gazebo_msgs::srv::GetLinkProperties_Request request)
+{
+    gazebo_msgs::srv::GetLinkProperties_Response reply;
+#if GAZEBO_MAJOR_VERSION >= 8
+    gazebo::physics::Link * link = dynamic_cast<gazebo::physics::Link *>(world_->EntityByName(request.link_name()).get());
+#else
+    gazebo::physics::Link * link = dynamic_cast<gazebo::physics::Link *>(world_->GetEntity(request.link_name()).get());
+#endif
+
+    if (!link)
+    {
+        reply.success(false);
+        reply.status_message("GetLinkProperties: link not found, did you forget to scope the link by model name?");
+    }
+    else
+    {
+        reply.gravity_mode(link->GetGravityMode());
+
+        gazebo::physics::InertialPtr inertia = link->GetInertial();
+
+#if GAZEBO_MAJOR_VERSION >= 8
+        reply.mass(link->GetInertial()->Mass());
+
+        reply.ixx(inertia->IXX());
+        reply.iyy(inertia->IYY());
+        reply.izz(inertia->IZZ());
+        reply.ixy(inertia->IXY());
+        reply.ixz(inertia->IXZ());
+        reply.iyz(inertia->IYZ());
+
+        ignition::math::Vector3d com = link->GetInertial()->CoG();
+#else
+        reply.mass(link->GetInertial()->GetMass());
+
+        reply.ixx(inertia->GetIXX());
+        reply.iyy(inertia->GetIYY());
+        reply.izz(inertia->GetIZZ());
+        reply.ixy(inertia->GetIXY());
+        reply.ixz(inertia->GetIXZ());
+        reply.iyz(inertia->GetIYZ());
+
+        ignition::math::Vector3d com = link->GetInertial()->GetCoG().Ign();
+#endif
+        reply.com().position().x(com.X());
+        reply.com().position().y(com.Y());
+        reply.com().position().z(com.Z());
+        reply.com().orientation().x(0);
+        reply.com().orientation().y(0);
+        reply.com().orientation().z(0);
+        reply.com().orientation().w(1);
+
+        reply.success(true);
+        reply.status_message("GetLinkProperties: got properties");
+    }
 
     return reply;
 }

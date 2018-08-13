@@ -27,12 +27,18 @@
 #include <rti/request/rtirequest.hpp>
 
 #include "gazebo_msgs/srv/Default_Response.hpp"
-#include "gazebo_msgs/srv/DeleteModel_Request.hpp"
 #include "gazebo_msgs/srv/DeleteLight_Request.hpp"
+#include "gazebo_msgs/srv/DeleteModel_Request.hpp"
+#include "gazebo_msgs/srv/GetJointProperties_Request.hpp"
+#include "gazebo_msgs/srv/GetJointProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetLightProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetLightProperties_Response.hpp"
+#include "gazebo_msgs/srv/GetLinkProperties_Request.hpp"
+#include "gazebo_msgs/srv/GetLinkProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetWorldProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
+#include "gazebo_msgs/srv/GetPhysicsProperties_Response.hpp"
+
 
 #include "common/ReplierListener.hpp"
 
@@ -70,6 +76,12 @@ public:
     gazebo_msgs::srv::GetWorldProperties_Response get_world_properties(
             gazebo_msgs::srv::GetWorldProperties_Request request);
 
+    gazebo_msgs::srv::GetJointProperties_Response get_joint_properties(
+            gazebo_msgs::srv::GetJointProperties_Request request);
+
+    gazebo_msgs::srv::GetLinkProperties_Response get_link_properties(
+            gazebo_msgs::srv::GetLinkProperties_Request request);
+
 private:
     ::dds::domain::DomainParticipant participant_;
 
@@ -78,7 +90,8 @@ private:
             gazebo_msgs::srv::Default_Response>
             delete_model_replier_;
 
-    ::dds::sub::LoanedSamples<gazebo_msgs::srv::DeleteModel_Request> delete_model_requests_;
+    ::dds::sub::LoanedSamples<gazebo_msgs::srv::DeleteModel_Request>
+            delete_model_requests_;
     ReplierListener<
             gazebo_msgs::srv::DeleteModel_Request,
             gazebo_msgs::srv::Default_Response>
@@ -89,7 +102,8 @@ private:
             gazebo_msgs::srv::Default_Response>
             delete_light_replier_;
 
-    ::dds::sub::LoanedSamples<gazebo_msgs::srv::DeleteLight_Request> delete_light_requests_;
+    ::dds::sub::LoanedSamples<gazebo_msgs::srv::DeleteLight_Request>
+            delete_light_requests_;
     ReplierListener<
             gazebo_msgs::srv::DeleteLight_Request,
             gazebo_msgs::srv::Default_Response>
@@ -100,7 +114,8 @@ private:
             gazebo_msgs::srv::GetLightProperties_Response>
             get_light_properties_replier_;
 
-    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetLightProperties_Request> get_light_properties_requests_;
+    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetLightProperties_Request>
+            get_light_properties_requests_;
     ReplierListener<
             gazebo_msgs::srv::GetLightProperties_Request,
             gazebo_msgs::srv::GetLightProperties_Response>
@@ -111,11 +126,37 @@ private:
             gazebo_msgs::srv::GetWorldProperties_Response>
             get_world_properties_replier_;
 
-    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetWorldProperties_Request> get_world_properties_requests_;
+    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetWorldProperties_Request>
+            get_world_properties_requests_;
     ReplierListener<
             gazebo_msgs::srv::GetWorldProperties_Request,
             gazebo_msgs::srv::GetWorldProperties_Response>
             get_world_properties_listener_;
+
+    rti::request::Replier<
+            gazebo_msgs::srv::GetJointProperties_Request,
+            gazebo_msgs::srv::GetJointProperties_Response>
+            get_joint_properties_replier_;
+
+    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetJointProperties_Request>
+            get_joint_properties_requests_;
+    ReplierListener<
+            gazebo_msgs::srv::GetJointProperties_Request,
+            gazebo_msgs::srv::GetJointProperties_Response>
+            get_joint_properties_listener_;
+
+    rti::request::Replier<
+            gazebo_msgs::srv::GetLinkProperties_Request,
+            gazebo_msgs::srv::GetLinkProperties_Response>
+            get_link_properties_replier_;
+
+    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetLinkProperties_Request>
+            get_link_properties_requests_;
+    ReplierListener<
+            gazebo_msgs::srv::GetLinkProperties_Request,
+            gazebo_msgs::srv::GetLinkProperties_Response>
+            get_link_properties_listener_;
+
 
     physics::WorldPtr world_;
 };

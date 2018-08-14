@@ -33,6 +33,7 @@ ApiPlugin::ApiPlugin()
           get_world_properties_replier_(::dds::core::null),
           get_joint_properties_replier_(::dds::core::null),
           get_link_properties_replier_(::dds::core::null),
+          get_model_properties_replier_(::dds::core::null),
           delete_model_listener_(std::bind(
                   &ApiPlugin::delete_model,
                   this,
@@ -55,6 +56,10 @@ ApiPlugin::ApiPlugin()
                   std::placeholders::_1)),
           get_link_properties_listener_(std::bind(
                   &ApiPlugin::get_link_properties,
+                  this,
+                  std::placeholders::_1)),
+          get_model_properties_listener_(std::bind(
+                  &ApiPlugin::get_model_properties,
                   this,
                   std::placeholders::_1))
 {
@@ -143,6 +148,15 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
 
     get_link_properties_replier_.listener(&get_link_properties_listener_);
 
+    utils::create_replier<
+            gazebo_msgs::srv::GetModelProperties_Request,
+            gazebo_msgs::srv::GetModelProperties_Response>(
+            get_model_properties_replier_,
+            participant_,
+            "get_model_properties");
+
+    get_model_properties_replier_.listener(&get_model_properties_listener_);
+
     gzmsg << std::endl;
     gzmsg << "Starting Api plugin" << std::endl;
     gzmsg << "* Services:" << std::endl;
@@ -167,11 +181,7 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
 gazebo_msgs::srv::Default_Response
         ApiPlugin::delete_model(gazebo_msgs::srv::DeleteModel_Request request)
 {
-#if GAZEBO_MAJOR_VERSION >= 8
-    gazebo::physics::ModelPtr model = world_->ModelByName(request.model_name());
-#else
-    gazebo::physics::ModelPtr model = world_->GetModel(request.model_name());
-#endif
+    gazebo::physics::ModelPtr model = utils::get_model(world_,request.model_name());
 
     gazebo_msgs::srv::Default_Response reply;
     if (model) {
@@ -187,11 +197,7 @@ gazebo_msgs::srv::Default_Response
 gazebo_msgs::srv::Default_Response
         ApiPlugin::delete_light(gazebo_msgs::srv::DeleteLight_Request request)
 {
-#if GAZEBO_MAJOR_VERSION >= 8
-    gazebo::physics::LightPtr light = world_->LightByName(request.light_name());
-#else
-    gazebo::physics::LightPtr light = world_->Light(request.light_name());
-#endif
+    gazebo::physics::LightPtr light = utils::get_light(world_,request.light_name());
 
     gazebo_msgs::srv::Default_Response reply;
     if (light) {
@@ -210,11 +216,7 @@ gazebo_msgs::srv::Default_Response
 gazebo_msgs::srv::GetLightProperties_Response ApiPlugin::get_light_properties(
         gazebo_msgs::srv::GetLightProperties_Request request)
 {
-#if GAZEBO_MAJOR_VERSION >= 8
-    gazebo::physics::LightPtr light = world_->LightByName(request.light_name());
-#else
-    gazebo::physics::LightPtr light = world_->Light(request.light_name());
-#endif
+    gazebo::physics::LightPtr light = utils::get_light(world_,request.light_name());
 
     gazebo_msgs::srv::GetLightProperties_Response reply;
 
@@ -271,25 +273,14 @@ gazebo_msgs::srv::GetJointProperties_Response ApiPlugin::get_joint_properties(
         gazebo_msgs::srv::GetJointProperties_Request request)
 {
     gazebo_msgs::srv::GetJointProperties_Response reply;
-    gazebo::physics::JointPtr joint;
-#if GAZEBO_MAJOR_VERSION >= 8
-    for (unsigned int i = 0; i < world_->ModelCount() && !joint; i ++)
-    {
-        joint = world_->ModelByIndex(i)->GetJoint(request.joint_name());
-#else
-    for (unsigned int i = 0; i < world_->GetModelCount() && !joint; i ++)
-    {
-        joint = world_->GetModel(i)->GetJoint(request.joint_name());
-#endif
-    }
+    gazebo::physics::JointPtr joint
+            = utils::get_joint(world_, request.joint_name());
 
-    if (!joint)
-    {
+    if (!joint){
         reply.success(false);
         reply.status_message("GetJointProperties: joint not found");
     }
-    else
-    {
+    else{
         reply.damping().resize(1);
         reply.damping()[0] = joint->GetDamping(0);
 
@@ -315,19 +306,13 @@ gazebo_msgs::srv::GetLinkProperties_Response ApiPlugin::get_link_properties(
             gazebo_msgs::srv::GetLinkProperties_Request request)
 {
     gazebo_msgs::srv::GetLinkProperties_Response reply;
-#if GAZEBO_MAJOR_VERSION >= 8
-    gazebo::physics::Link * link = dynamic_cast<gazebo::physics::Link *>(world_->EntityByName(request.link_name()).get());
-#else
-    gazebo::physics::Link * link = dynamic_cast<gazebo::physics::Link *>(world_->GetEntity(request.link_name()).get());
-#endif
+    gazebo::physics::Link * link = dynamic_cast<gazebo::physics::Link *>(utils::get_entity(world_,request.link_name()).get());
 
-    if (!link)
-    {
+    if (!link){
         reply.success(false);
         reply.status_message("GetLinkProperties: link not found, did you forget to scope the link by model name?");
     }
-    else
-    {
+    else{
         reply.gravity_mode(link->GetGravityMode());
 
         gazebo::physics::InertialPtr inertia = link->GetInertial();
@@ -366,6 +351,60 @@ gazebo_msgs::srv::GetLinkProperties_Response ApiPlugin::get_link_properties(
         reply.success(true);
         reply.status_message("GetLinkProperties: got properties");
     }
+
+    return reply;
+}
+
+gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
+            gazebo_msgs::srv::GetModelProperties_Request request)
+{
+    gazebo_msgs::srv::GetModelProperties_Response reply;
+
+    gazebo::physics::ModelPtr model = utils::get_model(world_,request.model_name());
+
+    if (!model){
+        reply.success(false);
+        reply.status_message("GetModelProperties: model does not exist");
+    }
+    else{
+        // get model parent name
+        gazebo::physics::Model * parent_model = dynamic_cast<gazebo::physics::Model *>(model->GetParent().get());
+        if (parent_model) reply.parent_model_name(parent_model->GetName());
+
+        // get list of child bodies, geoms and children model names
+        reply.child_model_names().resize(model->GetChildCount());
+        reply.body_names().resize(model->GetChildCount());
+        reply.geom_names().resize(model->GetChildCount());
+        for (unsigned int i = 0 ; i < model->GetChildCount(); i ++){
+            gazebo::physics::Link * body = dynamic_cast<gazebo::physics::Link *>(model->GetChild(i).get());
+            if (body){
+                reply.body_names()[i] = body->GetName();
+                // get list of geoms
+                for (unsigned int j = 0; j < body->GetChildCount() ; j++){
+                    gazebo::physics::Collision * geom = dynamic_cast<gazebo::physics::Collision *>(body->GetChild(i).get());
+                    if (geom)
+                        reply.geom_names()[i] = geom->GetName();
+                }
+            }
+
+            gazebo::physics::Model * child_model = dynamic_cast<gazebo::physics::Model *>(model->GetChild(i).get());
+            if (child_model){
+                reply.child_model_names()[i] = child_model->GetName();
+            }
+        }
+
+        // get list of joints
+        gazebo::physics::Joint_V joints = model->GetJoints();
+        reply.joint_names().resize(joints.size());
+        for (unsigned int i=0;i< joints.size(); i++)
+            reply.joint_names()[i] = joints[i]->GetName();
+
+        // is model static
+        reply.is_static(model->IsStatic());
+
+        reply.success(true);
+        reply.status_message("GetModelProperties: got properties");
+  }
 
     return reply;
 }

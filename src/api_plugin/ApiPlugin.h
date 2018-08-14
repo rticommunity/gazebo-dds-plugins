@@ -38,7 +38,8 @@
 #include "gazebo_msgs/srv/GetWorldProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetPhysicsProperties_Response.hpp"
-
+#include "gazebo_msgs/srv/GetModelProperties_Request.hpp"
+#include "gazebo_msgs/srv/GetModelProperties_Response.hpp"
 
 #include "common/ReplierListener.hpp"
 
@@ -81,6 +82,9 @@ public:
 
     gazebo_msgs::srv::GetLinkProperties_Response get_link_properties(
             gazebo_msgs::srv::GetLinkProperties_Request request);
+
+    gazebo_msgs::srv::GetModelProperties_Response get_model_properties(
+            gazebo_msgs::srv::GetModelProperties_Request request);
 
 private:
     ::dds::domain::DomainParticipant participant_;
@@ -156,6 +160,18 @@ private:
             gazebo_msgs::srv::GetLinkProperties_Request,
             gazebo_msgs::srv::GetLinkProperties_Response>
             get_link_properties_listener_;
+
+    rti::request::Replier<
+            gazebo_msgs::srv::GetModelProperties_Request,
+            gazebo_msgs::srv::GetModelProperties_Response>
+            get_model_properties_replier_;
+
+    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetModelProperties_Request>
+            get_model_properties_requests_;
+    ReplierListener<
+            gazebo_msgs::srv::GetModelProperties_Request,
+            gazebo_msgs::srv::GetModelProperties_Response>
+            get_model_properties_listener_;
 
 
     physics::WorldPtr world_;

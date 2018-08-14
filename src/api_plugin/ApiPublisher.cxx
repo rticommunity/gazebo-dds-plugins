@@ -35,6 +35,8 @@
 #include "gazebo_msgs/srv/GetJointProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetLinkProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetLinkProperties_Response.hpp"
+#include "gazebo_msgs/srv/GetModelProperties_Request.hpp"
+#include "gazebo_msgs/srv/GetModelProperties_Response.hpp"
 
 template <typename T, typename T2>
 T2 send_request(
@@ -142,6 +144,21 @@ void get_link_properties(
     std::cout << reply << std::endl;
 }
 
+void get_model_properties(
+        const dds::domain::DomainParticipant &participant,
+        std::string service_name,
+        std::string model_name)
+{
+    gazebo_msgs::srv::GetModelProperties_Request request(model_name);
+
+    gazebo_msgs::srv::GetModelProperties_Response reply = send_request<
+            gazebo_msgs::srv::GetModelProperties_Request,
+            gazebo_msgs::srv::GetModelProperties_Response>(
+            participant, service_name, request);
+
+    std::cout << reply << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
     int ret_code = 0;
@@ -187,6 +204,12 @@ int main(int argc, char *argv[])
 
     service_map["get_link_properties"] = std::bind(
             &get_link_properties,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3);
+
+    service_map["get_model_properties"] = std::bind(
+            &get_model_properties,
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3);

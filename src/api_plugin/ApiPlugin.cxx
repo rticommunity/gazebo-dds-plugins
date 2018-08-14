@@ -73,6 +73,16 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
 {
     world_ = parent;
 
+#if GAZEBO_MAJOR_VERSION >= 8
+    std::string world_name = world_->Name();
+#else
+    std::string world_name = world_->GetName();
+#endif
+
+    gazebo_node_ = gazebo::transport::NodePtr(new gazebo::transport::Node());
+    gazebo_node_->Init(world_name);
+    gazebo_pub_ = gazebo_node_->Advertise<gazebo::msgs::Request>("~/request");
+
     // Obtain the qos profile information from loaded world
     std::string qos_profile_file;
     utils::get_world_parameter<std::string>(
@@ -185,7 +195,8 @@ gazebo_msgs::srv::Default_Response
 
     gazebo_msgs::srv::Default_Response reply;
     if (model) {
-        world_->RemoveModel(model);
+        gazebo::msgs::Request* msg = gazebo::msgs::CreateRequest("entity_delete", request.model_name());
+        gazebo_pub_->Publish(*msg, true);
 
         reply.success(true);
         reply.status_message("DeleteModel: successfully deleted model");
@@ -201,6 +212,9 @@ gazebo_msgs::srv::Default_Response
 
     gazebo_msgs::srv::Default_Response reply;
     if (light) {
+        gazebo::msgs::Request* msg = gazebo::msgs::CreateRequest("entity_delete", request.light_name());
+        gazebo_pub_->Publish(*msg, true);
+
         reply.success(true);
         reply.status_message("DeleteLight: successfully deleted light");
     } else {

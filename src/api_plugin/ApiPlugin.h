@@ -173,7 +173,8 @@ private:
             gazebo_msgs::srv::GetModelProperties_Response>
             get_model_properties_listener_;
 
-
+    gazebo::transport::PublisherPtr gazebo_pub_;
+    gazebo::transport::NodePtr gazebo_node_;
     physics::WorldPtr world_;
 };
 

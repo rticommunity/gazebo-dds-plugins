@@ -37,6 +37,7 @@
 #include "gazebo_msgs/srv/GetLinkProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetModelProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetModelProperties_Response.hpp"
+#include "std_msgs/msg/Empty.hpp"
 
 template <typename T, typename T2>
 T2 send_request(
@@ -159,6 +160,20 @@ void get_model_properties(
     std::cout << reply << std::endl;
 }
 
+void send_empty_request(
+        const dds::domain::DomainParticipant &participant,
+        std::string service_name)
+{
+    std_msgs::msg::Empty request(true);
+
+    gazebo_msgs::srv::Default_Response reply = send_request<
+            std_msgs::msg::Empty,
+            gazebo_msgs::srv::Default_Response>(
+            participant, service_name, request);
+
+    std::cout << reply << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
     int ret_code = 0;
@@ -171,6 +186,13 @@ int main(int argc, char *argv[])
                     const std::string &,
                     const std::string &)>>
             service_map;
+
+    std::unordered_map<
+            std::string,
+            std::function<void(
+                    const dds::domain::DomainParticipant &,
+                    const std::string &)>>
+            empty_service_map;
 
     service_map["delete_model"] = std::bind(
             &delete_model,
@@ -214,6 +236,26 @@ int main(int argc, char *argv[])
             std::placeholders::_2,
             std::placeholders::_3);
 
+    empty_service_map["reset_simulation"] = std::bind(
+            &send_empty_request,
+            std::placeholders::_1,
+            std::placeholders::_2);
+
+    empty_service_map["reset_world"] = std::bind(
+            &send_empty_request,
+            std::placeholders::_1,
+            std::placeholders::_2);
+
+    empty_service_map["pause_physics"] = std::bind(
+            &send_empty_request,
+            std::placeholders::_1,
+            std::placeholders::_2);
+
+    empty_service_map["unpause_physics"] = std::bind(
+            &send_empty_request,
+            std::placeholders::_1,
+            std::placeholders::_2);
+
     gazebo::dds::utils::CommandLineParser cmd_parser(argc, argv);
 
     if (cmd_parser.has_flag("-h")) {
@@ -250,10 +292,15 @@ int main(int argc, char *argv[])
             participant = dds::domain::DomainParticipant(domain_id);
         }
 
-        service_map[service_name](
-                participant,
-                service_name,
-                std::string(cmd_parser.get_value("-i")));
+        // Call the service
+        if (cmd_parser.has_flag("-i")) {
+            service_map[service_name](
+                    participant,
+                    service_name,
+                    std::string(cmd_parser.get_value("-i")));
+        } else {
+            empty_service_map[service_name](participant, service_name);
+        }
 
     } catch (const std::exception &ex) {
         // This will catch DDS and CommandLineParser exceptions

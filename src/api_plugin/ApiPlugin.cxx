@@ -34,6 +34,10 @@ ApiPlugin::ApiPlugin()
           get_joint_properties_replier_(::dds::core::null),
           get_link_properties_replier_(::dds::core::null),
           get_model_properties_replier_(::dds::core::null),
+          reset_simulation_replier_(::dds::core::null),
+          reset_world_replier_(::dds::core::null),
+          pause_physics_replier_(::dds::core::null),
+          unpause_physics_replier_(::dds::core::null),
           delete_model_listener_(std::bind(
                   &ApiPlugin::delete_model,
                   this,
@@ -60,6 +64,22 @@ ApiPlugin::ApiPlugin()
                   std::placeholders::_1)),
           get_model_properties_listener_(std::bind(
                   &ApiPlugin::get_model_properties,
+                  this,
+                  std::placeholders::_1)),
+          reset_simulation_listener_(std::bind(
+                  &ApiPlugin::reset_simulation,
+                  this,
+                  std::placeholders::_1)),
+          reset_world_listener_(std::bind(
+                  &ApiPlugin::reset_world,
+                  this,
+                  std::placeholders::_1)),
+          pause_physics_listener_(std::bind(
+                  &ApiPlugin::pause_physics,
+                  this,
+                  std::placeholders::_1)),
+          unpause_physics_listener_(std::bind(
+                  &ApiPlugin::unpause_physics,
                   this,
                   std::placeholders::_1))
 {
@@ -152,9 +172,7 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
     utils::create_replier<
             gazebo_msgs::srv::GetLinkProperties_Request,
             gazebo_msgs::srv::GetLinkProperties_Response>(
-            get_link_properties_replier_,
-            participant_,
-            "get_link_properties");
+            get_link_properties_replier_, participant_, "get_link_properties");
 
     get_link_properties_replier_.listener(&get_link_properties_listener_);
 
@@ -166,6 +184,34 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
             "get_model_properties");
 
     get_model_properties_replier_.listener(&get_model_properties_listener_);
+
+    utils::create_replier<
+            std_msgs::msg::Empty,
+            gazebo_msgs::srv::Default_Response>(
+            reset_simulation_replier_, participant_, "reset_simulation");
+
+    reset_simulation_replier_.listener(&reset_simulation_listener_);
+
+    utils::create_replier<
+            std_msgs::msg::Empty,
+            gazebo_msgs::srv::Default_Response>(
+            reset_world_replier_, participant_, "reset_world");
+
+    reset_world_replier_.listener(&reset_world_listener_);
+
+    utils::create_replier<
+            std_msgs::msg::Empty,
+            gazebo_msgs::srv::Default_Response>(
+            pause_physics_replier_, participant_, "pause_physics");
+
+    pause_physics_replier_.listener(&pause_physics_listener_);
+
+    utils::create_replier<
+            std_msgs::msg::Empty,
+            gazebo_msgs::srv::Default_Response>(
+            unpause_physics_replier_, participant_, "unpause_physics");
+
+    unpause_physics_replier_.listener(&unpause_physics_listener_);
 
     gzmsg << std::endl;
     gzmsg << "Starting Api plugin" << std::endl;
@@ -191,11 +237,13 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
 gazebo_msgs::srv::Default_Response
         ApiPlugin::delete_model(gazebo_msgs::srv::DeleteModel_Request request)
 {
-    gazebo::physics::ModelPtr model = utils::get_model(world_,request.model_name());
+    gazebo::physics::ModelPtr model
+            = utils::get_model(world_, request.model_name());
 
     gazebo_msgs::srv::Default_Response reply;
     if (model) {
-        gazebo::msgs::Request* msg = gazebo::msgs::CreateRequest("entity_delete", request.model_name());
+        gazebo::msgs::Request *msg = gazebo::msgs::CreateRequest(
+                "entity_delete", request.model_name());
         gazebo_pub_->Publish(*msg, true);
 
         reply.success(true);
@@ -208,11 +256,13 @@ gazebo_msgs::srv::Default_Response
 gazebo_msgs::srv::Default_Response
         ApiPlugin::delete_light(gazebo_msgs::srv::DeleteLight_Request request)
 {
-    gazebo::physics::LightPtr light = utils::get_light(world_,request.light_name());
+    gazebo::physics::LightPtr light
+            = utils::get_light(world_, request.light_name());
 
     gazebo_msgs::srv::Default_Response reply;
     if (light) {
-        gazebo::msgs::Request* msg = gazebo::msgs::CreateRequest("entity_delete", request.light_name());
+        gazebo::msgs::Request *msg = gazebo::msgs::CreateRequest(
+                "entity_delete", request.light_name());
         gazebo_pub_->Publish(*msg, true);
 
         reply.success(true);
@@ -230,7 +280,8 @@ gazebo_msgs::srv::Default_Response
 gazebo_msgs::srv::GetLightProperties_Response ApiPlugin::get_light_properties(
         gazebo_msgs::srv::GetLightProperties_Request request)
 {
-    gazebo::physics::LightPtr light = utils::get_light(world_,request.light_name());
+    gazebo::physics::LightPtr light
+            = utils::get_light(world_, request.light_name());
 
     gazebo_msgs::srv::GetLightProperties_Response reply;
 
@@ -290,18 +341,17 @@ gazebo_msgs::srv::GetJointProperties_Response ApiPlugin::get_joint_properties(
     gazebo::physics::JointPtr joint
             = utils::get_joint(world_, request.joint_name());
 
-    if (!joint){
+    if (!joint) {
         reply.success(false);
         reply.status_message("GetJointProperties: joint not found");
-    }
-    else{
+    } else {
         reply.damping().resize(1);
         reply.damping()[0] = joint->GetDamping(0);
 
         reply.position().clear();
         reply.position().resize(1);
         reply.rate().resize(1);
-        
+
 #if GAZEBO_MAJOR_VERSION >= 8
         reply.position()[0] = joint->Position(0);
 #else
@@ -317,16 +367,18 @@ gazebo_msgs::srv::GetJointProperties_Response ApiPlugin::get_joint_properties(
 }
 
 gazebo_msgs::srv::GetLinkProperties_Response ApiPlugin::get_link_properties(
-            gazebo_msgs::srv::GetLinkProperties_Request request)
+        gazebo_msgs::srv::GetLinkProperties_Request request)
 {
     gazebo_msgs::srv::GetLinkProperties_Response reply;
-    gazebo::physics::Link * link = dynamic_cast<gazebo::physics::Link *>(utils::get_entity(world_,request.link_name()).get());
+    gazebo::physics::Link *link = dynamic_cast<gazebo::physics::Link *>(
+            utils::get_entity(world_, request.link_name()).get());
 
-    if (!link){
+    if (!link) {
         reply.success(false);
-        reply.status_message("GetLinkProperties: link not found, did you forget to scope the link by model name?");
-    }
-    else{
+        reply.status_message(
+                "GetLinkProperties: link not found, did you forget to scope "
+                "the link by model name?");
+    } else {
         reply.gravity_mode(link->GetGravityMode());
 
         gazebo::physics::InertialPtr inertia = link->GetInertial();
@@ -370,39 +422,47 @@ gazebo_msgs::srv::GetLinkProperties_Response ApiPlugin::get_link_properties(
 }
 
 gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
-            gazebo_msgs::srv::GetModelProperties_Request request)
+        gazebo_msgs::srv::GetModelProperties_Request request)
 {
     gazebo_msgs::srv::GetModelProperties_Response reply;
 
-    gazebo::physics::ModelPtr model = utils::get_model(world_,request.model_name());
+    gazebo::physics::ModelPtr model
+            = utils::get_model(world_, request.model_name());
 
-    if (!model){
+    if (!model) {
         reply.success(false);
         reply.status_message("GetModelProperties: model does not exist");
-    }
-    else{
+    } else {
         // get model parent name
-        gazebo::physics::Model * parent_model = dynamic_cast<gazebo::physics::Model *>(model->GetParent().get());
-        if (parent_model) reply.parent_model_name(parent_model->GetName());
+        gazebo::physics::Model *parent_model
+                = dynamic_cast<gazebo::physics::Model *>(
+                        model->GetParent().get());
+        if (parent_model)
+            reply.parent_model_name(parent_model->GetName());
 
         // get list of child bodies, geoms and children model names
         reply.child_model_names().resize(model->GetChildCount());
         reply.body_names().resize(model->GetChildCount());
         reply.geom_names().resize(model->GetChildCount());
-        for (unsigned int i = 0 ; i < model->GetChildCount(); i ++){
-            gazebo::physics::Link * body = dynamic_cast<gazebo::physics::Link *>(model->GetChild(i).get());
-            if (body){
+        for (unsigned int i = 0; i < model->GetChildCount(); i++) {
+            gazebo::physics::Link *body = dynamic_cast<gazebo::physics::Link *>(
+                    model->GetChild(i).get());
+            if (body) {
                 reply.body_names()[i] = body->GetName();
                 // get list of geoms
-                for (unsigned int j = 0; j < body->GetChildCount() ; j++){
-                    gazebo::physics::Collision * geom = dynamic_cast<gazebo::physics::Collision *>(body->GetChild(i).get());
+                for (unsigned int j = 0; j < body->GetChildCount(); j++) {
+                    gazebo::physics::Collision *geom
+                            = dynamic_cast<gazebo::physics::Collision *>(
+                                    body->GetChild(i).get());
                     if (geom)
                         reply.geom_names()[i] = geom->GetName();
                 }
             }
 
-            gazebo::physics::Model * child_model = dynamic_cast<gazebo::physics::Model *>(model->GetChild(i).get());
-            if (child_model){
+            gazebo::physics::Model *child_model
+                    = dynamic_cast<gazebo::physics::Model *>(
+                            model->GetChild(i).get());
+            if (child_model) {
                 reply.child_model_names()[i] = child_model->GetName();
             }
         }
@@ -410,7 +470,7 @@ gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
         // get list of joints
         gazebo::physics::Joint_V joints = model->GetJoints();
         reply.joint_names().resize(joints.size());
-        for (unsigned int i=0;i< joints.size(); i++)
+        for (unsigned int i = 0; i < joints.size(); i++)
             reply.joint_names()[i] = joints[i]->GetName();
 
         // is model static
@@ -418,7 +478,57 @@ gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
 
         reply.success(true);
         reply.status_message("GetModelProperties: got properties");
-  }
+    }
+
+    return reply;
+}
+
+gazebo_msgs::srv::Default_Response
+        ApiPlugin::reset_simulation(std_msgs::msg::Empty request)
+{
+    world_->Reset();  
+
+    gazebo_msgs::srv::Default_Response reply;
+
+    reply.success(true);
+    reply.status_message("Reset simulation: successfully");
+
+    return reply;
+}
+
+gazebo_msgs::srv::Default_Response
+        ApiPlugin::reset_world(std_msgs::msg::Empty request)
+{
+    world_->ResetEntities(gazebo::physics::Base::MODEL);
+    gazebo_msgs::srv::Default_Response reply;
+
+    reply.success(true);
+    reply.status_message("Reset world: successfully");
+
+    return reply;
+}
+
+gazebo_msgs::srv::Default_Response
+        ApiPlugin::pause_physics(std_msgs::msg::Empty request)
+{
+    world_->SetPaused(true);
+    gazebo_msgs::srv::Default_Response reply;
+
+    reply.success(true);
+    reply.status_message("Pause physics: successfully");
+
+    return reply;
+}
+
+gazebo_msgs::srv::Default_Response
+        ApiPlugin::unpause_physics(std_msgs::msg::Empty request)
+{
+    world_->SetPaused(false);
+
+    gazebo_msgs::srv::Default_Response reply;
+
+    reply.success(true);
+    reply.status_message("Unpause physics: successfully");
 
     return reply;
 }

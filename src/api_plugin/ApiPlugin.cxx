@@ -34,6 +34,7 @@ ApiPlugin::ApiPlugin()
           get_joint_properties_replier_(::dds::core::null),
           get_link_properties_replier_(::dds::core::null),
           get_model_properties_replier_(::dds::core::null),
+          get_model_state_replier_(::dds::core::null),
           reset_simulation_replier_(::dds::core::null),
           reset_world_replier_(::dds::core::null),
           pause_physics_replier_(::dds::core::null),
@@ -64,6 +65,10 @@ ApiPlugin::ApiPlugin()
                   std::placeholders::_1)),
           get_model_properties_listener_(std::bind(
                   &ApiPlugin::get_model_properties,
+                  this,
+                  std::placeholders::_1)),
+          get_model_state_listener_(std::bind(
+                  &ApiPlugin::get_model_state,
                   this,
                   std::placeholders::_1)),
           reset_simulation_listener_(std::bind(
@@ -179,6 +184,15 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
             "get_model_properties");
 
     get_model_properties_replier_.listener(&get_model_properties_listener_);
+
+    utils::create_replier<
+            gazebo_msgs::srv::GetModelState_Request,
+            gazebo_msgs::srv::GetModelState_Response>(
+            get_model_state_replier_,
+            participant_,
+            "get_model_state");
+
+    get_model_state_replier_.listener(&get_model_state_listener_);
 
     utils::create_replier<
             std_msgs::msg::Empty,
@@ -396,7 +410,7 @@ gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
     if (!model) {
         model_properties_reply_.success(false);
         model_properties_reply_.status_message(
-                "GetModelProperties: model does not exist");
+                "GetModelProperties: model not found");
     } else {
         // get model parent name
         gazebo::physics::Model *parent_model
@@ -406,14 +420,14 @@ gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
             model_properties_reply_.parent_model_name(parent_model->GetName());
 
         // get list of child bodies, geoms and children model names
+        model_properties_reply_.child_model_names().clear();
+        model_properties_reply_.body_names().clear();
+        model_properties_reply_.geom_names().clear();
+
         model_properties_reply_.child_model_names().resize(
                 model->GetChildCount());
         model_properties_reply_.body_names().resize(model->GetChildCount());
         model_properties_reply_.geom_names().resize(model->GetChildCount());
-
-        model_properties_reply_.child_model_names().clear();
-        model_properties_reply_.body_names().clear();
-        model_properties_reply_.geom_names().clear();
 
         for (unsigned int i = 0; i < model->GetChildCount(); i++) {
             gazebo::physics::Link *body = dynamic_cast<gazebo::physics::Link *>(
@@ -442,8 +456,8 @@ gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
 
         // get list of joints
         gazebo::physics::Joint_V joints = model->GetJoints();
-        model_properties_reply_.joint_names().resize(joints.size());
         model_properties_reply_.joint_names().clear();
+        model_properties_reply_.joint_names().resize(joints.size());
 
         for (unsigned int i = 0; i < joints.size(); i++)
             model_properties_reply_.joint_names()[i] = joints[i]->GetName();
@@ -457,6 +471,102 @@ gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
     }
 
     return model_properties_reply_;
+}
+
+gazebo_msgs::srv::GetModelState_Response ApiPlugin::get_model_state(
+            gazebo_msgs::srv::GetModelState_Request request)
+{
+#if GAZEBO_MAJOR_VERSION >= 8
+    gazebo::physics::ModelPtr model = world_->ModelByName(request.model_name());
+    gazebo::physics::EntityPtr frame
+            = world_->EntityByName(request.relative_entity_name());
+#else
+    gazebo::physics::ModelPtr model = world_->GetModel(request.model_name());
+    gazebo::physics::EntityPtr frame
+            = world_->GetEntity(request.relative_entity_name());
+#endif
+    if (!model) {
+        model_state_reply_.success(false);
+        model_state_reply_.status_message(
+                "GetModelState: model not found");
+        return model_state_reply_;
+    } else {
+    
+        // set header of the sample
+        current_time_ = utils::get_sim_time(world_);
+
+        model_state_reply_.header().stamp().sec(current_time_.sec);
+        model_state_reply_.header().stamp().nanosec(current_time_.nsec);
+        model_state_reply_.header().frame_id() = request.relative_entity_name(); 
+    
+#if GAZEBO_MAJOR_VERSION >= 8
+        ignition::math::Pose3d model_pose = model->WorldPose();
+        ignition::math::Vector3d model_linear_vel = model->WorldLinearVel();
+        ignition::math::Vector3d model_angular_vel = model->WorldAngularVel();
+#else
+        ignition::math::Pose3d model_pose = model->GetWorldPose().Ign();
+        ignition::math::Vector3d model_linear_vel
+                = model->GetWorldLinearVel().Ign();
+        ignition::math::Vector3d model_angular_vel
+                = model->GetWorldAngularVel().Ign();
+#endif
+        ignition::math::Vector3d model_pos = model_pose.Pos();
+        ignition::math::Quaterniond model_rot = model_pose.Rot();
+
+        if (frame) {
+        // convert to relative pose, rates
+#if GAZEBO_MAJOR_VERSION >= 8
+            ignition::math::Pose3d frame_pose = frame->WorldPose();
+            ignition::math::Vector3d frame_vpos = frame->WorldLinearVel();
+            ignition::math::Vector3d frame_veul = frame->WorldAngularVel();
+#else
+            ignition::math::Pose3d frame_pose = frame->GetWorldPose().Ign();
+            ignition::math::Vector3d frame_vpos
+                    = frame->GetWorldLinearVel().Ign();
+            ignition::math::Vector3d frame_veul
+                    = frame->GetWorldAngularVel().Ign();
+#endif
+            ignition::math::Pose3d model_rel_pose = model_pose - frame_pose;
+            model_pos = model_rel_pose.Pos();
+            model_rot = model_rel_pose.Rot();
+
+            model_linear_vel = frame_pose.Rot().RotateVectorReverse(
+                    model_linear_vel - frame_vpos);
+            model_angular_vel = frame_pose.Rot().RotateVectorReverse(
+                    model_angular_vel - frame_veul);
+        } else if (
+                request.relative_entity_name() != ""
+                && request.relative_entity_name() != "world"
+                && request.relative_entity_name() != "map"
+                && request.relative_entity_name() != "/map") {
+
+            model_state_reply_.success(false);
+            model_state_reply_.status_message(
+                    "GetModelState: reference relative_entity_name not found");
+            return model_state_reply_;
+        }
+
+        // fill in response
+        model_state_reply_.pose().position().x(model_pos.X());
+        model_state_reply_.pose().position().y(model_pos.Y());
+        model_state_reply_.pose().position().z(model_pos.Z());
+        model_state_reply_.pose().orientation().w(model_rot.W());
+        model_state_reply_.pose().orientation().x(model_rot.X());
+        model_state_reply_.pose().orientation().y(model_rot.Y());
+        model_state_reply_.pose().orientation().z(model_rot.Z());
+
+        model_state_reply_.twist().linear().x(model_linear_vel.X());
+        model_state_reply_.twist().linear().y(model_linear_vel.Y());
+        model_state_reply_.twist().linear().z(model_linear_vel.Z());
+        model_state_reply_.twist().angular().x(model_angular_vel.X());
+        model_state_reply_.twist().angular().y(model_angular_vel.Y());
+        model_state_reply_.twist().angular().z(model_angular_vel.Z());
+
+        model_state_reply_.success(true);
+        model_state_reply_.status_message("GetModelState: got properties");
+    }
+
+    return model_state_reply_;
 }
 
 gazebo_msgs::srv::Default_Response

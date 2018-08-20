@@ -37,6 +37,8 @@
 #include "gazebo_msgs/srv/GetLinkProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetModelProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetModelProperties_Response.hpp"
+#include "gazebo_msgs/srv/GetModelState_Request.hpp"
+#include "gazebo_msgs/srv/GetModelState_Response.hpp"
 #include "gazebo_msgs/srv/GetPhysicsProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetWorldProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
@@ -86,6 +88,9 @@ public:
 
     gazebo_msgs::srv::GetModelProperties_Response get_model_properties(
             gazebo_msgs::srv::GetModelProperties_Request request);
+
+    gazebo_msgs::srv::GetModelState_Response get_model_state(
+            gazebo_msgs::srv::GetModelState_Request request);
 
     gazebo_msgs::srv::Default_Response
             reset_simulation(std_msgs::msg::Empty request);
@@ -227,15 +232,29 @@ private:
     ReplierListener<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
             unpause_physics_listener_;
 
+    rti::request::Replier<
+            gazebo_msgs::srv::GetModelState_Request,
+            gazebo_msgs::srv::GetModelState_Response>
+            get_model_state_replier_;
+
+    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetModelState_Request>
+            get_model_state_requests_;
+    ReplierListener<
+            gazebo_msgs::srv::GetModelState_Request,
+            gazebo_msgs::srv::GetModelState_Response>
+            get_model_state_listener_;
+
     gazebo_msgs::srv::Default_Response default_reply_;
     gazebo_msgs::srv::GetLightProperties_Response light_properties_reply_;
     gazebo_msgs::srv::GetWorldProperties_Response world_properties_reply_;
     gazebo_msgs::srv::GetJointProperties_Response joint_properties_reply_;
     gazebo_msgs::srv::GetLinkProperties_Response link_properties_reply_;
     gazebo_msgs::srv::GetModelProperties_Response model_properties_reply_;
+    gazebo_msgs::srv::GetModelState_Response model_state_reply_;
 
     gazebo::transport::PublisherPtr gazebo_pub_;
     gazebo::transport::NodePtr gazebo_node_;
+    common::Time current_time_;
     physics::WorldPtr world_;
 };
 

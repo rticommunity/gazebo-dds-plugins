@@ -37,6 +37,8 @@
 #include "gazebo_msgs/srv/GetLinkProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetModelProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetModelProperties_Response.hpp"
+#include "gazebo_msgs/srv/GetModelState_Request.hpp"
+#include "gazebo_msgs/srv/GetModelState_Response.hpp"
 #include "std_msgs/msg/Empty.hpp"
 
 template <typename T, typename T2>
@@ -58,9 +60,9 @@ T2 send_request(
 void delete_model(
         const dds::domain::DomainParticipant &participant,
         const std::string &service_name,
-        const std::string &model_name)
+        std::vector<std::string> model_name)
 {
-    gazebo_msgs::srv::DeleteModel_Request request(model_name);
+    gazebo_msgs::srv::DeleteModel_Request request(model_name[0]);
 
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::DeleteModel_Request,
@@ -73,9 +75,9 @@ void delete_model(
 void delete_light(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::string light_name)
+        std::vector<std::string> light_name)
 {
-    gazebo_msgs::srv::DeleteLight_Request request(light_name);
+    gazebo_msgs::srv::DeleteLight_Request request(light_name[0]);
 
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::DeleteLight_Request,
@@ -88,9 +90,9 @@ void delete_light(
 void get_light_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::string light_name)
+        std::vector<std::string> light_name)
 {
-    gazebo_msgs::srv::GetLightProperties_Request request(light_name);
+    gazebo_msgs::srv::GetLightProperties_Request request(light_name[0]);
 
     gazebo_msgs::srv::GetLightProperties_Response reply = send_request<
             gazebo_msgs::srv::GetLightProperties_Request,
@@ -103,9 +105,9 @@ void get_light_properties(
 void get_world_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::string world_name)
+        std::vector<std::string> world_name)
 {
-    gazebo_msgs::srv::GetWorldProperties_Request request(world_name);
+    gazebo_msgs::srv::GetWorldProperties_Request request(world_name[0]);
 
     gazebo_msgs::srv::GetWorldProperties_Response reply = send_request<
             gazebo_msgs::srv::GetWorldProperties_Request,
@@ -118,9 +120,9 @@ void get_world_properties(
 void get_joint_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::string joint_name)
+        std::vector<std::string> joint_name)
 {
-    gazebo_msgs::srv::GetJointProperties_Request request(joint_name);
+    gazebo_msgs::srv::GetJointProperties_Request request(joint_name[0]);
 
     gazebo_msgs::srv::GetJointProperties_Response reply = send_request<
             gazebo_msgs::srv::GetJointProperties_Request,
@@ -133,9 +135,9 @@ void get_joint_properties(
 void get_link_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::string link_name)
+        std::vector<std::string> link_name)
 {
-    gazebo_msgs::srv::GetLinkProperties_Request request(link_name);
+    gazebo_msgs::srv::GetLinkProperties_Request request(link_name[0]);
 
     gazebo_msgs::srv::GetLinkProperties_Response reply = send_request<
             gazebo_msgs::srv::GetLinkProperties_Request,
@@ -148,13 +150,28 @@ void get_link_properties(
 void get_model_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::string model_name)
+        std::vector<std::string> model_name)
 {
-    gazebo_msgs::srv::GetModelProperties_Request request(model_name);
+    gazebo_msgs::srv::GetModelProperties_Request request(model_name[0]);
 
     gazebo_msgs::srv::GetModelProperties_Response reply = send_request<
             gazebo_msgs::srv::GetModelProperties_Request,
             gazebo_msgs::srv::GetModelProperties_Response>(
+            participant, service_name, request);
+
+    std::cout << reply << std::endl;
+}
+
+void get_model_state(
+        const dds::domain::DomainParticipant &participant,
+        std::string service_name,
+        std::vector<std::string> model_name)
+{
+    gazebo_msgs::srv::GetModelState_Request request(model_name[0],model_name[1]);
+
+    gazebo_msgs::srv::GetModelState_Response reply = send_request<
+            gazebo_msgs::srv::GetModelState_Request,
+            gazebo_msgs::srv::GetModelState_Response>(
             participant, service_name, request);
 
     std::cout << reply << std::endl;
@@ -174,6 +191,12 @@ void send_empty_request(
     std::cout << reply << std::endl;
 }
 
+//     gazebo_msgs::srv::GetModelState_Request request;
+//     request.model_name("pioneer2dx");
+//     request.relative_entity_name("elevator");
+//     gazebo_msgs::srv::GetModelState_Response reply = get_model_state(request);
+//     std::cout<< reply <<std::endl;
+
 int main(int argc, char *argv[])
 {
     int ret_code = 0;
@@ -184,7 +207,7 @@ int main(int argc, char *argv[])
             std::function<void(
                     const dds::domain::DomainParticipant &,
                     const std::string &,
-                    const std::string &)>>
+                    const std::vector<std::string> &)>>
             service_map;
 
     std::unordered_map<
@@ -232,6 +255,12 @@ int main(int argc, char *argv[])
 
     service_map["get_model_properties"] = std::bind(
             &get_model_properties,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3);
+
+    service_map["get_model_state"] = std::bind(
+            &get_model_state,
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3);
@@ -297,7 +326,7 @@ int main(int argc, char *argv[])
             service_map[service_name](
                     participant,
                     service_name,
-                    std::string(cmd_parser.get_value("-i")));
+                    cmd_parser.get_values("-i"));
         } else {
             empty_service_map[service_name](participant, service_name);
         }

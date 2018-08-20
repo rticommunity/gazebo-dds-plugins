@@ -64,6 +64,22 @@ common::Time get_sim_time(physics::WorldPtr world)
 }
 
 /**
+ * @brief Obtain the name of the world
+ *
+ * @param world world that will return its name 
+ * @return the name of the world
+ */
+std::string
+        get_world_name(physics::WorldPtr world)
+{
+#if GAZEBO_MAJOR_VERSION >= 8
+    return world->Name();
+#else
+    return world->GetName();
+#endif
+}
+
+/**
  * @brief Obtain model by name
  *
  * @param world pointer that will be used to obtain the model

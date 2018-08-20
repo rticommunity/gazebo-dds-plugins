@@ -100,6 +100,15 @@ public:
             unpause_physics(std_msgs::msg::Empty request);
 
 private:
+    
+    void get_world_models();
+
+    void get_joint_position(gazebo::physics::JointPtr joint);
+
+    ignition::math::Vector3d
+            get_link_inertial(gazebo::physics::Link *link, gazebo::physics::InertialPtr inertia);
+
+private:
     ::dds::domain::DomainParticipant participant_;
 
     rti::request::Replier<
@@ -186,33 +195,44 @@ private:
             gazebo_msgs::srv::GetModelProperties_Response>
             get_model_properties_listener_;
 
-    rti::request::Replier<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
-            reset_simulation_replier_;
+    rti::request::
+            Replier<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
+                    reset_simulation_replier_;
 
     ::dds::sub::LoanedSamples<std_msgs::msg::Empty> reset_simulation_requests_;
     ReplierListener<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
             reset_simulation_listener_;
 
-    rti::request::Replier<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
-            reset_world_replier_;
+    rti::request::
+            Replier<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
+                    reset_world_replier_;
 
     ::dds::sub::LoanedSamples<std_msgs::msg::Empty> reset_world_requests_;
     ReplierListener<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
             reset_world_listener_;
 
-    rti::request::Replier<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
-            pause_physics_replier_;
+    rti::request::
+            Replier<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
+                    pause_physics_replier_;
 
     ::dds::sub::LoanedSamples<std_msgs::msg::Empty> pause_physics_requests_;
     ReplierListener<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
             pause_physics_listener_;
 
-    rti::request::Replier<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
-            unpause_physics_replier_;
+    rti::request::
+            Replier<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
+                    unpause_physics_replier_;
 
     ::dds::sub::LoanedSamples<std_msgs::msg::Empty> unpause_physics_requests_;
     ReplierListener<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
             unpause_physics_listener_;
+
+    gazebo_msgs::srv::Default_Response default_reply_;
+    gazebo_msgs::srv::GetLightProperties_Response light_properties_reply_;
+    gazebo_msgs::srv::GetWorldProperties_Response world_properties_reply_;
+    gazebo_msgs::srv::GetJointProperties_Response joint_properties_reply_;
+    gazebo_msgs::srv::GetLinkProperties_Response link_properties_reply_;
+    gazebo_msgs::srv::GetModelProperties_Response model_properties_reply_;
 
     gazebo::transport::PublisherPtr gazebo_pub_;
     gazebo::transport::NodePtr gazebo_node_;

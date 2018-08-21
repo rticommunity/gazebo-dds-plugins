@@ -35,6 +35,8 @@
 #include "gazebo_msgs/srv/GetLightProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetLinkProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetLinkProperties_Response.hpp"
+#include "gazebo_msgs/srv/GetLinkState_Request.hpp"
+#include "gazebo_msgs/srv/GetLinkState_Response.hpp"
 #include "gazebo_msgs/srv/GetModelProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetModelProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetModelState_Request.hpp"
@@ -86,6 +88,9 @@ public:
     gazebo_msgs::srv::GetLinkProperties_Response get_link_properties(
             gazebo_msgs::srv::GetLinkProperties_Request request);
 
+    gazebo_msgs::srv::GetLinkState_Response get_link_state(
+            gazebo_msgs::srv::GetLinkState_Request request);
+
     gazebo_msgs::srv::GetModelProperties_Response get_model_properties(
             gazebo_msgs::srv::GetModelProperties_Request request);
 
@@ -110,8 +115,15 @@ private:
 
     void get_joint_position(gazebo::physics::JointPtr joint);
 
-    ignition::math::Vector3d
-            get_link_inertial(gazebo::physics::Link *link, gazebo::physics::InertialPtr inertia);
+    ignition::math::Vector3d get_link_inertial(
+            gazebo::physics::Link *link,
+            gazebo::physics::InertialPtr inertia);
+
+    void get_entity_state(
+            gazebo::physics::EntityPtr &entity,
+            ignition::math::Pose3d &entity_pose,
+            ignition::math::Vector3d &entity_linear_vel,
+            ignition::math::Vector3d &entity_angular_vel);
 
 private:
     ::dds::domain::DomainParticipant participant_;
@@ -120,9 +132,6 @@ private:
             gazebo_msgs::srv::DeleteModel_Request,
             gazebo_msgs::srv::Default_Response>
             delete_model_replier_;
-
-    ::dds::sub::LoanedSamples<gazebo_msgs::srv::DeleteModel_Request>
-            delete_model_requests_;
     ReplierListener<
             gazebo_msgs::srv::DeleteModel_Request,
             gazebo_msgs::srv::Default_Response>
@@ -132,9 +141,6 @@ private:
             gazebo_msgs::srv::DeleteLight_Request,
             gazebo_msgs::srv::Default_Response>
             delete_light_replier_;
-
-    ::dds::sub::LoanedSamples<gazebo_msgs::srv::DeleteLight_Request>
-            delete_light_requests_;
     ReplierListener<
             gazebo_msgs::srv::DeleteLight_Request,
             gazebo_msgs::srv::Default_Response>
@@ -144,9 +150,6 @@ private:
             gazebo_msgs::srv::GetLightProperties_Request,
             gazebo_msgs::srv::GetLightProperties_Response>
             get_light_properties_replier_;
-
-    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetLightProperties_Request>
-            get_light_properties_requests_;
     ReplierListener<
             gazebo_msgs::srv::GetLightProperties_Request,
             gazebo_msgs::srv::GetLightProperties_Response>
@@ -156,9 +159,6 @@ private:
             gazebo_msgs::srv::GetWorldProperties_Request,
             gazebo_msgs::srv::GetWorldProperties_Response>
             get_world_properties_replier_;
-
-    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetWorldProperties_Request>
-            get_world_properties_requests_;
     ReplierListener<
             gazebo_msgs::srv::GetWorldProperties_Request,
             gazebo_msgs::srv::GetWorldProperties_Response>
@@ -168,9 +168,6 @@ private:
             gazebo_msgs::srv::GetJointProperties_Request,
             gazebo_msgs::srv::GetJointProperties_Response>
             get_joint_properties_replier_;
-
-    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetJointProperties_Request>
-            get_joint_properties_requests_;
     ReplierListener<
             gazebo_msgs::srv::GetJointProperties_Request,
             gazebo_msgs::srv::GetJointProperties_Response>
@@ -180,9 +177,6 @@ private:
             gazebo_msgs::srv::GetLinkProperties_Request,
             gazebo_msgs::srv::GetLinkProperties_Response>
             get_link_properties_replier_;
-
-    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetLinkProperties_Request>
-            get_link_properties_requests_;
     ReplierListener<
             gazebo_msgs::srv::GetLinkProperties_Request,
             gazebo_msgs::srv::GetLinkProperties_Response>
@@ -192,9 +186,6 @@ private:
             gazebo_msgs::srv::GetModelProperties_Request,
             gazebo_msgs::srv::GetModelProperties_Response>
             get_model_properties_replier_;
-
-    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetModelProperties_Request>
-            get_model_properties_requests_;
     ReplierListener<
             gazebo_msgs::srv::GetModelProperties_Request,
             gazebo_msgs::srv::GetModelProperties_Response>
@@ -203,32 +194,24 @@ private:
     rti::request::
             Replier<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
                     reset_simulation_replier_;
-
-    ::dds::sub::LoanedSamples<std_msgs::msg::Empty> reset_simulation_requests_;
     ReplierListener<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
             reset_simulation_listener_;
 
     rti::request::
             Replier<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
                     reset_world_replier_;
-
-    ::dds::sub::LoanedSamples<std_msgs::msg::Empty> reset_world_requests_;
     ReplierListener<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
             reset_world_listener_;
 
     rti::request::
             Replier<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
                     pause_physics_replier_;
-
-    ::dds::sub::LoanedSamples<std_msgs::msg::Empty> pause_physics_requests_;
     ReplierListener<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
             pause_physics_listener_;
 
     rti::request::
             Replier<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
                     unpause_physics_replier_;
-
-    ::dds::sub::LoanedSamples<std_msgs::msg::Empty> unpause_physics_requests_;
     ReplierListener<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
             unpause_physics_listener_;
 
@@ -236,13 +219,19 @@ private:
             gazebo_msgs::srv::GetModelState_Request,
             gazebo_msgs::srv::GetModelState_Response>
             get_model_state_replier_;
-
-    ::dds::sub::LoanedSamples<gazebo_msgs::srv::GetModelState_Request>
-            get_model_state_requests_;
     ReplierListener<
             gazebo_msgs::srv::GetModelState_Request,
             gazebo_msgs::srv::GetModelState_Response>
             get_model_state_listener_;
+
+    rti::request::Replier<
+            gazebo_msgs::srv::GetLinkState_Request,
+            gazebo_msgs::srv::GetLinkState_Response>
+            get_link_state_replier_;
+    ReplierListener<
+            gazebo_msgs::srv::GetLinkState_Request,
+            gazebo_msgs::srv::GetLinkState_Response>
+            get_link_state_listener_;
 
     gazebo_msgs::srv::Default_Response default_reply_;
     gazebo_msgs::srv::GetLightProperties_Response light_properties_reply_;
@@ -251,6 +240,11 @@ private:
     gazebo_msgs::srv::GetLinkProperties_Response link_properties_reply_;
     gazebo_msgs::srv::GetModelProperties_Response model_properties_reply_;
     gazebo_msgs::srv::GetModelState_Response model_state_reply_;
+    gazebo_msgs::srv::GetLinkState_Response link_state_reply_;
+
+    ignition::math::Pose3d entity_pose_, frame_pose_;
+    ignition::math::Vector3d entity_vpos_, entity_veul_, frame_vpos_,
+            frame_veul_;
 
     gazebo::transport::PublisherPtr gazebo_pub_;
     gazebo::transport::NodePtr gazebo_node_;

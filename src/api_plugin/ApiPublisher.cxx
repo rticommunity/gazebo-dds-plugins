@@ -35,6 +35,8 @@
 #include "gazebo_msgs/srv/GetJointProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetLinkProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetLinkProperties_Response.hpp"
+#include "gazebo_msgs/srv/GetLinkState_Request.hpp"
+#include "gazebo_msgs/srv/GetLinkState_Response.hpp"
 #include "gazebo_msgs/srv/GetModelProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetModelProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetModelState_Request.hpp"
@@ -147,6 +149,21 @@ void get_link_properties(
     std::cout << reply << std::endl;
 }
 
+void get_link_state(
+        const dds::domain::DomainParticipant &participant,
+        std::string service_name,
+        std::vector<std::string> link_name)
+{
+    gazebo_msgs::srv::GetLinkState_Request request(link_name[0],link_name[1]);
+
+    gazebo_msgs::srv::GetLinkState_Response reply = send_request<
+            gazebo_msgs::srv::GetLinkState_Request,
+            gazebo_msgs::srv::GetLinkState_Response>(
+            participant, service_name, request);
+
+    std::cout << reply << std::endl;
+}
+
 void get_model_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
@@ -190,12 +207,6 @@ void send_empty_request(
 
     std::cout << reply << std::endl;
 }
-
-//     gazebo_msgs::srv::GetModelState_Request request;
-//     request.model_name("pioneer2dx");
-//     request.relative_entity_name("elevator");
-//     gazebo_msgs::srv::GetModelState_Response reply = get_model_state(request);
-//     std::cout<< reply <<std::endl;
 
 int main(int argc, char *argv[])
 {
@@ -249,6 +260,12 @@ int main(int argc, char *argv[])
 
     service_map["get_link_properties"] = std::bind(
             &get_link_properties,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3);
+
+    service_map["get_link_state"] = std::bind(
+            &get_link_state,
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3);

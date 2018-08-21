@@ -33,6 +33,7 @@ ApiPlugin::ApiPlugin()
           get_world_properties_replier_(::dds::core::null),
           get_joint_properties_replier_(::dds::core::null),
           get_link_properties_replier_(::dds::core::null),
+          get_link_state_replier_(::dds::core::null),
           get_model_properties_replier_(::dds::core::null),
           get_model_state_replier_(::dds::core::null),
           reset_simulation_replier_(::dds::core::null),
@@ -61,6 +62,10 @@ ApiPlugin::ApiPlugin()
                   std::placeholders::_1)),
           get_link_properties_listener_(std::bind(
                   &ApiPlugin::get_link_properties,
+                  this,
+                  std::placeholders::_1)),
+          get_link_state_listener_(std::bind(
+                  &ApiPlugin::get_link_state,
                   this,
                   std::placeholders::_1)),
           get_model_properties_listener_(std::bind(
@@ -175,6 +180,13 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
             get_link_properties_replier_, participant_, "get_link_properties");
 
     get_link_properties_replier_.listener(&get_link_properties_listener_);
+
+    utils::create_replier<
+            gazebo_msgs::srv::GetLinkState_Request,
+            gazebo_msgs::srv::GetLinkState_Response>(
+            get_link_state_replier_, participant_, "get_link_state");
+
+    get_link_state_replier_.listener(&get_link_state_listener_);
 
     utils::create_replier<
             gazebo_msgs::srv::GetModelProperties_Request,
@@ -401,6 +413,63 @@ gazebo_msgs::srv::GetLinkProperties_Response ApiPlugin::get_link_properties(
     return link_properties_reply_;
 }
 
+gazebo_msgs::srv::GetLinkState_Response ApiPlugin::get_link_state(
+        gazebo_msgs::srv::GetLinkState_Request request)
+{
+    gazebo::physics::EntityPtr body
+            = utils::get_entity(world_, request.link_name());
+    gazebo::physics::EntityPtr frame
+            = utils::get_entity(world_, request.reference_frame());
+
+    if (!body) {
+        link_state_reply_.success(false);
+        link_state_reply_.status_message("GetLinkState: link not found");
+        return link_state_reply_;
+    }
+
+    get_entity_state(body, entity_pose_, entity_vpos_, entity_veul_);
+
+    if (frame) {
+        get_entity_state(frame, frame_pose_, frame_vpos_, frame_veul_);
+
+        entity_pose_ = entity_pose_ - frame_pose_;
+        entity_vpos_
+                = frame_pose_.Rot().RotateVectorReverse(entity_vpos_ - frame_vpos_);
+        entity_veul_
+                = frame_pose_.Rot().RotateVectorReverse(entity_veul_ - frame_veul_);
+    }
+
+    else if (
+            request.reference_frame() != ""
+            && request.reference_frame() != "world"
+            && request.reference_frame() != "map") {
+        link_state_reply_.success(false);
+        link_state_reply_.status_message(
+                "GetLinkState: reference reference_frame not found");
+        return link_state_reply_;
+    }
+
+    link_state_reply_.link_state().link_name(request.link_name());
+    link_state_reply_.link_state().pose().position().x(entity_pose_.Pos().X());
+    link_state_reply_.link_state().pose().position().y(entity_pose_.Pos().Y());
+    link_state_reply_.link_state().pose().position().z(entity_pose_.Pos().Z());
+    link_state_reply_.link_state().pose().orientation().x(entity_pose_.Rot().X());
+    link_state_reply_.link_state().pose().orientation().y(entity_pose_.Rot().Y());
+    link_state_reply_.link_state().pose().orientation().z(entity_pose_.Rot().Z());
+    link_state_reply_.link_state().pose().orientation().w(entity_pose_.Rot().W());
+    link_state_reply_.link_state().twist().linear().x(entity_vpos_.X());
+    link_state_reply_.link_state().twist().linear().y(entity_vpos_.Y());
+    link_state_reply_.link_state().twist().linear().z(entity_vpos_.Z());
+    link_state_reply_.link_state().twist().angular().x(entity_veul_.X());
+    link_state_reply_.link_state().twist().angular().y(entity_veul_.Y());
+    link_state_reply_.link_state().twist().angular().z(entity_veul_.Z());
+    link_state_reply_.link_state().reference_frame(request.reference_frame());
+
+    link_state_reply_.success(true);
+    link_state_reply_.status_message("GetLinkState: got state");
+    return link_state_reply_;
+}
+
 gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
         gazebo_msgs::srv::GetModelProperties_Request request)
 {
@@ -476,15 +545,11 @@ gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
 gazebo_msgs::srv::GetModelState_Response ApiPlugin::get_model_state(
             gazebo_msgs::srv::GetModelState_Request request)
 {
-#if GAZEBO_MAJOR_VERSION >= 8
-    gazebo::physics::ModelPtr model = world_->ModelByName(request.model_name());
+    gazebo::physics::EntityPtr model
+            = utils::get_entity(world_, request.model_name());
     gazebo::physics::EntityPtr frame
-            = world_->EntityByName(request.relative_entity_name());
-#else
-    gazebo::physics::ModelPtr model = world_->GetModel(request.model_name());
-    gazebo::physics::EntityPtr frame
-            = world_->GetEntity(request.relative_entity_name());
-#endif
+            = utils::get_entity(world_, request.relative_entity_name());
+            
     if (!model) {
         model_state_reply_.success(false);
         model_state_reply_.status_message(
@@ -499,41 +564,22 @@ gazebo_msgs::srv::GetModelState_Response ApiPlugin::get_model_state(
         model_state_reply_.header().stamp().nanosec(current_time_.nsec);
         model_state_reply_.header().frame_id() = request.relative_entity_name(); 
     
-#if GAZEBO_MAJOR_VERSION >= 8
-        ignition::math::Pose3d model_pose = model->WorldPose();
-        ignition::math::Vector3d model_linear_vel = model->WorldLinearVel();
-        ignition::math::Vector3d model_angular_vel = model->WorldAngularVel();
-#else
-        ignition::math::Pose3d model_pose = model->GetWorldPose().Ign();
-        ignition::math::Vector3d model_linear_vel
-                = model->GetWorldLinearVel().Ign();
-        ignition::math::Vector3d model_angular_vel
-                = model->GetWorldAngularVel().Ign();
-#endif
-        ignition::math::Vector3d model_pos = model_pose.Pos();
-        ignition::math::Quaterniond model_rot = model_pose.Rot();
+        get_entity_state(model, entity_pose_, entity_vpos_, entity_veul_);
+
+        ignition::math::Vector3d entity_pos = entity_pose_.Pos();
+        ignition::math::Quaterniond entity_rot = entity_pose_.Rot();
 
         if (frame) {
-        // convert to relative pose, rates
-#if GAZEBO_MAJOR_VERSION >= 8
-            ignition::math::Pose3d frame_pose = frame->WorldPose();
-            ignition::math::Vector3d frame_vpos = frame->WorldLinearVel();
-            ignition::math::Vector3d frame_veul = frame->WorldAngularVel();
-#else
-            ignition::math::Pose3d frame_pose = frame->GetWorldPose().Ign();
-            ignition::math::Vector3d frame_vpos
-                    = frame->GetWorldLinearVel().Ign();
-            ignition::math::Vector3d frame_veul
-                    = frame->GetWorldAngularVel().Ign();
-#endif
-            ignition::math::Pose3d model_rel_pose = model_pose - frame_pose;
-            model_pos = model_rel_pose.Pos();
-            model_rot = model_rel_pose.Rot();
+            get_entity_state(frame, frame_pose_, frame_vpos_, frame_veul_);
 
-            model_linear_vel = frame_pose.Rot().RotateVectorReverse(
-                    model_linear_vel - frame_vpos);
-            model_angular_vel = frame_pose.Rot().RotateVectorReverse(
-                    model_angular_vel - frame_veul);
+            ignition::math::Pose3d entity_rel_pose = entity_pose_ - frame_pose_;
+            entity_pos = entity_rel_pose.Pos();
+            entity_rot = entity_rel_pose.Rot();
+
+            entity_vpos_ = frame_pose_.Rot().RotateVectorReverse(
+                    entity_vpos_ - frame_vpos_);
+            entity_veul_ = frame_pose_.Rot().RotateVectorReverse(
+                    entity_veul_ - frame_veul_);
         } else if (
                 request.relative_entity_name() != ""
                 && request.relative_entity_name() != "world"
@@ -547,20 +593,20 @@ gazebo_msgs::srv::GetModelState_Response ApiPlugin::get_model_state(
         }
 
         // fill in response
-        model_state_reply_.pose().position().x(model_pos.X());
-        model_state_reply_.pose().position().y(model_pos.Y());
-        model_state_reply_.pose().position().z(model_pos.Z());
-        model_state_reply_.pose().orientation().w(model_rot.W());
-        model_state_reply_.pose().orientation().x(model_rot.X());
-        model_state_reply_.pose().orientation().y(model_rot.Y());
-        model_state_reply_.pose().orientation().z(model_rot.Z());
+        model_state_reply_.pose().position().x(entity_pos.X());
+        model_state_reply_.pose().position().y(entity_pos.Y());
+        model_state_reply_.pose().position().z(entity_pos.Z());
+        model_state_reply_.pose().orientation().w(entity_rot.W());
+        model_state_reply_.pose().orientation().x(entity_rot.X());
+        model_state_reply_.pose().orientation().y(entity_rot.Y());
+        model_state_reply_.pose().orientation().z(entity_rot.Z());
 
-        model_state_reply_.twist().linear().x(model_linear_vel.X());
-        model_state_reply_.twist().linear().y(model_linear_vel.Y());
-        model_state_reply_.twist().linear().z(model_linear_vel.Z());
-        model_state_reply_.twist().angular().x(model_angular_vel.X());
-        model_state_reply_.twist().angular().y(model_angular_vel.Y());
-        model_state_reply_.twist().angular().z(model_angular_vel.Z());
+        model_state_reply_.twist().linear().x(entity_vpos_.X());
+        model_state_reply_.twist().linear().y(entity_vpos_.Y());
+        model_state_reply_.twist().linear().z(entity_vpos_.Z());
+        model_state_reply_.twist().angular().x(entity_veul_.X());
+        model_state_reply_.twist().angular().y(entity_veul_.Y());
+        model_state_reply_.twist().angular().z(entity_veul_.Z());
 
         model_state_reply_.success(true);
         model_state_reply_.status_message("GetModelState: got properties");
@@ -666,6 +712,23 @@ ignition::math::Vector3d ApiPlugin::get_link_inertial(
     link_properties_reply_.iyz(inertia->GetIYZ());
 
     return link->GetInertial()->GetCoG().Ign();
+#endif
+}
+
+void ApiPlugin::get_entity_state(
+        gazebo::physics::EntityPtr &entity,
+        ignition::math::Pose3d &entity_pose,
+        ignition::math::Vector3d &entity_linear_vel,
+        ignition::math::Vector3d &entity_angular_vel)
+{
+#if GAZEBO_MAJOR_VERSION >= 8
+    entity_pose = entity->WorldPose();
+    entity_linear_vel = entity->WorldLinearVel();
+    entity_angular_vel = entity->WorldAngularVel();
+#else
+    entity_pose = entity->GetWorldPose().Ign();
+    entity_linear_vel = entity->GetWorldLinearVel().Ign();
+    entity_angular_vel = entity->GetWorldAngularVel().Ign();
 #endif
 }
 

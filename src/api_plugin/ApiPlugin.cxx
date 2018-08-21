@@ -37,6 +37,7 @@ ApiPlugin::ApiPlugin()
           get_model_properties_replier_(::dds::core::null),
           get_model_state_replier_(::dds::core::null),
           set_light_properties_replier_(::dds::core::null),
+          set_link_properties_replier_(::dds::core::null),
           reset_simulation_replier_(::dds::core::null),
           reset_world_replier_(::dds::core::null),
           pause_physics_replier_(::dds::core::null),
@@ -79,6 +80,10 @@ ApiPlugin::ApiPlugin()
                   std::placeholders::_1)),
           set_light_properties_listener_(std::bind(
                   &ApiPlugin::set_light_properties,
+                  this,
+                  std::placeholders::_1)),
+          set_link_properties_listener_(std::bind(
+                  &ApiPlugin::set_link_properties,
                   this,
                   std::placeholders::_1)),
           reset_simulation_listener_(std::bind(
@@ -221,6 +226,15 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
             "set_light_properties");
 
     set_light_properties_replier_.listener(&set_light_properties_listener_);
+
+    utils::create_replier<
+            gazebo_msgs::srv::SetLinkProperties_Request,
+            gazebo_msgs::srv::Default_Response>(
+            set_link_properties_replier_,
+            participant_,
+            "set_link_properties");
+
+    set_link_properties_replier_.listener(&set_link_properties_listener_);
 
     utils::create_replier<
             std_msgs::msg::Empty,
@@ -657,7 +671,41 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_light_properties(
         light_modify_pub_->Publish(light, true);
 
         default_reply_.success(true);
-        default_reply_.status_message("setLightProperties: set properties");
+        default_reply_.status_message("setLightProperties: properties set");
+    }
+
+    return default_reply_;
+}
+
+gazebo_msgs::srv::Default_Response ApiPlugin::set_link_properties(
+        gazebo_msgs::srv::SetLinkProperties_Request request)
+{
+    gazebo::physics::Link *body = dynamic_cast<gazebo::physics::Link *>(
+                    utils::get_entity(world_, request.link_name()).get());
+
+    if (!body) {
+        default_reply_.success(false);
+        default_reply_.status_message("SetLinkProperties: link not found");
+
+    } else {
+        gazebo::physics::InertialPtr mass = body->GetInertial();
+
+        mass->SetCoG(ignition::math::Vector3d(
+                request.com().position().x(),
+                request.com().position().y(),
+                request.com().position().z()));
+        mass->SetInertiaMatrix(
+                request.ixx(),
+                request.iyy(),
+                request.izz(),
+                request.ixy(),
+                request.ixz(),
+                request.iyz());
+        mass->SetMass(request.mass());
+        body->SetGravityMode(request.gravity_mode());
+
+        default_reply_.success(true);
+        default_reply_.status_message("SetLinkProperties: properties set");
     }
 
     return default_reply_;

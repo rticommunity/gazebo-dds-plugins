@@ -41,6 +41,7 @@
 #include "gazebo_msgs/srv/GetModelState_Request.hpp"
 #include "gazebo_msgs/srv/GetModelState_Response.hpp"
 #include "gazebo_msgs/srv/SetLightProperties_Request.hpp"
+#include "gazebo_msgs/srv/SetLinkProperties_Request.hpp"
 #include "std_msgs/msg/Empty.hpp"
 
 template <typename T, typename T2>
@@ -218,6 +219,36 @@ void set_light_properties(
     std::cout << reply << std::endl;
 }
 
+void set_link_properties(
+        const dds::domain::DomainParticipant &participant,
+        std::string service_name,
+        std::vector<std::string> link_properties)
+{
+    gazebo_msgs::srv::SetLinkProperties_Request request;
+    request.link_name(link_properties[0]);
+
+    request.com().position().x(stof(link_properties[1]));
+    request.com().position().y(stof(link_properties[2]));
+    request.com().position().z(stof(link_properties[3]));
+
+    request.gravity_mode((strcasecmp("true",link_properties[4].c_str()) == 0));
+
+    request.mass(stof(link_properties[5]));
+    request.ixx(stof(link_properties[6]));
+    request.ixy(stof(link_properties[7]));
+    request.ixz(stof(link_properties[8]));
+    request.iyy(stof(link_properties[9]));
+    request.iyz(stof(link_properties[10]));
+    request.izz(stof(link_properties[11]));
+
+    gazebo_msgs::srv::Default_Response reply = send_request<
+            gazebo_msgs::srv::SetLinkProperties_Request,
+            gazebo_msgs::srv::Default_Response>(
+            participant, service_name, request);
+
+    std::cout << reply << std::endl;
+}
+
 void send_empty_request(
         const dds::domain::DomainParticipant &participant,
         std::string service_name)
@@ -302,6 +333,12 @@ int main(int argc, char *argv[])
 
     service_map["set_light_properties"] = std::bind(
             &set_light_properties,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3);
+
+    service_map["set_link_properties"] = std::bind(
+            &set_link_properties,
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3);

@@ -44,6 +44,7 @@
 #include "gazebo_msgs/srv/GetPhysicsProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
 #include "gazebo_msgs/srv/SetLightProperties_Request.hpp"
+#include "gazebo_msgs/srv/SetLinkProperties_Request.hpp"
 #include "std_msgs/msg/Empty.hpp"
 
 #include "common/ReplierListener.hpp"
@@ -99,6 +100,9 @@ public:
 
     gazebo_msgs::srv::Default_Response set_light_properties(
             gazebo_msgs::srv::SetLightProperties_Request request);
+
+    gazebo_msgs::srv::Default_Response set_link_properties(
+            gazebo_msgs::srv::SetLinkProperties_Request request);
 
     gazebo_msgs::srv::Default_Response
             reset_simulation(std_msgs::msg::Empty request);
@@ -220,6 +224,15 @@ private:
             gazebo_msgs::srv::SetLightProperties_Request,
             gazebo_msgs::srv::Default_Response>
             set_light_properties_listener_;
+
+    rti::request::Replier<
+            gazebo_msgs::srv::SetLinkProperties_Request,
+            gazebo_msgs::srv::Default_Response>
+            set_link_properties_replier_;
+    ReplierListener<
+            gazebo_msgs::srv::SetLinkProperties_Request,
+            gazebo_msgs::srv::Default_Response>
+            set_link_properties_listener_;
 
     rti::request::
             Replier<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>

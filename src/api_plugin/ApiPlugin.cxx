@@ -36,6 +36,7 @@ ApiPlugin::ApiPlugin()
           get_link_state_replier_(::dds::core::null),
           get_model_properties_replier_(::dds::core::null),
           get_model_state_replier_(::dds::core::null),
+          set_light_properties_replier_(::dds::core::null),
           reset_simulation_replier_(::dds::core::null),
           reset_world_replier_(::dds::core::null),
           pause_physics_replier_(::dds::core::null),
@@ -76,6 +77,10 @@ ApiPlugin::ApiPlugin()
                   &ApiPlugin::get_model_state,
                   this,
                   std::placeholders::_1)),
+          set_light_properties_listener_(std::bind(
+                  &ApiPlugin::set_light_properties,
+                  this,
+                  std::placeholders::_1)),
           reset_simulation_listener_(std::bind(
                   &ApiPlugin::reset_simulation,
                   this,
@@ -107,6 +112,8 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
     gazebo_node_ = gazebo::transport::NodePtr(new gazebo::transport::Node());
     gazebo_node_->Init(world_name);
     gazebo_pub_ = gazebo_node_->Advertise<gazebo::msgs::Request>("~/request");
+    light_modify_pub_
+            = gazebo_node_->Advertise<gazebo::msgs::Light>("~/light/modify");
 
     // Obtain the qos profile information from loaded world
     std::string qos_profile_file;
@@ -157,7 +164,7 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
     get_light_properties_replier_.listener(&get_light_properties_listener_);
 
     utils::create_replier<
-            gazebo_msgs::srv::GetWorldProperties_Request,
+            std_msgs::msg::Empty,
             gazebo_msgs::srv::GetWorldProperties_Response>(
             get_world_properties_replier_,
             participant_,
@@ -205,6 +212,15 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
             "get_model_state");
 
     get_model_state_replier_.listener(&get_model_state_listener_);
+
+    utils::create_replier<
+            gazebo_msgs::srv::SetLightProperties_Request,
+            gazebo_msgs::srv::Default_Response>(
+            set_light_properties_replier_,
+            participant_,
+            "set_light_properties");
+
+    set_light_properties_replier_.listener(&set_light_properties_listener_);
 
     utils::create_replier<
             std_msgs::msg::Empty,
@@ -255,7 +271,7 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
              "GetLightProperties_Response]"
           << std::endl;
     gzmsg << "  - get_world_properties "
-          << " [gazebo_msgs/srv/GetWorldProperties_Request]/[gazebo_msgs/srv/"
+          << " [std_msgs::msg::Empty]/[gazebo_msgs/srv/"
              "GetWorldProperties_Response]"
           << std::endl;
 }
@@ -344,7 +360,7 @@ gazebo_msgs::srv::GetLightProperties_Response ApiPlugin::get_light_properties(
 }
 
 gazebo_msgs::srv::GetWorldProperties_Response ApiPlugin::get_world_properties(
-        gazebo_msgs::srv::GetWorldProperties_Request request)
+        std_msgs::msg::Empty request)
 {
     get_world_models();
 
@@ -481,14 +497,14 @@ gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
         model_properties_reply_.status_message(
                 "GetModelProperties: model not found");
     } else {
-        // get model parent name
+        // Get model parent name
         gazebo::physics::Model *parent_model
                 = dynamic_cast<gazebo::physics::Model *>(
                         model->GetParent().get());
         if (parent_model)
             model_properties_reply_.parent_model_name(parent_model->GetName());
 
-        // get list of child bodies, geoms and children model names
+        // Get list of child bodies, geoms and children model names
         model_properties_reply_.child_model_names().clear();
         model_properties_reply_.body_names().clear();
         model_properties_reply_.geom_names().clear();
@@ -503,7 +519,7 @@ gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
                     model->GetChild(i).get());
             if (body) {
                 model_properties_reply_.body_names()[i] = body->GetName();
-                // get list of geoms
+                // Get list of geoms
                 for (unsigned int j = 0; j < body->GetChildCount(); j++) {
                     gazebo::physics::Collision *geom
                             = dynamic_cast<gazebo::physics::Collision *>(
@@ -523,7 +539,7 @@ gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
             }
         }
 
-        // get list of joints
+        // Get list of joints
         gazebo::physics::Joint_V joints = model->GetJoints();
         model_properties_reply_.joint_names().clear();
         model_properties_reply_.joint_names().resize(joints.size());
@@ -557,7 +573,7 @@ gazebo_msgs::srv::GetModelState_Response ApiPlugin::get_model_state(
         return model_state_reply_;
     } else {
     
-        // set header of the sample
+        // Set header of the sample
         current_time_ = utils::get_sim_time(world_);
 
         model_state_reply_.header().stamp().sec(current_time_.sec);
@@ -592,7 +608,7 @@ gazebo_msgs::srv::GetModelState_Response ApiPlugin::get_model_state(
             return model_state_reply_;
         }
 
-        // fill in response
+        // Fill in response
         model_state_reply_.pose().position().x(entity_pos.X());
         model_state_reply_.pose().position().y(entity_pos.Y());
         model_state_reply_.pose().position().z(entity_pos.Z());
@@ -613,6 +629,38 @@ gazebo_msgs::srv::GetModelState_Response ApiPlugin::get_model_state(
     }
 
     return model_state_reply_;
+}
+
+gazebo_msgs::srv::Default_Response ApiPlugin::set_light_properties(
+        gazebo_msgs::srv::SetLightProperties_Request request)
+{
+    gazebo::physics::LightPtr phy_light = utils::get_light(
+            world_, request.light_name());
+
+    if (phy_light == NULL) {
+        default_reply_.success(false);
+        default_reply_.status_message("setLightProperties: light not found!");
+    } else {
+        gazebo::msgs::Light light;
+
+        phy_light->FillMsg(light);
+
+        light.mutable_diffuse()->set_r(request.diffuse().r());
+        light.mutable_diffuse()->set_g(request.diffuse().g());
+        light.mutable_diffuse()->set_b(request.diffuse().b());
+        light.mutable_diffuse()->set_a(request.diffuse().a());
+
+        light.set_attenuation_constant(request.attenuation_constant());
+        light.set_attenuation_linear(request.attenuation_linear());
+        light.set_attenuation_quadratic(request.attenuation_quadratic());
+
+        light_modify_pub_->Publish(light, true);
+
+        default_reply_.success(true);
+        default_reply_.status_message("setLightProperties: set properties");
+    }
+
+    return default_reply_;
 }
 
 gazebo_msgs::srv::Default_Response

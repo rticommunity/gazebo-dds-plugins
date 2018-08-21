@@ -29,7 +29,6 @@
 #include "gazebo_msgs/srv/DeleteModel_Request.hpp"
 #include "gazebo_msgs/srv/GetLightProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetLightProperties_Response.hpp"
-#include "gazebo_msgs/srv/GetWorldProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetJointProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetJointProperties_Response.hpp"
@@ -41,6 +40,7 @@
 #include "gazebo_msgs/srv/GetModelProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetModelState_Request.hpp"
 #include "gazebo_msgs/srv/GetModelState_Response.hpp"
+#include "gazebo_msgs/srv/SetLightProperties_Request.hpp"
 #include "std_msgs/msg/Empty.hpp"
 
 template <typename T, typename T2>
@@ -106,13 +106,12 @@ void get_light_properties(
 
 void get_world_properties(
         const dds::domain::DomainParticipant &participant,
-        std::string service_name,
-        std::vector<std::string> world_name)
+        std::string service_name)
 {
-    gazebo_msgs::srv::GetWorldProperties_Request request(world_name[0]);
+    std_msgs::msg::Empty request;
 
     gazebo_msgs::srv::GetWorldProperties_Response reply = send_request<
-            gazebo_msgs::srv::GetWorldProperties_Request,
+            std_msgs::msg::Empty,
             gazebo_msgs::srv::GetWorldProperties_Response>(
             participant, service_name, request);
 
@@ -194,11 +193,36 @@ void get_model_state(
     std::cout << reply << std::endl;
 }
 
+void set_light_properties(
+        const dds::domain::DomainParticipant &participant,
+        std::string service_name,
+        std::vector<std::string> light_properties)
+{
+    gazebo_msgs::srv::SetLightProperties_Request request;
+    request.light_name(light_properties[0]);
+
+    request.diffuse().r(stof(light_properties[1]));
+    request.diffuse().g(stof(light_properties[2]));
+    request.diffuse().b(stof(light_properties[3]));
+    request.diffuse().a(stof(light_properties[4]));
+
+    request.attenuation_constant(stof(light_properties[5]));
+    request.attenuation_linear(stof(light_properties[6]));
+    request.attenuation_quadratic(stof(light_properties[7]));
+
+    gazebo_msgs::srv::Default_Response reply = send_request<
+            gazebo_msgs::srv::SetLightProperties_Request,
+            gazebo_msgs::srv::Default_Response>(
+            participant, service_name, request);
+
+    std::cout << reply << std::endl;
+}
+
 void send_empty_request(
         const dds::domain::DomainParticipant &participant,
         std::string service_name)
 {
-    std_msgs::msg::Empty request(true);
+    std_msgs::msg::Empty request;
 
     gazebo_msgs::srv::Default_Response reply = send_request<
             std_msgs::msg::Empty,
@@ -246,12 +270,6 @@ int main(int argc, char *argv[])
             std::placeholders::_2,
             std::placeholders::_3);
 
-    service_map["get_world_properties"] = std::bind(
-            &get_world_properties,
-            std::placeholders::_1,
-            std::placeholders::_2,
-            std::placeholders::_3);
-
     service_map["get_joint_properties"] = std::bind(
             &get_joint_properties,
             std::placeholders::_1,
@@ -281,6 +299,17 @@ int main(int argc, char *argv[])
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3);
+
+    service_map["set_light_properties"] = std::bind(
+            &set_light_properties,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3);
+
+    empty_service_map["get_world_properties"] = std::bind(
+            &get_world_properties,
+            std::placeholders::_1,
+            std::placeholders::_2);
 
     empty_service_map["reset_simulation"] = std::bind(
             &send_empty_request,

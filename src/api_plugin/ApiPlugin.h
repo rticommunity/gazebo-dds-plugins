@@ -42,8 +42,8 @@
 #include "gazebo_msgs/srv/GetModelState_Request.hpp"
 #include "gazebo_msgs/srv/GetModelState_Response.hpp"
 #include "gazebo_msgs/srv/GetPhysicsProperties_Response.hpp"
-#include "gazebo_msgs/srv/GetWorldProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
+#include "gazebo_msgs/srv/SetLightProperties_Request.hpp"
 #include "std_msgs/msg/Empty.hpp"
 
 #include "common/ReplierListener.hpp"
@@ -80,7 +80,7 @@ public:
             gazebo_msgs::srv::GetLightProperties_Request request);
 
     gazebo_msgs::srv::GetWorldProperties_Response get_world_properties(
-            gazebo_msgs::srv::GetWorldProperties_Request request);
+            std_msgs::msg::Empty request);
 
     gazebo_msgs::srv::GetJointProperties_Response get_joint_properties(
             gazebo_msgs::srv::GetJointProperties_Request request);
@@ -96,6 +96,9 @@ public:
 
     gazebo_msgs::srv::GetModelState_Response get_model_state(
             gazebo_msgs::srv::GetModelState_Request request);
+
+    gazebo_msgs::srv::Default_Response set_light_properties(
+            gazebo_msgs::srv::SetLightProperties_Request request);
 
     gazebo_msgs::srv::Default_Response
             reset_simulation(std_msgs::msg::Empty request);
@@ -156,11 +159,11 @@ private:
             get_light_properties_listener_;
 
     rti::request::Replier<
-            gazebo_msgs::srv::GetWorldProperties_Request,
+            std_msgs::msg::Empty,
             gazebo_msgs::srv::GetWorldProperties_Response>
             get_world_properties_replier_;
     ReplierListener<
-            gazebo_msgs::srv::GetWorldProperties_Request,
+            std_msgs::msg::Empty,
             gazebo_msgs::srv::GetWorldProperties_Response>
             get_world_properties_listener_;
 
@@ -183,6 +186,15 @@ private:
             get_link_properties_listener_;
 
     rti::request::Replier<
+            gazebo_msgs::srv::GetLinkState_Request,
+            gazebo_msgs::srv::GetLinkState_Response>
+            get_link_state_replier_;
+    ReplierListener<
+            gazebo_msgs::srv::GetLinkState_Request,
+            gazebo_msgs::srv::GetLinkState_Response>
+            get_link_state_listener_;
+
+    rti::request::Replier<
             gazebo_msgs::srv::GetModelProperties_Request,
             gazebo_msgs::srv::GetModelProperties_Response>
             get_model_properties_replier_;
@@ -190,6 +202,24 @@ private:
             gazebo_msgs::srv::GetModelProperties_Request,
             gazebo_msgs::srv::GetModelProperties_Response>
             get_model_properties_listener_;
+
+    rti::request::Replier<
+            gazebo_msgs::srv::GetModelState_Request,
+            gazebo_msgs::srv::GetModelState_Response>
+            get_model_state_replier_;
+    ReplierListener<
+            gazebo_msgs::srv::GetModelState_Request,
+            gazebo_msgs::srv::GetModelState_Response>
+            get_model_state_listener_;
+
+    rti::request::Replier<
+            gazebo_msgs::srv::SetLightProperties_Request,
+            gazebo_msgs::srv::Default_Response>
+            set_light_properties_replier_;
+    ReplierListener<
+            gazebo_msgs::srv::SetLightProperties_Request,
+            gazebo_msgs::srv::Default_Response>
+            set_light_properties_listener_;
 
     rti::request::
             Replier<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
@@ -215,24 +245,6 @@ private:
     ReplierListener<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>
             unpause_physics_listener_;
 
-    rti::request::Replier<
-            gazebo_msgs::srv::GetModelState_Request,
-            gazebo_msgs::srv::GetModelState_Response>
-            get_model_state_replier_;
-    ReplierListener<
-            gazebo_msgs::srv::GetModelState_Request,
-            gazebo_msgs::srv::GetModelState_Response>
-            get_model_state_listener_;
-
-    rti::request::Replier<
-            gazebo_msgs::srv::GetLinkState_Request,
-            gazebo_msgs::srv::GetLinkState_Response>
-            get_link_state_replier_;
-    ReplierListener<
-            gazebo_msgs::srv::GetLinkState_Request,
-            gazebo_msgs::srv::GetLinkState_Response>
-            get_link_state_listener_;
-
     gazebo_msgs::srv::Default_Response default_reply_;
     gazebo_msgs::srv::GetLightProperties_Response light_properties_reply_;
     gazebo_msgs::srv::GetWorldProperties_Response world_properties_reply_;
@@ -242,11 +254,15 @@ private:
     gazebo_msgs::srv::GetModelState_Response model_state_reply_;
     gazebo_msgs::srv::GetLinkState_Response link_state_reply_;
 
-    ignition::math::Pose3d entity_pose_, frame_pose_;
-    ignition::math::Vector3d entity_vpos_, entity_veul_, frame_vpos_,
-            frame_veul_;
+    ignition::math::Pose3d entity_pose_;
+    ignition::math::Pose3d frame_pose_;
+    ignition::math::Vector3d entity_vpos_;
+    ignition::math::Vector3d entity_veul_;
+    ignition::math::Vector3d frame_vpos_;
+    ignition::math::Vector3d frame_veul_;
 
     gazebo::transport::PublisherPtr gazebo_pub_;
+    gazebo::transport::PublisherPtr light_modify_pub_;
     gazebo::transport::NodePtr gazebo_node_;
     common::Time current_time_;
     physics::WorldPtr world_;

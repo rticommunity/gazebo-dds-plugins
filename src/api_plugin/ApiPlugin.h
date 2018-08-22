@@ -71,61 +71,172 @@ public:
      */
     void Load(physics::WorldPtr parent, sdf::ElementPtr sdf) override;
 
+    /**
+     * @brief Delete a model for its name
+     *
+     * @param request sample that contains the name of the model
+     * @return response of the service
+     */
     gazebo_msgs::srv::Default_Response
             delete_model(gazebo_msgs::srv::DeleteModel_Request);
 
+    /**
+     * @brief Delete a light for its name
+     *
+     * @param request sample that contains the name of the light
+     * @return response of the service
+     */
     gazebo_msgs::srv::Default_Response
             delete_light(gazebo_msgs::srv::DeleteLight_Request request);
 
+    /**
+     * @brief Obtain the properties of a specified light
+     *
+     * @param request sample that contains the name of the light
+     * @return properties of the light
+     */
     gazebo_msgs::srv::GetLightProperties_Response get_light_properties(
             gazebo_msgs::srv::GetLightProperties_Request request);
 
-    gazebo_msgs::srv::GetWorldProperties_Response get_world_properties(
-            std_msgs::msg::Empty request);
+    /**
+     * @brief Obtain the properties of the world
+     *
+     * @param request empty sample
+     * @return properties of the world
+     */
+    gazebo_msgs::srv::GetWorldProperties_Response
+            get_world_properties(std_msgs::msg::Empty request);
 
+    /**
+     * @brief Obtain the properties of a specified joint
+     *
+     * @param request sample that contains the name of the joint
+     * @return properties of the joint
+     */
     gazebo_msgs::srv::GetJointProperties_Response get_joint_properties(
             gazebo_msgs::srv::GetJointProperties_Request request);
 
+    /**
+     * @brief Obtain the properties of a specified link
+     *
+     * @param request sample that contains the name of the link
+     * @return properties of the link
+     */
     gazebo_msgs::srv::GetLinkProperties_Response get_link_properties(
             gazebo_msgs::srv::GetLinkProperties_Request request);
 
-    gazebo_msgs::srv::GetLinkState_Response get_link_state(
-            gazebo_msgs::srv::GetLinkState_Request request);
+    /**
+     * @brief Obtain the current state of a specified link
+     *
+     * @param request sample that contains the name of the link
+     * @return current state of the link
+     */
+    gazebo_msgs::srv::GetLinkState_Response
+            get_link_state(gazebo_msgs::srv::GetLinkState_Request request);
 
+    /**
+     * @brief Obtain the properties of a specified model
+     *
+     * @param request sample that contains the name of the model
+     * @return properties of the model
+     */
     gazebo_msgs::srv::GetModelProperties_Response get_model_properties(
             gazebo_msgs::srv::GetModelProperties_Request request);
 
-    gazebo_msgs::srv::GetModelState_Response get_model_state(
-            gazebo_msgs::srv::GetModelState_Request request);
+    /**
+     * @brief Obtain the current state of a specified model
+     *
+     * @param request sample that contains the name of the model
+     * @return current state of the model
+     */
+    gazebo_msgs::srv::GetModelState_Response
+            get_model_state(gazebo_msgs::srv::GetModelState_Request request);
 
+    /**
+     * @brief Update the properties of a specified light
+     *
+     * @param request sample that contains the name of the light
+     * @return response of the service
+     */
     gazebo_msgs::srv::Default_Response set_light_properties(
             gazebo_msgs::srv::SetLightProperties_Request request);
 
+    /**
+     * @brief Update the properties of a specified link
+     *
+     * @param request sample that contains the name of the link
+     * @return response of the service
+     */
     gazebo_msgs::srv::Default_Response set_link_properties(
             gazebo_msgs::srv::SetLinkProperties_Request request);
 
+    /**
+     * @brief Reset the simulation to its initial state
+     *
+     * @param request empty sample
+     * @return response of the service
+     */
     gazebo_msgs::srv::Default_Response
             reset_simulation(std_msgs::msg::Empty request);
 
+    /**
+     * @brief Reset the world to its initial state
+     *
+     * @param request empty sample
+     * @return response of the service
+     */
     gazebo_msgs::srv::Default_Response
             reset_world(std_msgs::msg::Empty request);
 
+    /**
+     * @brief Pause the physics of the simulation
+     *
+     * @param request empty sample
+     * @return response of the service
+     */
     gazebo_msgs::srv::Default_Response
             pause_physics(std_msgs::msg::Empty request);
-    
+
+    /**
+     * @brief Unpause the physics of the simulation
+     *
+     * @param request empty sample
+     * @return response of the service
+     */
     gazebo_msgs::srv::Default_Response
             unpause_physics(std_msgs::msg::Empty request);
 
 private:
-    
+    /**
+     * @brief Obtain all the models inside the world
+     */
     void get_world_models();
 
+    /**
+     * @brief Obtain the position of a specified joint
+     *
+     * @param joint pointer that will be use to obtain the position of the joint
+     */
     void get_joint_position(gazebo::physics::JointPtr joint);
 
-    ignition::math::Vector3d get_link_inertial(
-            gazebo::physics::Link *link,
-            gazebo::physics::InertialPtr inertia);
+    /**
+     * @brief Obtain the inertial properties of a specified link
+     *
+     * @param link pointer that will be use to obtain the inertial properties of
+     * the link
+     * @return the center of gravity of the link
+     */
+    ignition::math::Vector3d get_link_inertial(gazebo::physics::Link *link);
 
+    /**
+     * @brief Obtain the current state of a specified entity
+     *
+     * @param entity pointer that will be use to obtain current state of
+     * the entity
+     * @param entity_pose will obtain the position of the entity
+     * @param entity_linear_vel will obtain the linear velocity of the entity
+     * @param entity_angular_vel will obtain the angular velocity of the entity
+     */
     void get_entity_state(
             gazebo::physics::EntityPtr &entity,
             ignition::math::Pose3d &entity_pose,
@@ -277,6 +388,7 @@ private:
     gazebo::transport::PublisherPtr gazebo_pub_;
     gazebo::transport::PublisherPtr light_modify_pub_;
     gazebo::transport::NodePtr gazebo_node_;
+    gazebo::msgs::Light light_sample;
     common::Time current_time_;
     physics::WorldPtr world_;
 };

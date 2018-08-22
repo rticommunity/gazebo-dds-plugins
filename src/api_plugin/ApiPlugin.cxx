@@ -113,6 +113,7 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
 {
     world_ = parent;
 
+    // Create the gazebo transport node
     std::string world_name = utils::get_world_name(world_);
     gazebo_node_ = gazebo::transport::NodePtr(new gazebo::transport::Node());
     gazebo_node_->Init(world_name);
@@ -212,9 +213,7 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
     utils::create_replier<
             gazebo_msgs::srv::GetModelState_Request,
             gazebo_msgs::srv::GetModelState_Response>(
-            get_model_state_replier_,
-            participant_,
-            "get_model_state");
+            get_model_state_replier_, participant_, "get_model_state");
 
     get_model_state_replier_.listener(&get_model_state_listener_);
 
@@ -230,9 +229,7 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
     utils::create_replier<
             gazebo_msgs::srv::SetLinkProperties_Request,
             gazebo_msgs::srv::Default_Response>(
-            set_link_properties_replier_,
-            participant_,
-            "set_link_properties");
+            set_link_properties_replier_, participant_, "set_link_properties");
 
     set_link_properties_replier_.listener(&set_link_properties_listener_);
 
@@ -293,10 +290,12 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
 gazebo_msgs::srv::Default_Response
         ApiPlugin::delete_model(gazebo_msgs::srv::DeleteModel_Request request)
 {
+    // Obtain the model
     gazebo::physics::ModelPtr model
             = utils::get_model(world_, request.model_name());
 
     if (model) {
+        // Send the message to delete the entity
         gazebo::msgs::Request *msg = gazebo::msgs::CreateRequest(
                 "entity_delete", request.model_name());
         gazebo_pub_->Publish(*msg, true);
@@ -306,9 +305,7 @@ gazebo_msgs::srv::Default_Response
                 "DeleteModel: successfully deleted model");
     } else {
         default_reply_.success(false);
-        default_reply_.status_message(
-                "DeleteModel: Requested model '"
-                + request.model_name().to_std_string() + "' not found!");
+        default_reply_.status_message("DeleteModel: model not found");
     }
 
     return default_reply_;
@@ -317,10 +314,12 @@ gazebo_msgs::srv::Default_Response
 gazebo_msgs::srv::Default_Response
         ApiPlugin::delete_light(gazebo_msgs::srv::DeleteLight_Request request)
 {
+    // Obtain the light
     gazebo::physics::LightPtr light
             = utils::get_light(world_, request.light_name());
 
     if (light) {
+        // Send the message to delete the entity
         gazebo::msgs::Request *msg = gazebo::msgs::CreateRequest(
                 "entity_delete", request.light_name());
         gazebo_pub_->Publish(*msg, true);
@@ -330,9 +329,7 @@ gazebo_msgs::srv::Default_Response
                 "DeleteLight: successfully deleted light");
     } else {
         default_reply_.success(false);
-        default_reply_.status_message(
-                "DeleteLight: Requested light '"
-                + request.light_name().to_std_string() + "' not found!");
+        default_reply_.status_message("DeleteLight: light not found");
     }
 
     return default_reply_;
@@ -341,16 +338,16 @@ gazebo_msgs::srv::Default_Response
 gazebo_msgs::srv::GetLightProperties_Response ApiPlugin::get_light_properties(
         gazebo_msgs::srv::GetLightProperties_Request request)
 {
+    // Obtain the light
     gazebo::physics::LightPtr light
             = utils::get_light(world_, request.light_name());
 
     if (light == NULL) {
         light_properties_reply_.success(false);
         light_properties_reply_.status_message(
-                "GetLightProperties: Requested light '"
-                + request.light_name().to_std_string() + "' not found!");
+                "GetLightProperties: light not found");
     } else {
-        gazebo::msgs::Light light_sample;
+        // Fill the sample
         light->FillMsg(light_sample);
 
         light_properties_reply_.diffuse().r(light_sample.diffuse().r());
@@ -373,9 +370,10 @@ gazebo_msgs::srv::GetLightProperties_Response ApiPlugin::get_light_properties(
     return light_properties_reply_;
 }
 
-gazebo_msgs::srv::GetWorldProperties_Response ApiPlugin::get_world_properties(
-        std_msgs::msg::Empty request)
+gazebo_msgs::srv::GetWorldProperties_Response
+        ApiPlugin::get_world_properties(std_msgs::msg::Empty request)
 {
+    // Obtain all the models of the world
     get_world_models();
 
     world_properties_reply_.rendering_enabled(true);
@@ -389,6 +387,7 @@ gazebo_msgs::srv::GetWorldProperties_Response ApiPlugin::get_world_properties(
 gazebo_msgs::srv::GetJointProperties_Response ApiPlugin::get_joint_properties(
         gazebo_msgs::srv::GetJointProperties_Request request)
 {
+    // Obtain the joint
     gazebo::physics::JointPtr joint
             = utils::get_joint(world_, request.joint_name());
 
@@ -397,6 +396,7 @@ gazebo_msgs::srv::GetJointProperties_Response ApiPlugin::get_joint_properties(
         joint_properties_reply_.status_message(
                 "GetJointProperties: joint not found");
     } else {
+        // Fill the sample
         joint_properties_reply_.damping()[0] = joint->GetDamping(0);
         joint_properties_reply_.rate()[0] = joint->GetVelocity(0);
         get_joint_position(joint);
@@ -411,21 +411,19 @@ gazebo_msgs::srv::GetJointProperties_Response ApiPlugin::get_joint_properties(
 gazebo_msgs::srv::GetLinkProperties_Response ApiPlugin::get_link_properties(
         gazebo_msgs::srv::GetLinkProperties_Request request)
 {
+    // Obtain the link
     gazebo::physics::Link *link = dynamic_cast<gazebo::physics::Link *>(
             utils::get_entity(world_, request.link_name()).get());
 
     if (!link) {
         link_properties_reply_.success(false);
         link_properties_reply_.status_message(
-                "GetLinkProperties: link not found, did you forget to scope "
-                "the link by model name?");
+                "GetLinkProperties: link not found");
     } else {
+        // Fill the sample
         link_properties_reply_.gravity_mode(link->GetGravityMode());
 
-        gazebo::physics::InertialPtr inertia = link->GetInertial();
-
-        ignition::math::Vector3d center_of_gravity
-                = get_link_inertial(link, inertia);
+        ignition::math::Vector3d center_of_gravity = get_link_inertial(link);
 
         link_properties_reply_.com().position().x(center_of_gravity.X());
         link_properties_reply_.com().position().y(center_of_gravity.Y());
@@ -446,47 +444,53 @@ gazebo_msgs::srv::GetLinkProperties_Response ApiPlugin::get_link_properties(
 gazebo_msgs::srv::GetLinkState_Response ApiPlugin::get_link_state(
         gazebo_msgs::srv::GetLinkState_Request request)
 {
-    gazebo::physics::EntityPtr body
+    // Obtain the link and frame
+    gazebo::physics::EntityPtr link
             = utils::get_entity(world_, request.link_name());
     gazebo::physics::EntityPtr frame
             = utils::get_entity(world_, request.reference_frame());
 
-    if (!body) {
+    if (!link) {
         link_state_reply_.success(false);
         link_state_reply_.status_message("GetLinkState: link not found");
         return link_state_reply_;
     }
 
-    get_entity_state(body, entity_pose_, entity_vpos_, entity_veul_);
+    // Obtain the current state of the link
+    get_entity_state(link, entity_pose_, entity_vpos_, entity_veul_);
 
     if (frame) {
+        // Obtain the current state of the frame
         get_entity_state(frame, frame_pose_, frame_vpos_, frame_veul_);
 
         entity_pose_ = entity_pose_ - frame_pose_;
-        entity_vpos_
-                = frame_pose_.Rot().RotateVectorReverse(entity_vpos_ - frame_vpos_);
-        entity_veul_
-                = frame_pose_.Rot().RotateVectorReverse(entity_veul_ - frame_veul_);
-    }
-
-    else if (
+        entity_vpos_ = frame_pose_.Rot().RotateVectorReverse(
+                entity_vpos_ - frame_vpos_);
+        entity_veul_ = frame_pose_.Rot().RotateVectorReverse(
+                entity_veul_ - frame_veul_);
+    } else if (
             request.reference_frame() != ""
             && request.reference_frame() != "world"
             && request.reference_frame() != "map") {
         link_state_reply_.success(false);
         link_state_reply_.status_message(
-                "GetLinkState: reference reference_frame not found");
+                "GetLinkState: reference frame not found");
         return link_state_reply_;
     }
 
+    // Fill the sample
     link_state_reply_.link_state().link_name(request.link_name());
     link_state_reply_.link_state().pose().position().x(entity_pose_.Pos().X());
     link_state_reply_.link_state().pose().position().y(entity_pose_.Pos().Y());
     link_state_reply_.link_state().pose().position().z(entity_pose_.Pos().Z());
-    link_state_reply_.link_state().pose().orientation().x(entity_pose_.Rot().X());
-    link_state_reply_.link_state().pose().orientation().y(entity_pose_.Rot().Y());
-    link_state_reply_.link_state().pose().orientation().z(entity_pose_.Rot().Z());
-    link_state_reply_.link_state().pose().orientation().w(entity_pose_.Rot().W());
+    link_state_reply_.link_state().pose().orientation().x(
+            entity_pose_.Rot().X());
+    link_state_reply_.link_state().pose().orientation().y(
+            entity_pose_.Rot().Y());
+    link_state_reply_.link_state().pose().orientation().z(
+            entity_pose_.Rot().Z());
+    link_state_reply_.link_state().pose().orientation().w(
+            entity_pose_.Rot().W());
     link_state_reply_.link_state().twist().linear().x(entity_vpos_.X());
     link_state_reply_.link_state().twist().linear().y(entity_vpos_.Y());
     link_state_reply_.link_state().twist().linear().z(entity_vpos_.Z());
@@ -503,6 +507,7 @@ gazebo_msgs::srv::GetLinkState_Response ApiPlugin::get_link_state(
 gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
         gazebo_msgs::srv::GetModelProperties_Request request)
 {
+    // Obtain the model
     gazebo::physics::ModelPtr model
             = utils::get_model(world_, request.model_name());
 
@@ -561,7 +566,7 @@ gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
         for (unsigned int i = 0; i < joints.size(); i++)
             model_properties_reply_.joint_names()[i] = joints[i]->GetName();
 
-        // is model static
+        // Set static mode
         model_properties_reply_.is_static(model->IsStatic());
 
         model_properties_reply_.success(true);
@@ -573,33 +578,34 @@ gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
 }
 
 gazebo_msgs::srv::GetModelState_Response ApiPlugin::get_model_state(
-            gazebo_msgs::srv::GetModelState_Request request)
+        gazebo_msgs::srv::GetModelState_Request request)
 {
+    // Obtain the model and frame
     gazebo::physics::EntityPtr model
             = utils::get_entity(world_, request.model_name());
     gazebo::physics::EntityPtr frame
             = utils::get_entity(world_, request.relative_entity_name());
-            
+
     if (!model) {
         model_state_reply_.success(false);
-        model_state_reply_.status_message(
-                "GetModelState: model not found");
+        model_state_reply_.status_message("GetModelState: model not found");
         return model_state_reply_;
     } else {
-    
         // Set header of the sample
         current_time_ = utils::get_sim_time(world_);
 
         model_state_reply_.header().stamp().sec(current_time_.sec);
         model_state_reply_.header().stamp().nanosec(current_time_.nsec);
-        model_state_reply_.header().frame_id() = request.relative_entity_name(); 
-    
+        model_state_reply_.header().frame_id() = request.relative_entity_name();
+
+        // Obtain the current state of the model
         get_entity_state(model, entity_pose_, entity_vpos_, entity_veul_);
 
         ignition::math::Vector3d entity_pos = entity_pose_.Pos();
         ignition::math::Quaterniond entity_rot = entity_pose_.Rot();
 
         if (frame) {
+            // Obtain the current state of the frame
             get_entity_state(frame, frame_pose_, frame_vpos_, frame_veul_);
 
             ignition::math::Pose3d entity_rel_pose = entity_pose_ - frame_pose_;
@@ -615,14 +621,13 @@ gazebo_msgs::srv::GetModelState_Response ApiPlugin::get_model_state(
                 && request.relative_entity_name() != "world"
                 && request.relative_entity_name() != "map"
                 && request.relative_entity_name() != "/map") {
-
             model_state_reply_.success(false);
             model_state_reply_.status_message(
                     "GetModelState: reference relative_entity_name not found");
             return model_state_reply_;
         }
 
-        // Fill in response
+        // Fill the sample
         model_state_reply_.pose().position().x(entity_pos.X());
         model_state_reply_.pose().position().y(entity_pos.Y());
         model_state_reply_.pose().position().z(entity_pos.Z());
@@ -648,27 +653,27 @@ gazebo_msgs::srv::GetModelState_Response ApiPlugin::get_model_state(
 gazebo_msgs::srv::Default_Response ApiPlugin::set_light_properties(
         gazebo_msgs::srv::SetLightProperties_Request request)
 {
-    gazebo::physics::LightPtr phy_light = utils::get_light(
-            world_, request.light_name());
+    // Obtain the light
+    gazebo::physics::LightPtr phy_light
+            = utils::get_light(world_, request.light_name());
 
     if (phy_light == NULL) {
         default_reply_.success(false);
-        default_reply_.status_message("setLightProperties: light not found!");
+        default_reply_.status_message("setLightProperties: light not found");
     } else {
-        gazebo::msgs::Light light;
+        // Fill the sample
+        phy_light->FillMsg(light_sample);
 
-        phy_light->FillMsg(light);
+        light_sample.mutable_diffuse()->set_r(request.diffuse().r());
+        light_sample.mutable_diffuse()->set_g(request.diffuse().g());
+        light_sample.mutable_diffuse()->set_b(request.diffuse().b());
+        light_sample.mutable_diffuse()->set_a(request.diffuse().a());
 
-        light.mutable_diffuse()->set_r(request.diffuse().r());
-        light.mutable_diffuse()->set_g(request.diffuse().g());
-        light.mutable_diffuse()->set_b(request.diffuse().b());
-        light.mutable_diffuse()->set_a(request.diffuse().a());
+        light_sample.set_attenuation_constant(request.attenuation_constant());
+        light_sample.set_attenuation_linear(request.attenuation_linear());
+        light_sample.set_attenuation_quadratic(request.attenuation_quadratic());
 
-        light.set_attenuation_constant(request.attenuation_constant());
-        light.set_attenuation_linear(request.attenuation_linear());
-        light.set_attenuation_quadratic(request.attenuation_quadratic());
-
-        light_modify_pub_->Publish(light, true);
+        light_modify_pub_->Publish(light_sample, true);
 
         default_reply_.success(true);
         default_reply_.status_message("setLightProperties: properties set");
@@ -680,16 +685,18 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_light_properties(
 gazebo_msgs::srv::Default_Response ApiPlugin::set_link_properties(
         gazebo_msgs::srv::SetLinkProperties_Request request)
 {
-    gazebo::physics::Link *body = dynamic_cast<gazebo::physics::Link *>(
-                    utils::get_entity(world_, request.link_name()).get());
+    // Obtain the link
+    gazebo::physics::Link *link = dynamic_cast<gazebo::physics::Link *>(
+            utils::get_entity(world_, request.link_name()).get());
 
-    if (!body) {
+    if (!link) {
         default_reply_.success(false);
         default_reply_.status_message("SetLinkProperties: link not found");
 
     } else {
-        gazebo::physics::InertialPtr mass = body->GetInertial();
+        gazebo::physics::InertialPtr mass = link->GetInertial();
 
+        // Update the properties of the link
         mass->SetCoG(ignition::math::Vector3d(
                 request.com().position().x(),
                 request.com().position().y(),
@@ -702,7 +709,7 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_link_properties(
                 request.ixz(),
                 request.iyz());
         mass->SetMass(request.mass());
-        body->SetGravityMode(request.gravity_mode());
+        link->SetGravityMode(request.gravity_mode());
 
         default_reply_.success(true);
         default_reply_.status_message("SetLinkProperties: properties set");
@@ -782,10 +789,11 @@ void ApiPlugin::get_joint_position(gazebo::physics::JointPtr joint)
 #endif
 }
 
-ignition::math::Vector3d ApiPlugin::get_link_inertial(
-        gazebo::physics::Link *link,
-        gazebo::physics::InertialPtr inertia)
+ignition::math::Vector3d
+        ApiPlugin::get_link_inertial(gazebo::physics::Link *link)
 {
+    gazebo::physics::InertialPtr inertia = link->GetInertial();
+
 #if GAZEBO_MAJOR_VERSION >= 8
     link_properties_reply_.mass(link->GetInertial()->Mass());
 

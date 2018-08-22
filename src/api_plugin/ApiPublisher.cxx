@@ -52,9 +52,11 @@ T2 send_request(
 {
     rti::request::Requester<T, T2> requester(::dds::core::null);
 
+    // Create requester
     gazebo::dds::utils::create_requester<T, T2>(
             requester, participant, service_name);
 
+    // Call the service
     T2 reply = gazebo::dds::utils::call_service<T, T2>(requester, request);
 
     return reply;
@@ -199,6 +201,7 @@ void set_light_properties(
         std::string service_name,
         std::vector<std::string> light_properties)
 {
+    // Fill the sample
     gazebo_msgs::srv::SetLightProperties_Request request;
     request.light_name(light_properties[0]);
 
@@ -224,6 +227,7 @@ void set_link_properties(
         std::string service_name,
         std::vector<std::string> link_properties)
 {
+    //Fill the sample
     gazebo_msgs::srv::SetLinkProperties_Request request;
     request.link_name(link_properties[0]);
 
@@ -267,7 +271,7 @@ int main(int argc, char *argv[])
 {
     int ret_code = 0;
 
-    // Set of the unordered_map of functions
+    // Set the unordered_map of functions
     std::unordered_map<
             std::string,
             std::function<void(
@@ -283,6 +287,7 @@ int main(int argc, char *argv[])
                     const std::string &)>>
             empty_service_map;
 
+    // Initialize the map of functions
     service_map["delete_model"] = std::bind(
             &delete_model,
             std::placeholders::_1,

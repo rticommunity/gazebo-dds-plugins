@@ -20,6 +20,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <unordered_map>
 
 namespace gazebo { namespace dds { namespace utils {
 
@@ -74,9 +75,10 @@ public:
      * @brief Get the values of a specific key
      *
      * @param key_value key that will be looked for on the map.
-     * @return vector that contains all the values of the key
+     * @return map that contains all the values of the key
      */
-    std::vector<std::string> get_values(std::string key_value)
+    std::unordered_map<std::string, std::vector<std::string>>
+            get_values(std::string key_value)
     {
         std::string values = get_value(key_value);
 
@@ -90,10 +92,26 @@ public:
         if (found != std::string::npos)
             values.erase(found, 1);
 
+        process_values(values);
+
         std::istringstream buffer(values);
         std::istream_iterator<std::string> it_begin(buffer), it_end;
 
-        return std::vector<std::string>(it_begin, it_end);
+        std::vector<std::string> value_list(it_begin, it_end);
+
+        // Set the unordered_map
+        std::unordered_map<std::string, std::vector<std::string>> result_map;
+
+        std::string current_variable;
+        for (int i = 0; i < value_list.size(); i++) {
+            if (value_list[i][value_list[i].size() - 1] == ':') {
+                current_variable = value_list[i].substr(0, value_list[i].size() - 1);
+            } else {
+                result_map[current_variable].push_back(value_list[i]);
+            }
+        }
+
+        return result_map;
     }
 
     /**
@@ -111,6 +129,24 @@ public:
         }
 
         return result;
+    }
+
+private:
+    /**
+     * @brief Process the raw data to format them correctly
+     *
+     * @param data the raw data that will be processed.
+     */
+    void process_values(std::string &data)
+    {
+        std::size_t index = data.find(":");
+        while (index < std::string::npos) {
+            if (data[index + 1] != ' ') {
+                data.insert(index + 1, " ");
+            }
+
+            index = data.find(":", index + 1);
+        }
     }
 
 private:

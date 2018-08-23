@@ -27,11 +27,10 @@
 #include "gazebo_msgs/srv/Default_Response.hpp"
 #include "gazebo_msgs/srv/DeleteLight_Request.hpp"
 #include "gazebo_msgs/srv/DeleteModel_Request.hpp"
-#include "gazebo_msgs/srv/GetLightProperties_Request.hpp"
-#include "gazebo_msgs/srv/GetLightProperties_Response.hpp"
-#include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetJointProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetJointProperties_Response.hpp"
+#include "gazebo_msgs/srv/GetLightProperties_Request.hpp"
+#include "gazebo_msgs/srv/GetLightProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetLinkProperties_Request.hpp"
 #include "gazebo_msgs/srv/GetLinkProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetLinkState_Request.hpp"
@@ -40,6 +39,7 @@
 #include "gazebo_msgs/srv/GetModelProperties_Response.hpp"
 #include "gazebo_msgs/srv/GetModelState_Request.hpp"
 #include "gazebo_msgs/srv/GetModelState_Response.hpp"
+#include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
 #include "gazebo_msgs/srv/SetLightProperties_Request.hpp"
 #include "gazebo_msgs/srv/SetLinkProperties_Request.hpp"
 #include "std_msgs/msg/Empty.hpp"
@@ -65,9 +65,10 @@ T2 send_request(
 void delete_model(
         const dds::domain::DomainParticipant &participant,
         const std::string &service_name,
-        std::vector<std::string> model_name)
+        std::unordered_map<std::string, std::vector<std::string>> model_name)
 {
-    gazebo_msgs::srv::DeleteModel_Request request(model_name[0]);
+    gazebo_msgs::srv::DeleteModel_Request request(model_name["model_name"][0]);
+
 
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::DeleteModel_Request,
@@ -80,9 +81,9 @@ void delete_model(
 void delete_light(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::vector<std::string> light_name)
+        std::unordered_map<std::string, std::vector<std::string>> light_name)
 {
-    gazebo_msgs::srv::DeleteLight_Request request(light_name[0]);
+    gazebo_msgs::srv::DeleteLight_Request request(light_name["light_name"][0]);
 
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::DeleteLight_Request,
@@ -95,9 +96,10 @@ void delete_light(
 void get_light_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::vector<std::string> light_name)
+        std::unordered_map<std::string, std::vector<std::string>> light_name)
 {
-    gazebo_msgs::srv::GetLightProperties_Request request(light_name[0]);
+    gazebo_msgs::srv::GetLightProperties_Request request(
+            light_name["light_name"][0]);
 
     gazebo_msgs::srv::GetLightProperties_Response reply = send_request<
             gazebo_msgs::srv::GetLightProperties_Request,
@@ -124,9 +126,10 @@ void get_world_properties(
 void get_joint_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::vector<std::string> joint_name)
+        std::unordered_map<std::string, std::vector<std::string>> joint_name)
 {
-    gazebo_msgs::srv::GetJointProperties_Request request(joint_name[0]);
+    gazebo_msgs::srv::GetJointProperties_Request request(
+            joint_name["joint_name"][0]);
 
     gazebo_msgs::srv::GetJointProperties_Response reply = send_request<
             gazebo_msgs::srv::GetJointProperties_Request,
@@ -139,9 +142,10 @@ void get_joint_properties(
 void get_link_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::vector<std::string> link_name)
+        std::unordered_map<std::string, std::vector<std::string>> link_name)
 {
-    gazebo_msgs::srv::GetLinkProperties_Request request(link_name[0]);
+    gazebo_msgs::srv::GetLinkProperties_Request request(
+            link_name["link_name"][0]);
 
     gazebo_msgs::srv::GetLinkProperties_Response reply = send_request<
             gazebo_msgs::srv::GetLinkProperties_Request,
@@ -154,9 +158,10 @@ void get_link_properties(
 void get_link_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::vector<std::string> link_name)
+        std::unordered_map<std::string, std::vector<std::string>> link_name)
 {
-    gazebo_msgs::srv::GetLinkState_Request request(link_name[0],link_name[1]);
+    gazebo_msgs::srv::GetLinkState_Request request(
+            link_name["link_name"][0], link_name["reference_frame"][0]);
 
     gazebo_msgs::srv::GetLinkState_Response reply = send_request<
             gazebo_msgs::srv::GetLinkState_Request,
@@ -169,9 +174,10 @@ void get_link_state(
 void get_model_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::vector<std::string> model_name)
+        std::unordered_map<std::string, std::vector<std::string>> model_name)
 {
-    gazebo_msgs::srv::GetModelProperties_Request request(model_name[0]);
+    gazebo_msgs::srv::GetModelProperties_Request request(
+            model_name["model_name"][0]);
 
     gazebo_msgs::srv::GetModelProperties_Response reply = send_request<
             gazebo_msgs::srv::GetModelProperties_Request,
@@ -184,9 +190,10 @@ void get_model_properties(
 void get_model_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::vector<std::string> model_name)
+        std::unordered_map<std::string, std::vector<std::string>> model_name)
 {
-    gazebo_msgs::srv::GetModelState_Request request(model_name[0],model_name[1]);
+    gazebo_msgs::srv::GetModelState_Request request(
+            model_name["model_name"][0], model_name["relative_entity_name"][0]);
 
     gazebo_msgs::srv::GetModelState_Response reply = send_request<
             gazebo_msgs::srv::GetModelState_Request,
@@ -199,20 +206,23 @@ void get_model_state(
 void set_light_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::vector<std::string> light_properties)
+        std::unordered_map<std::string, std::vector<std::string>>
+                light_properties)
 {
     // Fill the sample
     gazebo_msgs::srv::SetLightProperties_Request request;
-    request.light_name(light_properties[0]);
+    request.light_name(light_properties["light_name"][0]);
 
-    request.diffuse().r(stof(light_properties[1]));
-    request.diffuse().g(stof(light_properties[2]));
-    request.diffuse().b(stof(light_properties[3]));
-    request.diffuse().a(stof(light_properties[4]));
+    request.diffuse().r(stof(light_properties["diffuse"][0]));
+    request.diffuse().g(stof(light_properties["diffuse"][1]));
+    request.diffuse().b(stof(light_properties["diffuse"][2]));
+    request.diffuse().a(stof(light_properties["diffuse"][3]));
 
-    request.attenuation_constant(stof(light_properties[5]));
-    request.attenuation_linear(stof(light_properties[6]));
-    request.attenuation_quadratic(stof(light_properties[7]));
+    request.attenuation_constant(
+            stof(light_properties["attenuation_constant"][0]));
+    request.attenuation_linear(stof(light_properties["attenuation_linear"][0]));
+    request.attenuation_quadratic(
+            stof(light_properties["attenuation_quadratic"][0]));
 
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::SetLightProperties_Request,
@@ -225,25 +235,28 @@ void set_light_properties(
 void set_link_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::vector<std::string> link_properties)
+        std::unordered_map<std::string, std::vector<std::string>>
+                link_properties)
 {
-    //Fill the sample
+    // Fill the sample
     gazebo_msgs::srv::SetLinkProperties_Request request;
-    request.link_name(link_properties[0]);
+    request.link_name(link_properties["link_name"][0]);
 
-    request.com().position().x(stof(link_properties[1]));
-    request.com().position().y(stof(link_properties[2]));
-    request.com().position().z(stof(link_properties[3]));
+    request.com().position().x(stof(link_properties["com_position"][0]));
+    request.com().position().y(stof(link_properties["com_position"][1]));
+    request.com().position().z(stof(link_properties["com_position"][2]));
 
-    request.gravity_mode((strcasecmp("true",link_properties[4].c_str()) == 0));
+    request.gravity_mode(
+            (strcasecmp("true", link_properties["gravity_mode"][0].c_str())
+             == 0));
 
-    request.mass(stof(link_properties[5]));
-    request.ixx(stof(link_properties[6]));
-    request.ixy(stof(link_properties[7]));
-    request.ixz(stof(link_properties[8]));
-    request.iyy(stof(link_properties[9]));
-    request.iyz(stof(link_properties[10]));
-    request.izz(stof(link_properties[11]));
+    request.mass(stof(link_properties["mass"][0]));
+    request.ixx(stof(link_properties["ixx"][0]));
+    request.ixy(stof(link_properties["ixy"][0]));
+    request.ixz(stof(link_properties["ixz"][0]));
+    request.iyy(stof(link_properties["iyy"][0]));
+    request.iyz(stof(link_properties["iyz"][0]));
+    request.izz(stof(link_properties["izz"][0]));
 
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::SetLinkProperties_Request,
@@ -277,7 +290,9 @@ int main(int argc, char *argv[])
             std::function<void(
                     const dds::domain::DomainParticipant &,
                     const std::string &,
-                    const std::vector<std::string> &)>>
+                    const std::unordered_map<
+                            std::string,
+                            std::vector<std::string>> &)>>
             service_map;
 
     std::unordered_map<
@@ -354,24 +369,16 @@ int main(int argc, char *argv[])
             std::placeholders::_2);
 
     empty_service_map["reset_simulation"] = std::bind(
-            &send_empty_request,
-            std::placeholders::_1,
-            std::placeholders::_2);
+            &send_empty_request, std::placeholders::_1, std::placeholders::_2);
 
     empty_service_map["reset_world"] = std::bind(
-            &send_empty_request,
-            std::placeholders::_1,
-            std::placeholders::_2);
+            &send_empty_request, std::placeholders::_1, std::placeholders::_2);
 
     empty_service_map["pause_physics"] = std::bind(
-            &send_empty_request,
-            std::placeholders::_1,
-            std::placeholders::_2);
+            &send_empty_request, std::placeholders::_1, std::placeholders::_2);
 
     empty_service_map["unpause_physics"] = std::bind(
-            &send_empty_request,
-            std::placeholders::_1,
-            std::placeholders::_2);
+            &send_empty_request, std::placeholders::_1, std::placeholders::_2);
 
     gazebo::dds::utils::CommandLineParser cmd_parser(argc, argv);
 
@@ -412,9 +419,7 @@ int main(int argc, char *argv[])
         // Call the service
         if (cmd_parser.has_flag("-i")) {
             service_map[service_name](
-                    participant,
-                    service_name,
-                    cmd_parser.get_values("-i"));
+                    participant, service_name, cmd_parser.get_values("-i"));
         } else {
             empty_service_map[service_name](participant, service_name);
         }

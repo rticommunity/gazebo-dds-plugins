@@ -43,8 +43,14 @@ You can check the help of the publisher with the flag `-h` for more information
 
 In addition, we can see a few example of how to use the publisher here:
 
-In this first example, we call the service `set_link_properties` with the new information of the link named chassis and using the domain id 226
+In this first example, we call the service `set_light_properties` with the new information of the light named sun and using the domain id 226
 
 ```
-./build/src/api_plugin/apipublisher -d 226 -s set_link_properties -i "chassis 0 00 true 40.5 0.5 0.6 0.7 0.8 0.2 0.3"
+./build/src/api_plugin/apipublisher -d 226 -s set_light_properties -i "light_name: sun diffuse: 100 200 100 100 attenuation_constant: 5  attenuation_linear: 0.5  attenuation_quadratic: 0.5"
+```
+
+In this second example, we call the service `set_link_properties` with the new information of the link named chassis and using the domain id 226
+
+```
+./build/src/api_plugin/apipublisher -d 226 -s set_link_properties -i "link_name:chassis com_position:0 0 0 gravity_mode:true  mass: 4.5 ixx:0.5 ixy:0.6 ixz:0.7 iyy:0.8 iyz:0.2 izz:0.3"
 ```

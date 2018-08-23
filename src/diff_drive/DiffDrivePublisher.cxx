@@ -15,6 +15,7 @@
  */
 
 #include <cstdlib>
+#include <unordered_map>
 
 #include <dds/core/ddscore.hpp>
 #include <dds/domain/find.hpp>
@@ -92,10 +93,10 @@ int main(int argc, char *argv[])
         float linear_x = 0.0;
         float angular_z = 0.0;
         if (cmd_parser.has_flag("-s")) {
-            std::vector<std::string> sample_information
-                    = cmd_parser.get_values("-s");
-            linear_x = atof(sample_information[0].c_str());
-            angular_z = atof(sample_information[1].c_str());
+            std::unordered_map<std::string, std::vector<std::string>>
+                    sample_information = cmd_parser.get_values("-s");
+            linear_x = atof(sample_information["linear_velocity"][0].c_str());
+            angular_z = atof(sample_information["angular_velocity"][0].c_str());
         }
 
         publisher_main(

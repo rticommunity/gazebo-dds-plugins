@@ -38,6 +38,8 @@ ApiPlugin::ApiPlugin()
           get_model_state_replier_(::dds::core::null),
           set_light_properties_replier_(::dds::core::null),
           set_link_properties_replier_(::dds::core::null),
+          set_model_state_replier_(::dds::core::null),
+          set_link_state_replier_(::dds::core::null),
           reset_simulation_replier_(::dds::core::null),
           reset_world_replier_(::dds::core::null),
           pause_physics_replier_(::dds::core::null),
@@ -84,6 +86,14 @@ ApiPlugin::ApiPlugin()
                   std::placeholders::_1)),
           set_link_properties_listener_(std::bind(
                   &ApiPlugin::set_link_properties,
+                  this,
+                  std::placeholders::_1)),
+          set_model_state_listener_(std::bind(
+                  &ApiPlugin::set_model_state,
+                  this,
+                  std::placeholders::_1)),
+          set_link_state_listener_(std::bind(
+                  &ApiPlugin::set_link_state,
                   this,
                   std::placeholders::_1)),
           reset_simulation_listener_(std::bind(
@@ -232,6 +242,20 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
             set_link_properties_replier_, participant_, "set_link_properties");
 
     set_link_properties_replier_.listener(&set_link_properties_listener_);
+
+    utils::create_replier<
+            gazebo_msgs::srv::SetModelState_Request,
+            gazebo_msgs::srv::Default_Response>(
+            set_model_state_replier_, participant_, "set_model_state");
+
+    set_model_state_replier_.listener(&set_model_state_listener_);
+
+    utils::create_replier<
+            gazebo_msgs::srv::SetLinkState_Request,
+            gazebo_msgs::srv::Default_Response>(
+            set_link_state_replier_, participant_, "set_link_state");
+
+    set_link_state_replier_.listener(&set_link_state_listener_);
 
     utils::create_replier<
             std_msgs::msg::Empty,
@@ -718,6 +742,134 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_link_properties(
     return default_reply_;
 }
 
+gazebo_msgs::srv::Default_Response ApiPlugin::set_model_state(
+        gazebo_msgs::srv::SetModelState_Request request)
+{
+    ignition::math::Vector3d target_pos(
+            request.model_state().pose().position().x(),
+            request.model_state().pose().position().y(),
+            request.model_state().pose().position().z());
+    ignition::math::Quaterniond target_rot(
+            request.model_state().pose().orientation().w(),
+            request.model_state().pose().orientation().x(),
+            request.model_state().pose().orientation().y(),
+            request.model_state().pose().orientation().z());
+    target_rot.Normalize();  // eliminates invalid rotation (0, 0, 0, 0)
+    ignition::math::Pose3d target_pose(target_pos, target_rot);
+    ignition::math::Vector3d target_pos_dot(
+            request.model_state().twist().linear().x(),
+            request.model_state().twist().linear().y(),
+            request.model_state().twist().linear().z());
+    ignition::math::Vector3d target_rot_dot(
+            request.model_state().twist().angular().x(),
+            request.model_state().twist().angular().y(),
+            request.model_state().twist().angular().z());
+
+    gazebo::physics::ModelPtr model
+            = utils::get_model(world_, request.model_state().model_name());
+
+    if (!model) {
+        default_reply_.success(false);
+        default_reply_.status_message("SetModelState: model not found");
+    } else {
+        gazebo::physics::EntityPtr relative_entity = utils::get_entity(
+                world_, request.model_state().reference_frame());
+
+        if (relative_entity) {
+            get_entity_pose(relative_entity, frame_pose_);
+
+            target_pose = target_pose + frame_pose_;
+            target_pos_dot = frame_pose_.Rot().RotateVector(target_pos_dot);
+            target_rot_dot = frame_pose_.Rot().RotateVector(target_rot_dot);
+        } else if (
+                request.model_state().reference_frame() != ""
+                && request.model_state().reference_frame() != "world"
+                && request.model_state().reference_frame() != "map") {
+            default_reply_.success(false);
+            default_reply_.status_message(
+                    "SetModelState: specified reference frame entity does not "
+                    "exist");
+        }
+
+        bool is_paused = world_->IsPaused();
+        world_->SetPaused(true);
+        model->SetWorldPose(target_pose);
+        world_->SetPaused(is_paused);
+
+        // set model velocity
+        model->SetLinearVel(target_pos_dot);
+        model->SetAngularVel(target_rot_dot);
+
+        default_reply_.success(true);
+        default_reply_.status_message("SetModelState: set model state done");
+    }
+    return default_reply_;
+}
+
+gazebo_msgs::srv::Default_Response ApiPlugin::set_link_state(
+        gazebo_msgs::srv::SetLinkState_Request request)
+{
+    gazebo::physics::Link *body = dynamic_cast<gazebo::physics::Link *>(
+            utils::get_entity(world_, request.link_state().link_name()).get());
+    gazebo::physics::EntityPtr frame
+            = utils::get_entity(world_, request.link_state().reference_frame());
+
+    if (!body) {
+        default_reply_.success(false);
+        default_reply_.status_message("SetLinkState: link not found");
+    }
+    ignition::math::Vector3d target_pos(
+            request.link_state().pose().position().x(),
+            request.link_state().pose().position().y(),
+            request.link_state().pose().position().z());
+    ignition::math::Quaterniond target_rot(
+            request.link_state().pose().orientation().w(),
+            request.link_state().pose().orientation().x(),
+            request.link_state().pose().orientation().y(),
+            request.link_state().pose().orientation().z());
+    ignition::math::Pose3d target_pose(target_pos, target_rot);
+    ignition::math::Vector3d target_linear_vel(
+            request.link_state().twist().linear().x(),
+            request.link_state().twist().linear().y(),
+            request.link_state().twist().linear().z());
+    ignition::math::Vector3d target_angular_vel(
+            request.link_state().twist().angular().x(),
+            request.link_state().twist().angular().y(),
+            request.link_state().twist().angular().z());
+
+    if (frame) {
+        get_entity_state(frame, frame_pose_, frame_vpos_, frame_veul_);
+
+        ignition::math::Vector3d frame_pos = frame_pose_.Pos();
+        ignition::math::Quaterniond frame_rot = frame_pose_.Rot();
+
+        target_pose = target_pose + frame_pose_;
+
+        target_linear_vel -= frame_vpos_;
+        target_angular_vel -= frame_veul_;
+    } else if (
+            request.link_state().reference_frame() != ""
+            && request.link_state().reference_frame() != "world"
+            && request.link_state().reference_frame() != "map") {
+        default_reply_.success(false);
+        default_reply_.status_message("SetLinkState: failed");
+    }
+
+    bool is_paused = world_->IsPaused();
+    world_->SetPaused(true);
+    body->SetWorldPose(target_pose);
+    world_->SetPaused(is_paused);
+
+    // set body velocity to desired twist
+    body->SetLinearVel(target_linear_vel);
+    body->SetAngularVel(target_angular_vel);
+
+    default_reply_.success(true);
+    default_reply_.status_message("SetLinkState: success");
+
+    return default_reply_;
+}
+
 gazebo_msgs::srv::Default_Response
         ApiPlugin::reset_simulation(std_msgs::msg::Empty request)
 {
@@ -833,6 +985,17 @@ void ApiPlugin::get_entity_state(
     entity_pose = entity->GetWorldPose().Ign();
     entity_linear_vel = entity->GetWorldLinearVel().Ign();
     entity_angular_vel = entity->GetWorldAngularVel().Ign();
+#endif
+}
+
+void ApiPlugin::get_entity_pose(
+        gazebo::physics::EntityPtr &entity,
+        ignition::math::Pose3d &entity_pose)
+{
+#if GAZEBO_MAJOR_VERSION >= 8
+    entity_pose = entity->WorldPose();
+#else
+    entity_pose = entity->GetWorldPose().Ign();
 #endif
 }
 

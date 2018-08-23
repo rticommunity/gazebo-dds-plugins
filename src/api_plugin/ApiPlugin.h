@@ -45,6 +45,8 @@
 #include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
 #include "gazebo_msgs/srv/SetLightProperties_Request.hpp"
 #include "gazebo_msgs/srv/SetLinkProperties_Request.hpp"
+#include "gazebo_msgs/srv/SetModelState_Request.hpp"
+#include "gazebo_msgs/srv/SetLinkState_Request.hpp"
 #include "std_msgs/msg/Empty.hpp"
 
 #include "common/ReplierListener.hpp"
@@ -128,7 +130,8 @@ public:
     /**
      * @brief Obtain the current state of a specified link
      *
-     * @param request sample that contains the name of the link
+     * @param request sample that contains the name and reference frame of the
+     * link
      * @return current state of the link
      */
     gazebo_msgs::srv::GetLinkState_Response
@@ -146,7 +149,8 @@ public:
     /**
      * @brief Obtain the current state of a specified model
      *
-     * @param request sample that contains the name of the model
+     * @param request sample that contains the name and reference frame of the
+     * model
      * @return current state of the model
      */
     gazebo_msgs::srv::GetModelState_Response
@@ -169,6 +173,24 @@ public:
      */
     gazebo_msgs::srv::Default_Response set_link_properties(
             gazebo_msgs::srv::SetLinkProperties_Request request);
+
+    /**
+     * @brief Update the current state of a specified model
+     *
+     * @param request sample that contains the new state of the model
+     * @return response of the service
+     */
+    gazebo_msgs::srv::Default_Response set_model_state(
+            gazebo_msgs::srv::SetModelState_Request request);
+
+    /**
+     * @brief Update the current state of a specified link
+     *
+     * @param request sample that contains the new state of the link
+     * @return response of the service
+     */
+    gazebo_msgs::srv::Default_Response set_link_state(
+            gazebo_msgs::srv::SetLinkState_Request request);
 
     /**
      * @brief Reset the simulation to its initial state
@@ -242,6 +264,17 @@ private:
             ignition::math::Pose3d &entity_pose,
             ignition::math::Vector3d &entity_linear_vel,
             ignition::math::Vector3d &entity_angular_vel);
+
+   /**
+     * @brief Obtain the pose of a specified entity
+     *
+     * @param entity pointer that will be use to obtain the pose of
+     * the entity
+     * @param entity_pose will obtain the pose of the entity
+     */
+    void get_entity_pose(
+            gazebo::physics::EntityPtr &entity,
+            ignition::math::Pose3d &entity_pose);
 
 private:
     ::dds::domain::DomainParticipant participant_;
@@ -344,6 +377,24 @@ private:
             gazebo_msgs::srv::SetLinkProperties_Request,
             gazebo_msgs::srv::Default_Response>
             set_link_properties_listener_;
+
+    rti::request::Replier<
+            gazebo_msgs::srv::SetModelState_Request,
+            gazebo_msgs::srv::Default_Response>
+            set_model_state_replier_;
+    ReplierListener<
+            gazebo_msgs::srv::SetModelState_Request,
+            gazebo_msgs::srv::Default_Response>
+            set_model_state_listener_;
+
+    rti::request::Replier<
+            gazebo_msgs::srv::SetLinkState_Request,
+            gazebo_msgs::srv::Default_Response>
+            set_link_state_replier_;
+    ReplierListener<
+            gazebo_msgs::srv::SetLinkState_Request,
+            gazebo_msgs::srv::Default_Response>
+            set_link_state_listener_;
 
     rti::request::
             Replier<std_msgs::msg::Empty, gazebo_msgs::srv::Default_Response>

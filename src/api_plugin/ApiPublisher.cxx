@@ -42,6 +42,8 @@
 #include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
 #include "gazebo_msgs/srv/SetLightProperties_Request.hpp"
 #include "gazebo_msgs/srv/SetLinkProperties_Request.hpp"
+#include "gazebo_msgs/srv/SetModelState_Request.hpp"
+#include "gazebo_msgs/srv/SetLinkState_Request.hpp"
 #include "std_msgs/msg/Empty.hpp"
 
 template <typename T, typename T2>
@@ -266,6 +268,102 @@ void set_link_properties(
     std::cout << reply << std::endl;
 }
 
+void set_model_state(
+        const dds::domain::DomainParticipant &participant,
+        std::string service_name,
+        std::unordered_map<std::string, std::vector<std::string>>
+                model_state)
+{
+    // Fill the sample
+    gazebo_msgs::srv::SetModelState_Request request;
+    request.model_state().model_name(model_state["model_name"][0]);
+
+    request.model_state().pose().position().x(
+            stof(model_state["pose_position"][0]));
+    request.model_state().pose().position().y(
+            stof(model_state["pose_position"][1]));
+    request.model_state().pose().position().z(
+            stof(model_state["pose_position"][2]));
+
+    request.model_state().pose().orientation().x(
+            stof(model_state["pose_orientation"][0]));
+    request.model_state().pose().orientation().y(
+            stof(model_state["pose_orientation"][1]));
+    request.model_state().pose().orientation().z(
+            stof(model_state["pose_orientation"][2]));
+
+    request.model_state().twist().linear().x(
+            stof(model_state["twist_linear"][0]));
+    request.model_state().twist().linear().y(
+            stof(model_state["twist_linear"][1]));
+    request.model_state().twist().linear().z(
+            stof(model_state["twist_linear"][2]));
+
+    request.model_state().twist().angular().x(
+            stof(model_state["twist_angular"][0]));
+    request.model_state().twist().angular().y(
+            stof(model_state["twist_angular"][1]));
+    request.model_state().twist().angular().z(
+            stof(model_state["twist_angular"][2]));
+
+    request.model_state().reference_frame(model_state["reference_frame"][0]);
+
+    gazebo_msgs::srv::Default_Response reply = send_request<
+            gazebo_msgs::srv::SetModelState_Request,
+            gazebo_msgs::srv::Default_Response>(
+            participant, service_name, request);
+
+    std::cout << reply << std::endl;
+}
+
+void set_link_state(
+        const dds::domain::DomainParticipant &participant,
+        std::string service_name,
+        std::unordered_map<std::string, std::vector<std::string>>
+                link_state)
+{
+    // Fill the sample
+    gazebo_msgs::srv::SetLinkState_Request request;
+    request.link_state().link_name(link_state["link_name"][0]);
+
+    request.link_state().pose().position().x(
+            stof(link_state["pose_position"][0]));
+    request.link_state().pose().position().y(
+            stof(link_state["pose_position"][1]));
+    request.link_state().pose().position().z(
+            stof(link_state["pose_position"][2]));
+
+    request.link_state().pose().orientation().x(
+            stof(link_state["pose_orientation"][0]));
+    request.link_state().pose().orientation().y(
+            stof(link_state["pose_orientation"][1]));
+    request.link_state().pose().orientation().z(
+            stof(link_state["pose_orientation"][2]));
+
+    request.link_state().twist().linear().x(
+            stof(link_state["twist_linear"][0]));
+    request.link_state().twist().linear().y(
+            stof(link_state["twist_linear"][1]));
+    request.link_state().twist().linear().z(
+            stof(link_state["twist_linear"][2]));
+
+    request.link_state().twist().angular().x(
+            stof(link_state["twist_angular"][0]));
+    request.link_state().twist().angular().y(
+            stof(link_state["twist_angular"][1]));
+    request.link_state().twist().angular().z(
+            stof(link_state["twist_angular"][2]));
+
+    request.link_state().reference_frame(link_state["reference_frame"][0]);
+
+    gazebo_msgs::srv::Default_Response reply = send_request<
+            gazebo_msgs::srv::SetLinkState_Request,
+            gazebo_msgs::srv::Default_Response>(
+            participant, service_name, request);
+
+    std::cout << reply << std::endl;
+}
+
 void send_empty_request(
         const dds::domain::DomainParticipant &participant,
         std::string service_name)
@@ -359,6 +457,18 @@ int main(int argc, char *argv[])
 
     service_map["set_link_properties"] = std::bind(
             &set_link_properties,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3);
+
+    service_map["set_model_state"] = std::bind(
+            &set_model_state,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3);
+
+    service_map["set_link_state"] = std::bind(
+            &set_link_state,
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3);

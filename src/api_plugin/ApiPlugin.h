@@ -45,6 +45,7 @@
 #include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
 #include "gazebo_msgs/srv/SetLightProperties_Request.hpp"
 #include "gazebo_msgs/srv/SetLinkProperties_Request.hpp"
+#include "gazebo_msgs/srv/SetJointProperties_Request.hpp"
 #include "gazebo_msgs/srv/SetModelState_Request.hpp"
 #include "gazebo_msgs/srv/SetLinkState_Request.hpp"
 #include "std_msgs/msg/Empty.hpp"
@@ -173,6 +174,15 @@ public:
      */
     gazebo_msgs::srv::Default_Response set_link_properties(
             gazebo_msgs::srv::SetLinkProperties_Request request);
+
+    /**
+     * @brief Update the properties of a specified joint
+     *
+     * @param request sample that contains the new properties of the joint
+     * @return response of the service
+     */
+    gazebo_msgs::srv::Default_Response set_joint_properties(
+            gazebo_msgs::srv::SetJointProperties_Request request);
 
     /**
      * @brief Update the current state of a specified model

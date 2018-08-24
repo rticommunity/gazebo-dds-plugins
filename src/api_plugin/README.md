@@ -36,7 +36,7 @@ $ gazebo dds-gazebo-plugins/resources/worlds/DifferentialDrive.world --verbose
 
 The plugin contains an example publisher to send request to the services.
 ```
-$ dds-gazebo-plugins/build/src/diff_drive/diffdrivepublisher -d <domain id> -t <topic name> -s "(<linear velocity in axis x> <angular velocity in axis z>)"
+$ dds-gazebo-plugins/build/src/api_plugin/apipublisher -d <domain id> -t <topic name> -s "<variable1: <value1> <variable2>: <value2>)"
 ```
 
 You can check the help of the publisher with the flag `-h` for more information
@@ -52,5 +52,5 @@ In this first example, we call the service `set_light_properties` with the new i
 In this second example, we call the service `set_link_properties` with the new information of the link named chassis and using the domain id 226
 
 ```
-./build/src/api_plugin/apipublisher -d 226 -s set_link_properties -i "link_name:chassis com_position:0 0 0 gravity_mode:true  mass: 4.5 ixx:0.5 ixy:0.6 ixz:0.7 iyy:0.8 iyz:0.2 izz:0.3"
+./build/src/api_plugin/apipublisher -d 226 -s set_link_properties -i "link_name:chassis com_position:0 0 0 gravity_mode:true  mass:4.5 ixx:0.5 ixy:0.6 ixz:0.7 iyy:0.8 iyz:0.2 izz:0.3"
 ```

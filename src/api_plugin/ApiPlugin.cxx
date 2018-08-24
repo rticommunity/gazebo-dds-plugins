@@ -421,6 +421,8 @@ gazebo_msgs::srv::GetJointProperties_Response ApiPlugin::get_joint_properties(
                 "GetJointProperties: joint not found");
     } else {
         // Fill the sample
+        joint_properties_reply_.type(gazebo_msgs::srv::Type::PRISMATIC);
+
         joint_properties_reply_.damping()[0] = joint->GetDamping(0);
         joint_properties_reply_.rate()[0] = joint->GetVelocity(0);
         get_joint_position(joint);
@@ -742,9 +744,49 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_link_properties(
     return default_reply_;
 }
 
+gazebo_msgs::srv::Default_Response ApiPlugin::set_joint_properties(
+        gazebo_msgs::srv::SetJointProperties_Request request)
+{
+
+    gazebo::physics::JointPtr joint = utils::get_joint(world_, request.joint_name());
+
+    if (!joint) {
+        default_reply_.success(false);
+        default_reply_.status_message("SetJointProperties: joint not found");
+    } else {
+        for (unsigned int i = 0;
+             i < request.ode_joint_config().damping().size();
+             i++) {
+            joint->SetDamping(i, request.ode_joint_config().damping()[i]);
+            joint->SetParam(
+                    "hi_stop", i, request.ode_joint_config().hiStop()[i]);
+            joint->SetParam(
+                    "lo_stop", i, request.ode_joint_config().loStop()[i]);
+            joint->SetParam("erp", i, request.ode_joint_config().erp()[i]);
+            joint->SetParam("cfm", i, request.ode_joint_config().cfm()[i]);
+            joint->SetParam(
+                    "stop_erp", i, request.ode_joint_config().stop_erp()[i]);
+            joint->SetParam(
+                    "stop_cfm", i, request.ode_joint_config().stop_cfm()[i]);
+            joint->SetParam(
+                    "fudge_factor",
+                    i,
+                    request.ode_joint_config().fudge_factor()[i]);
+            joint->SetParam("fmax", i, request.ode_joint_config().fmax()[i]);
+            joint->SetParam("vel", i, request.ode_joint_config().vel()[i]);
+        }
+
+        default_reply_.success(true);
+        default_reply_.status_message("SetJointProperties: properties set");
+    }
+
+    return default_reply_;
+}
+
 gazebo_msgs::srv::Default_Response ApiPlugin::set_model_state(
         gazebo_msgs::srv::SetModelState_Request request)
 {
+    // Manage the information of the request
     ignition::math::Vector3d target_pos(
             request.model_state().pose().position().x(),
             request.model_state().pose().position().y(),
@@ -765,6 +807,7 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_model_state(
             request.model_state().twist().angular().y(),
             request.model_state().twist().angular().z());
 
+    // Obtain model
     gazebo::physics::ModelPtr model
             = utils::get_model(world_, request.model_state().model_name());
 
@@ -772,10 +815,12 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_model_state(
         default_reply_.success(false);
         default_reply_.status_message("SetModelState: model not found");
     } else {
+        // Obtain frame
         gazebo::physics::EntityPtr relative_entity = utils::get_entity(
                 world_, request.model_state().reference_frame());
 
         if (relative_entity) {
+            // Obtain the current state of the frame
             get_entity_pose(relative_entity, frame_pose_);
 
             target_pose = target_pose + frame_pose_;
@@ -791,12 +836,13 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_model_state(
                     "exist");
         }
 
+        // Set model pose
         bool is_paused = world_->IsPaused();
         world_->SetPaused(true);
         model->SetWorldPose(target_pose);
         world_->SetPaused(is_paused);
 
-        // set model velocity
+        // Set model velocity
         model->SetLinearVel(target_pos_dot);
         model->SetAngularVel(target_rot_dot);
 
@@ -809,6 +855,7 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_model_state(
 gazebo_msgs::srv::Default_Response ApiPlugin::set_link_state(
         gazebo_msgs::srv::SetLinkState_Request request)
 {
+    // Obtain link and frame
     gazebo::physics::Link *body = dynamic_cast<gazebo::physics::Link *>(
             utils::get_entity(world_, request.link_state().link_name()).get());
     gazebo::physics::EntityPtr frame
@@ -818,6 +865,8 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_link_state(
         default_reply_.success(false);
         default_reply_.status_message("SetLinkState: link not found");
     }
+
+    // Manage the information of the request
     ignition::math::Vector3d target_pos(
             request.link_state().pose().position().x(),
             request.link_state().pose().position().y(),
@@ -838,6 +887,7 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_link_state(
             request.link_state().twist().angular().z());
 
     if (frame) {
+        // Obtain the current state of the frame
         get_entity_state(frame, frame_pose_, frame_vpos_, frame_veul_);
 
         ignition::math::Vector3d frame_pos = frame_pose_.Pos();
@@ -855,12 +905,13 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_link_state(
         default_reply_.status_message("SetLinkState: failed");
     }
 
+    // Set link pose
     bool is_paused = world_->IsPaused();
     world_->SetPaused(true);
     body->SetWorldPose(target_pose);
     world_->SetPaused(is_paused);
 
-    // set body velocity to desired twist
+    // Set link velocity 
     body->SetLinearVel(target_linear_vel);
     body->SetAngularVel(target_angular_vel);
 

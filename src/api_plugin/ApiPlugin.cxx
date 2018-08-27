@@ -159,14 +159,14 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
     utils::create_replier<
             gazebo_msgs::srv::DeleteModel_Request,
             gazebo_msgs::srv::Default_Response>(
-            delete_model_replier_, participant_, "delete_model");
+            delete_model_replier_, participant_, "delete_model", qos_provider);
 
     delete_model_replier_.listener(&delete_model_listener_);
 
     utils::create_replier<
             gazebo_msgs::srv::DeleteLight_Request,
             gazebo_msgs::srv::Default_Response>(
-            delete_light_replier_, participant_, "delete_light");
+            delete_light_replier_, participant_, "delete_light", qos_provider);
 
     delete_light_replier_.listener(&delete_light_listener_);
 
@@ -175,7 +175,8 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
             gazebo_msgs::srv::GetLightProperties_Response>(
             get_light_properties_replier_,
             participant_,
-            "get_light_properties");
+            "get_light_properties",
+            qos_provider);
 
     get_light_properties_replier_.listener(&get_light_properties_listener_);
 
@@ -184,7 +185,8 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
             gazebo_msgs::srv::GetWorldProperties_Response>(
             get_world_properties_replier_,
             participant_,
-            "get_world_properties");
+            "get_world_properties",
+            qos_provider);
 
     get_world_properties_replier_.listener(&get_world_properties_listener_);
 
@@ -193,21 +195,28 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
             gazebo_msgs::srv::GetJointProperties_Response>(
             get_joint_properties_replier_,
             participant_,
-            "get_joint_properties");
+            "get_joint_properties",
+            qos_provider);
 
     get_joint_properties_replier_.listener(&get_joint_properties_listener_);
 
     utils::create_replier<
             gazebo_msgs::srv::GetLinkProperties_Request,
             gazebo_msgs::srv::GetLinkProperties_Response>(
-            get_link_properties_replier_, participant_, "get_link_properties");
+            get_link_properties_replier_,
+            participant_,
+            "get_link_properties",
+            qos_provider);
 
     get_link_properties_replier_.listener(&get_link_properties_listener_);
 
     utils::create_replier<
             gazebo_msgs::srv::GetLinkState_Request,
             gazebo_msgs::srv::GetLinkState_Response>(
-            get_link_state_replier_, participant_, "get_link_state");
+            get_link_state_replier_,
+            participant_,
+            "get_link_state",
+            qos_provider);
 
     get_link_state_replier_.listener(&get_link_state_listener_);
 
@@ -216,14 +225,18 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
             gazebo_msgs::srv::GetModelProperties_Response>(
             get_model_properties_replier_,
             participant_,
-            "get_model_properties");
+            "get_model_properties",
+            qos_provider);
 
     get_model_properties_replier_.listener(&get_model_properties_listener_);
 
     utils::create_replier<
             gazebo_msgs::srv::GetModelState_Request,
             gazebo_msgs::srv::GetModelState_Response>(
-            get_model_state_replier_, participant_, "get_model_state");
+            get_model_state_replier_,
+            participant_,
+            "get_model_state",
+            qos_provider);
 
     get_model_state_replier_.listener(&get_model_state_listener_);
 
@@ -232,56 +245,75 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
             gazebo_msgs::srv::Default_Response>(
             set_light_properties_replier_,
             participant_,
-            "set_light_properties");
+            "set_light_properties",
+            qos_provider);
 
     set_light_properties_replier_.listener(&set_light_properties_listener_);
 
     utils::create_replier<
             gazebo_msgs::srv::SetLinkProperties_Request,
             gazebo_msgs::srv::Default_Response>(
-            set_link_properties_replier_, participant_, "set_link_properties");
+            set_link_properties_replier_,
+            participant_,
+            "set_link_properties",
+            qos_provider);
 
     set_link_properties_replier_.listener(&set_link_properties_listener_);
 
     utils::create_replier<
             gazebo_msgs::srv::SetModelState_Request,
             gazebo_msgs::srv::Default_Response>(
-            set_model_state_replier_, participant_, "set_model_state");
+            set_model_state_replier_,
+            participant_,
+            "set_model_state",
+            qos_provider);
 
     set_model_state_replier_.listener(&set_model_state_listener_);
 
     utils::create_replier<
             gazebo_msgs::srv::SetLinkState_Request,
             gazebo_msgs::srv::Default_Response>(
-            set_link_state_replier_, participant_, "set_link_state");
+            set_link_state_replier_,
+            participant_,
+            "set_link_state",
+            qos_provider);
 
     set_link_state_replier_.listener(&set_link_state_listener_);
 
     utils::create_replier<
             std_msgs::msg::Empty,
             gazebo_msgs::srv::Default_Response>(
-            reset_simulation_replier_, participant_, "reset_simulation");
+            reset_simulation_replier_,
+            participant_,
+            "reset_simulation",
+            qos_provider);
 
     reset_simulation_replier_.listener(&reset_simulation_listener_);
 
     utils::create_replier<
             std_msgs::msg::Empty,
             gazebo_msgs::srv::Default_Response>(
-            reset_world_replier_, participant_, "reset_world");
+            reset_world_replier_, participant_, "reset_world", qos_provider);
 
     reset_world_replier_.listener(&reset_world_listener_);
 
     utils::create_replier<
             std_msgs::msg::Empty,
             gazebo_msgs::srv::Default_Response>(
-            pause_physics_replier_, participant_, "pause_physics");
+            pause_physics_replier_,
+            participant_,
+            "pause_physics",
+            qos_provider);
 
     pause_physics_replier_.listener(&pause_physics_listener_);
 
     utils::create_replier<
             std_msgs::msg::Empty,
             gazebo_msgs::srv::Default_Response>(
-            unpause_physics_replier_, participant_, "unpause_physics");
+            unpause_physics_replier_,
+            participant_,
+            "unpause_physics",
+            qos_provider);
 
     unpause_physics_replier_.listener(&unpause_physics_listener_);
 
@@ -421,7 +453,7 @@ gazebo_msgs::srv::GetJointProperties_Response ApiPlugin::get_joint_properties(
                 "GetJointProperties: joint not found");
     } else {
         // Fill the sample
-        joint_properties_reply_.type(gazebo_msgs::srv::Type::PRISMATIC);
+        get_joint_type(joint);
 
         joint_properties_reply_.damping()[0] = joint->GetDamping(0);
         joint_properties_reply_.rate()[0] = joint->GetVelocity(0);
@@ -1048,6 +1080,21 @@ void ApiPlugin::get_entity_pose(
 #else
     entity_pose = entity->GetWorldPose().Ign();
 #endif
+}
+
+void ApiPlugin::get_joint_type(gazebo::physics::JointPtr joint)
+{
+    if (joint->GetMsgType() == msgs::Joint::REVOLUTE) {
+        joint_properties_reply_.type(gazebo_msgs::srv::Type::REVOLUTE);
+    } else if (joint->GetMsgType() == msgs::Joint::PRISMATIC) {
+        joint_properties_reply_.type(gazebo_msgs::srv::Type::PRISMATIC);
+    } else if (joint->GetMsgType() == msgs::Joint::UNIVERSAL) {
+        joint_properties_reply_.type(gazebo_msgs::srv::Type::UNIVERSAL);
+    } else if (joint->GetMsgType() == msgs::Joint::BALL) {
+        joint_properties_reply_.type(gazebo_msgs::srv::Type::BALL);
+    } else if (joint->GetMsgType() == msgs::Joint::FIXED) {
+        joint_properties_reply_.type(gazebo_msgs::srv::Type::FIXED);
+    }
 }
 
 }  // namespace dds

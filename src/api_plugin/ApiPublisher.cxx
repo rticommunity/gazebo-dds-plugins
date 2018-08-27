@@ -56,7 +56,10 @@ T2 send_request(
 
     // Create requester
     gazebo::dds::utils::create_requester<T, T2>(
-            requester, participant, service_name);
+            requester,
+            participant,
+            service_name,
+            ::dds::core::QosProvider::Default());
 
     // Call the service
     T2 reply = gazebo::dds::utils::call_service<T, T2>(requester, request);
@@ -70,7 +73,6 @@ void delete_model(
         std::unordered_map<std::string, std::vector<std::string>> model_name)
 {
     gazebo_msgs::srv::DeleteModel_Request request(model_name["model_name"][0]);
-
 
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::DeleteModel_Request,
@@ -98,10 +100,11 @@ void delete_light(
 void get_light_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>> light_name)
+        std::unordered_map<std::string, std::vector<std::string>>
+                light_properties)
 {
     gazebo_msgs::srv::GetLightProperties_Request request(
-            light_name["light_name"][0]);
+            light_properties["light_name"][0]);
 
     gazebo_msgs::srv::GetLightProperties_Response reply = send_request<
             gazebo_msgs::srv::GetLightProperties_Request,
@@ -128,10 +131,11 @@ void get_world_properties(
 void get_joint_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>> joint_name)
+        std::unordered_map<std::string, std::vector<std::string>>
+                joint_properties)
 {
     gazebo_msgs::srv::GetJointProperties_Request request(
-            joint_name["joint_name"][0]);
+            joint_properties["joint_name"][0]);
 
     gazebo_msgs::srv::GetJointProperties_Response reply = send_request<
             gazebo_msgs::srv::GetJointProperties_Request,
@@ -144,10 +148,11 @@ void get_joint_properties(
 void get_link_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>> link_name)
+        std::unordered_map<std::string, std::vector<std::string>>
+                link_properties)
 {
     gazebo_msgs::srv::GetLinkProperties_Request request(
-            link_name["link_name"][0]);
+            link_properties["link_name"][0]);
 
     gazebo_msgs::srv::GetLinkProperties_Response reply = send_request<
             gazebo_msgs::srv::GetLinkProperties_Request,
@@ -160,10 +165,10 @@ void get_link_properties(
 void get_link_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>> link_name)
+        std::unordered_map<std::string, std::vector<std::string>> link_state)
 {
     gazebo_msgs::srv::GetLinkState_Request request(
-            link_name["link_name"][0], link_name["reference_frame"][0]);
+            link_state["link_name"][0], link_state["reference_frame"][0]);
 
     gazebo_msgs::srv::GetLinkState_Response reply = send_request<
             gazebo_msgs::srv::GetLinkState_Request,
@@ -176,10 +181,11 @@ void get_link_state(
 void get_model_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>> model_name)
+        std::unordered_map<std::string, std::vector<std::string>>
+                model_properties)
 {
     gazebo_msgs::srv::GetModelProperties_Request request(
-            model_name["model_name"][0]);
+            model_properties["model_name"][0]);
 
     gazebo_msgs::srv::GetModelProperties_Response reply = send_request<
             gazebo_msgs::srv::GetModelProperties_Request,
@@ -192,10 +198,11 @@ void get_model_properties(
 void get_model_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>> model_name)
+        std::unordered_map<std::string, std::vector<std::string>> model_state)
 {
     gazebo_msgs::srv::GetModelState_Request request(
-            model_name["model_name"][0], model_name["relative_entity_name"][0]);
+            model_state["model_name"][0],
+            model_state["relative_entity_name"][0]);
 
     gazebo_msgs::srv::GetModelState_Response reply = send_request<
             gazebo_msgs::srv::GetModelState_Request,
@@ -499,7 +506,7 @@ int main(int argc, char *argv[])
                   << std::endl
                   << "\t-d <domain id>          - Sets the domainId (default 0)"
                   << std::endl
-                  << "\t-s <service name>         - Sets the service name"
+                  << "\t-s <service name>       - Sets the service name"
                   << std::endl
                   << "\t-i <sample information> - Sets information of the "
                      "sample"

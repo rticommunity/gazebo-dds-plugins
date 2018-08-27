@@ -82,16 +82,6 @@ public:
     {
         std::string values = get_value(key_value);
 
-        // Process values
-        std::size_t found;
-        found = values.find("(");
-        if (found != std::string::npos)
-            values.erase(found, 1);
-
-        found = values.find(")");
-        if (found != std::string::npos)
-            values.erase(found, 1);
-
         process_values(values);
 
         std::istringstream buffer(values);
@@ -105,7 +95,8 @@ public:
         std::string current_variable;
         for (int i = 0; i < value_list.size(); i++) {
             if (value_list[i][value_list[i].size() - 1] == ':') {
-                current_variable = value_list[i].substr(0, value_list[i].size() - 1);
+                current_variable
+                        = value_list[i].substr(0, value_list[i].size() - 1);
             } else {
                 result_map[current_variable].push_back(value_list[i]);
             }

@@ -286,6 +286,13 @@ private:
             gazebo::physics::EntityPtr &entity,
             ignition::math::Pose3d &entity_pose);
 
+    /**
+     * @brief Obtain the type of a specified joint
+     *
+     * @param joint pointer that will be use to obtain the type of the joint
+     */
+    void get_joint_type(gazebo::physics::JointPtr joint);
+
 private:
     ::dds::domain::DomainParticipant participant_;
 

@@ -42,6 +42,7 @@
 #include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
 #include "gazebo_msgs/srv/SetLightProperties_Request.hpp"
 #include "gazebo_msgs/srv/SetLinkProperties_Request.hpp"
+#include "gazebo_msgs/srv/SetJointProperties_Request.hpp"
 #include "gazebo_msgs/srv/SetModelState_Request.hpp"
 #include "gazebo_msgs/srv/SetLinkState_Request.hpp"
 #include "std_msgs/msg/Empty.hpp"
@@ -275,6 +276,57 @@ void set_link_properties(
     std::cout << reply << std::endl;
 }
 
+void set_joint_properties(
+        const dds::domain::DomainParticipant &participant,
+        std::string service_name,
+        std::unordered_map<std::string, std::vector<std::string>>
+                joint_properties)
+{
+    // Fill the sample
+    gazebo_msgs::srv::SetJointProperties_Request request;
+    request.joint_name(joint_properties["joint_name"][0]);
+
+    int num_axis = joint_properties["damping"].size();
+    
+    request.ode_joint_config().damping().resize(num_axis);
+    request.ode_joint_config().hiStop().resize(num_axis);
+    request.ode_joint_config().loStop().resize(num_axis);
+    request.ode_joint_config().erp().resize(num_axis);
+    request.ode_joint_config().cfm().resize(num_axis);
+    request.ode_joint_config().stop_erp().resize(num_axis);
+    request.ode_joint_config().stop_cfm().resize(num_axis);
+    request.ode_joint_config().fudge_factor().resize(num_axis);
+    request.ode_joint_config().fmax().resize(num_axis);
+    request.ode_joint_config().vel().resize(num_axis);
+
+    for (int i = 0; i < num_axis; i++) {
+        request.ode_joint_config().damping()[i]
+                = stof(joint_properties["damping"][i]);
+        request.ode_joint_config().hiStop()[i]
+                = stof(joint_properties["hiStop"][i]);
+        request.ode_joint_config().loStop()[i]
+                = stof(joint_properties["loStop"][i]);
+        request.ode_joint_config().erp()[i] = stof(joint_properties["erp"][i]);
+        request.ode_joint_config().cfm()[i] = stof(joint_properties["cfm"][i]);
+        request.ode_joint_config().stop_erp()[i]
+                = stof(joint_properties["stop_erp"][i]);
+        request.ode_joint_config().stop_cfm()[i]
+                = stof(joint_properties["stop_cfm"][i]);
+        request.ode_joint_config().fudge_factor()[i]
+                = stof(joint_properties["fudge_factor"][i]);
+        request.ode_joint_config().fmax()[i]
+                = stof(joint_properties["fmax"][i]);
+        request.ode_joint_config().vel()[i] = stof(joint_properties["vel"][i]);
+    }
+
+    gazebo_msgs::srv::Default_Response reply = send_request<
+            gazebo_msgs::srv::SetJointProperties_Request,
+            gazebo_msgs::srv::Default_Response>(
+            participant, service_name, request);
+
+    std::cout << reply << std::endl;
+}
+
 void set_model_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
@@ -464,6 +516,12 @@ int main(int argc, char *argv[])
 
     service_map["set_link_properties"] = std::bind(
             &set_link_properties,
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3);
+
+    service_map["set_joint_properties"] = std::bind(
+            &set_joint_properties,
             std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3);

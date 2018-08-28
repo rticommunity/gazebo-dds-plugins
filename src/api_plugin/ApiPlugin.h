@@ -396,6 +396,15 @@ private:
             set_link_properties_listener_;
 
     rti::request::Replier<
+            gazebo_msgs::srv::SetJointProperties_Request,
+            gazebo_msgs::srv::Default_Response>
+            set_joint_properties_replier_;
+    ReplierListener<
+            gazebo_msgs::srv::SetJointProperties_Request,
+            gazebo_msgs::srv::Default_Response>
+            set_joint_properties_listener_;
+
+    rti::request::Replier<
             gazebo_msgs::srv::SetModelState_Request,
             gazebo_msgs::srv::Default_Response>
             set_model_state_replier_;

@@ -38,6 +38,7 @@ ApiPlugin::ApiPlugin()
           get_model_state_replier_(::dds::core::null),
           set_light_properties_replier_(::dds::core::null),
           set_link_properties_replier_(::dds::core::null),
+          set_joint_properties_replier_(::dds::core::null),
           set_model_state_replier_(::dds::core::null),
           set_link_state_replier_(::dds::core::null),
           reset_simulation_replier_(::dds::core::null),
@@ -86,6 +87,10 @@ ApiPlugin::ApiPlugin()
                   std::placeholders::_1)),
           set_link_properties_listener_(std::bind(
                   &ApiPlugin::set_link_properties,
+                  this,
+                  std::placeholders::_1)),
+          set_joint_properties_listener_(std::bind(
+                  &ApiPlugin::set_joint_properties,
                   this,
                   std::placeholders::_1)),
           set_model_state_listener_(std::bind(
@@ -261,6 +266,16 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
     set_link_properties_replier_.listener(&set_link_properties_listener_);
 
     utils::create_replier<
+            gazebo_msgs::srv::SetJointProperties_Request,
+            gazebo_msgs::srv::Default_Response>(
+            set_joint_properties_replier_,
+            participant_,
+            "set_joint_properties",
+            qos_provider);
+
+    set_joint_properties_replier_.listener(&set_joint_properties_listener_);
+
+    utils::create_replier<
             gazebo_msgs::srv::SetModelState_Request,
             gazebo_msgs::srv::Default_Response>(
             set_model_state_replier_,
@@ -316,11 +331,6 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
             qos_provider);
 
     unpause_physics_replier_.listener(&unpause_physics_listener_);
-
-    // Initialize samples
-    joint_properties_reply_.damping().resize(1);
-    joint_properties_reply_.position().resize(1);
-    joint_properties_reply_.rate().resize(1);
 
     gzmsg << std::endl;
     gzmsg << "Starting Api plugin" << std::endl;
@@ -455,8 +465,23 @@ gazebo_msgs::srv::GetJointProperties_Response ApiPlugin::get_joint_properties(
         // Fill the sample
         get_joint_type(joint);
 
+        if (joint_properties_reply_.type()
+            == gazebo_msgs::srv::Type::UNIVERSAL) {
+            joint_properties_reply_.damping().resize(2);
+            joint_properties_reply_.position().resize(2);
+            joint_properties_reply_.rate().resize(2);
+
+            joint_properties_reply_.damping()[1] = joint->GetDamping(1);
+            joint_properties_reply_.rate()[1] = joint->GetVelocity(1);
+        } else {
+            joint_properties_reply_.damping().resize(1);
+            joint_properties_reply_.position().resize(1);
+            joint_properties_reply_.rate().resize(1);
+        }
+
         joint_properties_reply_.damping()[0] = joint->GetDamping(0);
         joint_properties_reply_.rate()[0] = joint->GetVelocity(0);
+        
         get_joint_position(joint);
 
         joint_properties_reply_.success(true);
@@ -779,8 +804,8 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_link_properties(
 gazebo_msgs::srv::Default_Response ApiPlugin::set_joint_properties(
         gazebo_msgs::srv::SetJointProperties_Request request)
 {
-
-    gazebo::physics::JointPtr joint = utils::get_joint(world_, request.joint_name());
+    gazebo::physics::JointPtr joint
+            = utils::get_joint(world_, request.joint_name());
 
     if (!joint) {
         default_reply_.success(false);
@@ -1019,9 +1044,16 @@ void ApiPlugin::get_joint_position(gazebo::physics::JointPtr joint)
 {
 #if GAZEBO_MAJOR_VERSION >= 8
     joint_properties_reply_.position()[0] = joint->Position(0);
+    if (joint_properties_reply_.type()
+            == gazebo_msgs::srv::Type::UNIVERSAL){
+        joint_properties_reply_.position()[1] = joint->Position(1);
 #else
     joint_properties_reply_.position()[0] = joint->GetAngle(0).Radian();
+    if (joint_properties_reply_.type()
+            == gazebo_msgs::srv::Type::UNIVERSAL){
+        joint_properties_reply_.position()[1] = joint->GetAngle(1).Radian();
 #endif
+    }
 }
 
 ignition::math::Vector3d

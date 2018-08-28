@@ -217,10 +217,11 @@ void create_datareader(
  */
 template <typename T, typename T2>
 void create_requester(
-        rti::request::Requester<T,T2> & requester,
-        const ::dds::domain::DomainParticipant & participant,
-        const std::string & service_name,
-        ::dds::core::QosProvider qos_provider)
+        rti::request::Requester<T, T2> &requester,
+        const ::dds::domain::DomainParticipant &participant,
+        const std::string &service_name,
+        ::dds::core::QosProvider qos_provider
+        = ::dds::core::QosProvider::Default())
 {
     rti::request::RequesterParams requester_params(participant);
     requester_params.datawriter_qos(qos_provider.datawriter_qos());
@@ -239,10 +240,11 @@ void create_requester(
  */
 template <typename T, typename T2>
 void create_replier(
-        rti::request::Replier<T,T2> & replier,
-        const ::dds::domain::DomainParticipant & participant,
-        const std::string & service_name,
-        ::dds::core::QosProvider qos_provider)
+        rti::request::Replier<T, T2> &replier,
+        const ::dds::domain::DomainParticipant &participant,
+        const std::string &service_name,
+        ::dds::core::QosProvider qos_provider
+        = ::dds::core::QosProvider::Default())
 {
     rti::request::ReplierParams replier_params(participant);
     replier_params.datawriter_qos(qos_provider.datawriter_qos());

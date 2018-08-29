@@ -18,7 +18,7 @@
 #include <dds/domain/find.hpp>
 #include <dds/pub/ddspub.hpp>
 
-#include "common/CommandLineParser.hpp"
+#include "common/ParametersManager.hpp"
 #include "common/DdsUtils.hpp"
 #include "std_msgs/msg/Int32.hpp"
 
@@ -55,9 +55,9 @@ int main(int argc, char *argv[])
 {
     int ret_code = 0;
 
-    gazebo::dds::utils::CommandLineParser cmd_parser(argc, argv);
+    gazebo::dds::utils::ParametersManager parameters_manager(argc, argv);
 
-    if (cmd_parser.has_flag("-h")) {
+    if (parameters_manager.has_flag("-h")) {
         std::cout << "Usage: elevatorpublisher [options]" << std::endl
                   << "Generic options:" << std::endl
                   << "\t-h                      - Prints this page and exits"
@@ -77,17 +77,17 @@ int main(int argc, char *argv[])
     try {
         // Check arguments
         int domain_id = 0;
-        if (cmd_parser.has_flag("-d")) {
-            domain_id = atoi(cmd_parser.get_value("-d").c_str());
+        if (parameters_manager.has_flag("-d")) {
+            domain_id = atoi(parameters_manager.get_flag_value("-d").c_str());
         }
 
         int floor = 0;
-        if (cmd_parser.has_flag("-s")) {
-            floor = atoi(cmd_parser.get_value("-s").c_str());
+        if (parameters_manager.has_flag("-s")) {
+            floor = atoi(parameters_manager.get_flag_value("-s").c_str());
         }
 
         publisher_main(
-                domain_id, std::string(cmd_parser.get_value("-t")), floor);
+                domain_id, std::string(parameters_manager.get_flag_value("-t")), floor);
 
     } catch (const std::exception &ex) {
         // This will catch DDS and CommandLineParser exceptions

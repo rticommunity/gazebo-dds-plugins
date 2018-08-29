@@ -24,12 +24,12 @@
 
 namespace gazebo { namespace dds { namespace utils {
 
-class CommandLineParser {
+class ParametersManager {
 public:
     /**
      * @brief Constructor
      */
-    CommandLineParser(int argc, char *argv[])
+    ParametersManager(int argc, char *argv[])
     {
         for (int i = 1; i < argc; i++) {
             if (argv[i][0] == '-' && i + 1 < argc && argv[i + 1][0] != '-') {
@@ -45,26 +45,26 @@ public:
     /**
      * @brief Destructor
      */
-    ~CommandLineParser()
+    ~ParametersManager()
     {
     }
 
     /**
-     * @brief Get value of a specific key
+     * @brief Get value of a specific flag
      *
      * @param key_value key that will be looked for on the map.
      * @return string that contains the value of the key
      */
-    std::string get_value(std::string key_value)
+    std::string get_flag_value(std::string key_value)
     {
         if (argument_map_.find(key_value) == argument_map_.end()) {
             throw std::runtime_error(
-                    std::string("CommandLineParser: Error in parameter '")
+                    std::string("ParametersManager: Error in parameter '")
                     + key_value + "'");
         } else if (argument_map_[key_value] == "" && key_value != "-h") {
             throw std::runtime_error(
                     std::string(
-                            "CommandLineParser: Missing value for argument '")
+                            "ParametersManager: Missing value for argument '")
                     + key_value + "'");
         }
 
@@ -72,15 +72,13 @@ public:
     }
 
     /**
-     * @brief Get the values of a specific key
+     * @brief Process the information of the sample
      *
      * @param key_value key that will be looked for on the map.
-     * @return map that contains all the values of the key
      */
-    std::unordered_map<std::string, std::vector<std::string>>
-            get_values(std::string key_value)
+    void process_sample_information(std::string key_value)
     {
-        std::string values = get_value(key_value);
+        std::string values = get_flag_value(key_value);
 
         process_values(values);
 
@@ -89,20 +87,30 @@ public:
 
         std::vector<std::string> value_list(it_begin, it_end);
 
-        // Set the unordered_map
-        std::unordered_map<std::string, std::vector<std::string>> result_map;
-
         std::string current_variable;
         for (int i = 0; i < value_list.size(); i++) {
             if (value_list[i][value_list[i].size() - 1] == ':') {
                 current_variable
                         = value_list[i].substr(0, value_list[i].size() - 1);
             } else {
-                result_map[current_variable].push_back(value_list[i]);
+                sample_information_[current_variable].push_back(value_list[i]);
             }
         }
+    }
 
-        return result_map;
+    /**
+     * @brief Get the sample information. It will process the information If it
+     * was not processed
+     *
+     * @return map that contains all the values of the key
+     */
+    std::unordered_map<std::string, std::vector<std::string>>
+            & get_sample_information(std::string key_value = "")
+    {
+        if(!key_value.empty() && sample_information_.empty())
+            process_sample_information(key_value);
+
+        return sample_information_;
     }
 
     /**
@@ -121,6 +129,33 @@ public:
 
         return result;
     }
+
+    /**
+     * @brief Validate the information of a basic sample. This sample contains 
+     * element_name and frame_name(optional).
+     * 
+     */
+    void validate_basic_sample(
+            std::string service_name,
+            std::string entity_name,
+            std::string frame_name = "")
+    {
+        // Check request information
+        if (sample_information_[entity_name].empty()) {
+            throw std::runtime_error(
+                    std::string(
+                            "ERROR: Missing  arguments to call service: \n"
+                            "Missing arguments: "
+                            + entity_name
+                            + " \n"
+                              "Excepted: "
+                              "apipublisher -d <domain_id> -s "
+                            + service_name
+                            + " -i "
+                              "\""
+                            + entity_name + ": <" + entity_name + ">\""));
+        }
+    } 
 
 private:
     /**
@@ -142,6 +177,7 @@ private:
 
 private:
     std::map<std::string, std::string> argument_map_;
+    std::unordered_map<std::string, std::vector<std::string> > sample_information_;
 };
 
 }  // namespace utils

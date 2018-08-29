@@ -21,8 +21,8 @@
 #include <dds/pub/ddspub.hpp>
 #include <rti/request/rtirequest.hpp>
 
-#include "common/CommandLineParser.hpp"
 #include "common/DdsUtils.hpp"
+#include "common/ParametersManager.hpp"
 
 #include "gazebo_msgs/srv/Default_Response.hpp"
 #include "gazebo_msgs/srv/DeleteLight_Request.hpp"
@@ -40,11 +40,11 @@
 #include "gazebo_msgs/srv/GetModelState_Request.hpp"
 #include "gazebo_msgs/srv/GetModelState_Response.hpp"
 #include "gazebo_msgs/srv/GetWorldProperties_Response.hpp"
+#include "gazebo_msgs/srv/SetJointProperties_Request.hpp"
 #include "gazebo_msgs/srv/SetLightProperties_Request.hpp"
 #include "gazebo_msgs/srv/SetLinkProperties_Request.hpp"
-#include "gazebo_msgs/srv/SetJointProperties_Request.hpp"
-#include "gazebo_msgs/srv/SetModelState_Request.hpp"
 #include "gazebo_msgs/srv/SetLinkState_Request.hpp"
+#include "gazebo_msgs/srv/SetModelState_Request.hpp"
 #include "std_msgs/msg/Empty.hpp"
 
 template <typename T, typename T2>
@@ -71,9 +71,16 @@ T2 send_request(
 void delete_model(
         const dds::domain::DomainParticipant &participant,
         const std::string &service_name,
-        std::unordered_map<std::string, std::vector<std::string>> model_name)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
-    gazebo_msgs::srv::DeleteModel_Request request(model_name["model_name"][0]);
+    // Check request information
+    parameters_manager.validate_basic_sample(service_name, "model_name");
+
+    std::unordered_map<std::string, std::vector<std::string>> sample_information
+            = parameters_manager.get_sample_information();
+
+    gazebo_msgs::srv::DeleteModel_Request request(
+            sample_information["model_name"][0]);
 
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::DeleteModel_Request,
@@ -86,9 +93,16 @@ void delete_model(
 void delete_light(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>> light_name)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
-    gazebo_msgs::srv::DeleteLight_Request request(light_name["light_name"][0]);
+    // Check request information
+    parameters_manager.validate_basic_sample(service_name, "light_name");
+
+    std::unordered_map<std::string, std::vector<std::string>> sample_information
+            = parameters_manager.get_sample_information();
+
+    gazebo_msgs::srv::DeleteLight_Request request(
+            sample_information["light_name"][0]);
 
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::DeleteLight_Request,
@@ -101,11 +115,16 @@ void delete_light(
 void get_light_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>>
-                light_properties)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
+    // Check request information
+    parameters_manager.validate_basic_sample(service_name, "light_name");
+
+    std::unordered_map<std::string, std::vector<std::string>> sample_information
+            = parameters_manager.get_sample_information();
+
     gazebo_msgs::srv::GetLightProperties_Request request(
-            light_properties["light_name"][0]);
+            sample_information["light_name"][0]);
 
     gazebo_msgs::srv::GetLightProperties_Response reply = send_request<
             gazebo_msgs::srv::GetLightProperties_Request,
@@ -132,11 +151,16 @@ void get_world_properties(
 void get_joint_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>>
-                joint_properties)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
+    // Check request information
+    parameters_manager.validate_basic_sample(service_name, "joint_name");
+
+    std::unordered_map<std::string, std::vector<std::string>> sample_information
+            = parameters_manager.get_sample_information();
+
     gazebo_msgs::srv::GetJointProperties_Request request(
-            joint_properties["joint_name"][0]);
+            sample_information["joint_name"][0]);
 
     gazebo_msgs::srv::GetJointProperties_Response reply = send_request<
             gazebo_msgs::srv::GetJointProperties_Request,
@@ -149,11 +173,16 @@ void get_joint_properties(
 void get_link_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>>
-                link_properties)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
+    // Check request information
+    parameters_manager.validate_basic_sample(service_name, "link_name");
+
+    std::unordered_map<std::string, std::vector<std::string>> sample_information
+            = parameters_manager.get_sample_information();
+
     gazebo_msgs::srv::GetLinkProperties_Request request(
-            link_properties["link_name"][0]);
+            sample_information["link_name"][0]);
 
     gazebo_msgs::srv::GetLinkProperties_Response reply = send_request<
             gazebo_msgs::srv::GetLinkProperties_Request,
@@ -166,10 +195,18 @@ void get_link_properties(
 void get_link_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>> link_state)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
+    // Check request information
+    parameters_manager.validate_basic_sample(
+            service_name, "link_name", "reference_frame");
+
+    std::unordered_map<std::string, std::vector<std::string>> sample_information
+            = parameters_manager.get_sample_information();
+
     gazebo_msgs::srv::GetLinkState_Request request(
-            link_state["link_name"][0], link_state["reference_frame"][0]);
+            sample_information["link_name"][0],
+            sample_information["reference_frame"][0]);
 
     gazebo_msgs::srv::GetLinkState_Response reply = send_request<
             gazebo_msgs::srv::GetLinkState_Request,
@@ -182,11 +219,17 @@ void get_link_state(
 void get_model_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>>
-                model_properties)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
+    // Check request information
+    parameters_manager.validate_basic_sample(
+            service_name, "model_name");
+
+    std::unordered_map<std::string, std::vector<std::string>> sample_information
+            = parameters_manager.get_sample_information();
+
     gazebo_msgs::srv::GetModelProperties_Request request(
-            model_properties["model_name"][0]);
+            sample_information["model_name"][0]);
 
     gazebo_msgs::srv::GetModelProperties_Response reply = send_request<
             gazebo_msgs::srv::GetModelProperties_Request,
@@ -199,11 +242,18 @@ void get_model_properties(
 void get_model_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>> model_state)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
+    // Check request information
+    parameters_manager.validate_basic_sample(
+            service_name, "model_name", "relative_entity_name");
+
+    std::unordered_map<std::string, std::vector<std::string>> sample_information
+            = parameters_manager.get_sample_information();
+
     gazebo_msgs::srv::GetModelState_Request request(
-            model_state["model_name"][0],
-            model_state["relative_entity_name"][0]);
+            sample_information["model_name"][0],
+            sample_information["relative_entity_name"][0]);
 
     gazebo_msgs::srv::GetModelState_Response reply = send_request<
             gazebo_msgs::srv::GetModelState_Request,
@@ -216,23 +266,26 @@ void get_model_state(
 void set_light_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>>
-                light_properties)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
+    std::unordered_map<std::string, std::vector<std::string>> sample_information
+            = parameters_manager.get_sample_information();
+
     // Fill the sample
     gazebo_msgs::srv::SetLightProperties_Request request;
-    request.light_name(light_properties["light_name"][0]);
+    request.light_name(sample_information["light_name"][0]);
 
-    request.diffuse().r(stof(light_properties["diffuse"][0]));
-    request.diffuse().g(stof(light_properties["diffuse"][1]));
-    request.diffuse().b(stof(light_properties["diffuse"][2]));
-    request.diffuse().a(stof(light_properties["diffuse"][3]));
+    request.diffuse().r(stof(sample_information["diffuse"][0]));
+    request.diffuse().g(stof(sample_information["diffuse"][1]));
+    request.diffuse().b(stof(sample_information["diffuse"][2]));
+    request.diffuse().a(stof(sample_information["diffuse"][3]));
 
     request.attenuation_constant(
-            stof(light_properties["attenuation_constant"][0]));
-    request.attenuation_linear(stof(light_properties["attenuation_linear"][0]));
+            stof(sample_information["attenuation_constant"][0]));
+    request.attenuation_linear(
+            stof(sample_information["attenuation_linear"][0]));
     request.attenuation_quadratic(
-            stof(light_properties["attenuation_quadratic"][0]));
+            stof(sample_information["attenuation_quadratic"][0]));
 
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::SetLightProperties_Request,
@@ -245,28 +298,30 @@ void set_light_properties(
 void set_link_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>>
-                link_properties)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
+    std::unordered_map<std::string, std::vector<std::string>> sample_information
+            = parameters_manager.get_sample_information();
+
     // Fill the sample
     gazebo_msgs::srv::SetLinkProperties_Request request;
-    request.link_name(link_properties["link_name"][0]);
+    request.link_name(sample_information["link_name"][0]);
 
-    request.com().position().x(stof(link_properties["com_position"][0]));
-    request.com().position().y(stof(link_properties["com_position"][1]));
-    request.com().position().z(stof(link_properties["com_position"][2]));
+    request.com().position().x(stof(sample_information["com_position"][0]));
+    request.com().position().y(stof(sample_information["com_position"][1]));
+    request.com().position().z(stof(sample_information["com_position"][2]));
 
     request.gravity_mode(
-            (strcasecmp("true", link_properties["gravity_mode"][0].c_str())
+            (strcasecmp("true", sample_information["gravity_mode"][0].c_str())
              == 0));
 
-    request.mass(stof(link_properties["mass"][0]));
-    request.ixx(stof(link_properties["ixx"][0]));
-    request.ixy(stof(link_properties["ixy"][0]));
-    request.ixz(stof(link_properties["ixz"][0]));
-    request.iyy(stof(link_properties["iyy"][0]));
-    request.iyz(stof(link_properties["iyz"][0]));
-    request.izz(stof(link_properties["izz"][0]));
+    request.mass(stof(sample_information["mass"][0]));
+    request.ixx(stof(sample_information["ixx"][0]));
+    request.ixy(stof(sample_information["ixy"][0]));
+    request.ixz(stof(sample_information["ixz"][0]));
+    request.iyy(stof(sample_information["iyy"][0]));
+    request.iyz(stof(sample_information["iyz"][0]));
+    request.izz(stof(sample_information["izz"][0]));
 
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::SetLinkProperties_Request,
@@ -279,15 +334,17 @@ void set_link_properties(
 void set_joint_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>>
-                joint_properties)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
+    std::unordered_map<std::string, std::vector<std::string>> sample_information
+            = parameters_manager.get_sample_information();
+
     // Fill the sample
     gazebo_msgs::srv::SetJointProperties_Request request;
-    request.joint_name(joint_properties["joint_name"][0]);
+    request.joint_name(sample_information["joint_name"][0]);
 
-    int num_axis = joint_properties["damping"].size();
-    
+    int num_axis = sample_information["damping"].size();
+
     request.ode_joint_config().damping().resize(num_axis);
     request.ode_joint_config().hiStop().resize(num_axis);
     request.ode_joint_config().loStop().resize(num_axis);
@@ -301,22 +358,25 @@ void set_joint_properties(
 
     for (int i = 0; i < num_axis; i++) {
         request.ode_joint_config().damping()[i]
-                = stof(joint_properties["damping"][i]);
+                = stof(sample_information["damping"][i]);
         request.ode_joint_config().hiStop()[i]
-                = stof(joint_properties["hiStop"][i]);
+                = stof(sample_information["hiStop"][i]);
         request.ode_joint_config().loStop()[i]
-                = stof(joint_properties["loStop"][i]);
-        request.ode_joint_config().erp()[i] = stof(joint_properties["erp"][i]);
-        request.ode_joint_config().cfm()[i] = stof(joint_properties["cfm"][i]);
+                = stof(sample_information["loStop"][i]);
+        request.ode_joint_config().erp()[i]
+                = stof(sample_information["erp"][i]);
+        request.ode_joint_config().cfm()[i]
+                = stof(sample_information["cfm"][i]);
         request.ode_joint_config().stop_erp()[i]
-                = stof(joint_properties["stop_erp"][i]);
+                = stof(sample_information["stop_erp"][i]);
         request.ode_joint_config().stop_cfm()[i]
-                = stof(joint_properties["stop_cfm"][i]);
+                = stof(sample_information["stop_cfm"][i]);
         request.ode_joint_config().fudge_factor()[i]
-                = stof(joint_properties["fudge_factor"][i]);
+                = stof(sample_information["fudge_factor"][i]);
         request.ode_joint_config().fmax()[i]
-                = stof(joint_properties["fmax"][i]);
-        request.ode_joint_config().vel()[i] = stof(joint_properties["vel"][i]);
+                = stof(sample_information["fmax"][i]);
+        request.ode_joint_config().vel()[i]
+                = stof(sample_information["vel"][i]);
     }
 
     gazebo_msgs::srv::Default_Response reply = send_request<
@@ -330,42 +390,45 @@ void set_joint_properties(
 void set_model_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>>
-                model_state)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
+    std::unordered_map<std::string, std::vector<std::string>> sample_information
+            = parameters_manager.get_sample_information();
+
     // Fill the sample
     gazebo_msgs::srv::SetModelState_Request request;
-    request.model_state().model_name(model_state["model_name"][0]);
+    request.model_state().model_name(sample_information["model_name"][0]);
 
     request.model_state().pose().position().x(
-            stof(model_state["pose_position"][0]));
+            stof(sample_information["pose_position"][0]));
     request.model_state().pose().position().y(
-            stof(model_state["pose_position"][1]));
+            stof(sample_information["pose_position"][1]));
     request.model_state().pose().position().z(
-            stof(model_state["pose_position"][2]));
+            stof(sample_information["pose_position"][2]));
 
     request.model_state().pose().orientation().x(
-            stof(model_state["pose_orientation"][0]));
+            stof(sample_information["pose_orientation"][0]));
     request.model_state().pose().orientation().y(
-            stof(model_state["pose_orientation"][1]));
+            stof(sample_information["pose_orientation"][1]));
     request.model_state().pose().orientation().z(
-            stof(model_state["pose_orientation"][2]));
+            stof(sample_information["pose_orientation"][2]));
 
     request.model_state().twist().linear().x(
-            stof(model_state["twist_linear"][0]));
+            stof(sample_information["twist_linear"][0]));
     request.model_state().twist().linear().y(
-            stof(model_state["twist_linear"][1]));
+            stof(sample_information["twist_linear"][1]));
     request.model_state().twist().linear().z(
-            stof(model_state["twist_linear"][2]));
+            stof(sample_information["twist_linear"][2]));
 
     request.model_state().twist().angular().x(
-            stof(model_state["twist_angular"][0]));
+            stof(sample_information["twist_angular"][0]));
     request.model_state().twist().angular().y(
-            stof(model_state["twist_angular"][1]));
+            stof(sample_information["twist_angular"][1]));
     request.model_state().twist().angular().z(
-            stof(model_state["twist_angular"][2]));
+            stof(sample_information["twist_angular"][2]));
 
-    request.model_state().reference_frame(model_state["reference_frame"][0]);
+    request.model_state().reference_frame(
+            sample_information["reference_frame"][0]);
 
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::SetModelState_Request,
@@ -378,42 +441,45 @@ void set_model_state(
 void set_link_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        std::unordered_map<std::string, std::vector<std::string>>
-                link_state)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
+    std::unordered_map<std::string, std::vector<std::string>> sample_information
+            = parameters_manager.get_sample_information();
+
     // Fill the sample
     gazebo_msgs::srv::SetLinkState_Request request;
-    request.link_state().link_name(link_state["link_name"][0]);
+    request.link_state().link_name(sample_information["link_name"][0]);
 
     request.link_state().pose().position().x(
-            stof(link_state["pose_position"][0]));
+            stof(sample_information["pose_position"][0]));
     request.link_state().pose().position().y(
-            stof(link_state["pose_position"][1]));
+            stof(sample_information["pose_position"][1]));
     request.link_state().pose().position().z(
-            stof(link_state["pose_position"][2]));
+            stof(sample_information["pose_position"][2]));
 
     request.link_state().pose().orientation().x(
-            stof(link_state["pose_orientation"][0]));
+            stof(sample_information["pose_orientation"][0]));
     request.link_state().pose().orientation().y(
-            stof(link_state["pose_orientation"][1]));
+            stof(sample_information["pose_orientation"][1]));
     request.link_state().pose().orientation().z(
-            stof(link_state["pose_orientation"][2]));
+            stof(sample_information["pose_orientation"][2]));
 
     request.link_state().twist().linear().x(
-            stof(link_state["twist_linear"][0]));
+            stof(sample_information["twist_linear"][0]));
     request.link_state().twist().linear().y(
-            stof(link_state["twist_linear"][1]));
+            stof(sample_information["twist_linear"][1]));
     request.link_state().twist().linear().z(
-            stof(link_state["twist_linear"][2]));
+            stof(sample_information["twist_linear"][2]));
 
     request.link_state().twist().angular().x(
-            stof(link_state["twist_angular"][0]));
+            stof(sample_information["twist_angular"][0]));
     request.link_state().twist().angular().y(
-            stof(link_state["twist_angular"][1]));
+            stof(sample_information["twist_angular"][1]));
     request.link_state().twist().angular().z(
-            stof(link_state["twist_angular"][2]));
+            stof(sample_information["twist_angular"][2]));
 
-    request.link_state().reference_frame(link_state["reference_frame"][0]);
+    request.link_state().reference_frame(
+            sample_information["reference_frame"][0]);
 
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::SetLinkState_Request,
@@ -447,9 +513,7 @@ int main(int argc, char *argv[])
             std::function<void(
                     const dds::domain::DomainParticipant &,
                     const std::string &,
-                    const std::unordered_map<
-                            std::string,
-                            std::vector<std::string>> &)>>
+                    const gazebo::dds::utils::ParametersManager &)>>
             service_map;
 
     std::unordered_map<
@@ -555,9 +619,9 @@ int main(int argc, char *argv[])
     empty_service_map["unpause_physics"] = std::bind(
             &send_empty_request, std::placeholders::_1, std::placeholders::_2);
 
-    gazebo::dds::utils::CommandLineParser cmd_parser(argc, argv);
+    gazebo::dds::utils::ParametersManager parameters_manager(argc, argv);
 
-    if (cmd_parser.has_flag("-h")) {
+    if (parameters_manager.has_flag("-h")) {
         std::cout << "Usage: apipublisher [options]" << std::endl
                   << "Generic options:" << std::endl
                   << "\t-h                      - Prints this page and exits"
@@ -578,11 +642,12 @@ int main(int argc, char *argv[])
     try {
         // Check arguments
         int domain_id = 0;
-        if (cmd_parser.has_flag("-d")) {
-            domain_id = atoi(cmd_parser.get_value("-d").c_str());
+        if (parameters_manager.has_flag("-d")) {
+            domain_id = atoi(parameters_manager.get_flag_value("-d").c_str());
         }
 
-        std::string service_name = std::string(cmd_parser.get_value("-s"));
+        std::string service_name
+                = std::string(parameters_manager.get_flag_value("-s"));
 
         // Find a DomainParticipant
         dds::domain::DomainParticipant participant(
@@ -592,9 +657,10 @@ int main(int argc, char *argv[])
         }
 
         // Call the service
-        if (cmd_parser.has_flag("-i")) {
+        if (parameters_manager.has_flag("-i")) {
+            parameters_manager.process_sample_information("-i");
             service_map[service_name](
-                    participant, service_name, cmd_parser.get_values("-i"));
+                    participant, service_name, parameters_manager);
         } else {
             empty_service_map[service_name](participant, service_name);
         }

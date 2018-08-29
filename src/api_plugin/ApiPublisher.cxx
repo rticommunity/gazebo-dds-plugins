@@ -268,6 +268,9 @@ void set_light_properties(
         std::string service_name,
         gazebo::dds::utils::ParametersManager parameters_manager)
 {
+    // Check request information
+    parameters_manager.validate_set_light_properties_sample();
+
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
 

@@ -133,30 +133,99 @@ public:
     /**
      * @brief Validate the information of a basic sample. This sample contains 
      * element_name and frame_name(optional).
-     * 
      */
     void validate_basic_sample(
             std::string service_name,
             std::string entity_name,
             std::string frame_name = "")
     {
-        // Check request information
-        if (sample_information_[entity_name].empty()) {
-            throw std::runtime_error(
-                    std::string(
-                            "ERROR: Missing  arguments to call service: \n"
-                            "Missing arguments: "
-                            + entity_name
-                            + " \n"
-                              "Excepted: "
-                              "apipublisher -d <domain_id> -s "
-                            + service_name
-                            + " -i "
-                              "\""
-                            + entity_name + ": <" + entity_name + ">\""));
-        }
-    } 
+        std::string exception;
+        std::string arguments_expected(
+                entity_name + ": <" + entity_name + "> ");
 
+        // Check if frame_name is requested
+        bool frame_flag = false;
+        if(!frame_name.empty()){
+            frame_flag = true;
+        }
+
+        // Check request information
+        if (sample_information_[entity_name].empty()
+            || (frame_flag && sample_information_[frame_name].empty())) {
+            exception
+                = "\nERROR: Missing  arguments to call service: \nMissing "
+                    "arguments:";
+
+            if (sample_information_[entity_name].empty())
+                exception += " " + entity_name + ",";
+
+            if (frame_flag && sample_information_[frame_name].empty()){
+                exception += " " + frame_name + ",";
+                arguments_expected += frame_name + ": <" + frame_name + ">";
+            }
+
+            exception += "\n\nExcepted: "
+                        "apipublisher -d <domain_id> -s " + service_name + 
+                        " -i " 
+                        "\"" + arguments_expected + "\"";
+
+            throw std::runtime_error(exception);
+        }
+    }
+
+    /**
+     * @brief Validate the request information of the set_light_properties
+     * service
+     */
+    void validate_set_light_properties_sample()
+    {
+        std::string exception;
+        // Check request information
+        if (sample_information_["light_name"].empty() ||
+            sample_information_["diffuse"].empty() || 
+            sample_information_["attenuation_constant"].empty() || 
+            sample_information_["attenuation_linear"].empty() ||
+            sample_information_["attenuation_quadratic"].empty()) {
+
+            exception
+                    = "\nERROR: Missing  arguments to call service: \nMissing "
+                      "arguments:";
+            
+            if (sample_information_["light_name"].empty())
+                exception+= " light_name,";
+            
+            if (sample_information_["diffuse"].empty())
+                exception+= " diffuse,";
+
+            if (sample_information_["attenuation_constant"].empty())
+                exception+= " attenuation_constant,";
+
+            if (sample_information_["attenuation_linear"].empty())
+                exception+= " attenuation_linear,";
+
+            if (sample_information_["attenuation_quadratic"].empty())
+                exception+= " attenuation_quadratic";
+
+            exception += "\n\nExcepted: apipublisher -d <domain_id> -s "
+                "set_light_properties -i \"light_name: <light_name> diffuse: "
+                "<diffuse> attenuation_constant: <attenuation_constant> "
+                "attenuation_linear: <attenuation_linear> "
+                "attenuation_quadratic: <attenuation_quadratic>\"";
+            throw std::runtime_error(exception);
+        }
+        else if (sample_information_["diffuse"].size() != 4){
+            exception = "\nERROR: Missing values to call service: \nMissing "
+                "values : diffuse (need 4 values) ";
+
+            exception += "\n\nExcepted: apipublisher -d <domain_id> -s "
+                "set_light_properties -i \"light_name: <light_name> diffuse: "
+                "<diffuse: 4> attenuation_constant: <attenuation_constant> "
+                "attenuation_linear: <attenuation_linear> "
+                "attenuation_quadratic: <attenuation_quadratic>\"";
+            throw std::runtime_error(exception);
+        }
+    }
+ 
 private:
     /**
      * @brief Process the raw data to format them correctly
@@ -177,7 +246,8 @@ private:
 
 private:
     std::map<std::string, std::string> argument_map_;
-    std::unordered_map<std::string, std::vector<std::string> > sample_information_;
+    std::unordered_map<std::string, std::vector<std::string>>
+            sample_information_;
 };
 
 }  // namespace utils

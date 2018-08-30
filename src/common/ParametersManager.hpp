@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-#ifndef COMMAND_LINE_PARSER_HPP
-#define COMMAND_LINE_PARSER_HPP
+#ifndef PARAMETERS_MANAGER_HPP
+#define PARAMETERS_MANAGER_HPP
 
 #include <iostream>
 #include <map>
 #include <string>
+#include <vector>
+#include <sstream>
+#include <iterator>
 #include <unordered_map>
 
 namespace gazebo { namespace dds { namespace utils {
@@ -244,7 +247,7 @@ private:
         }
     }
 
-private:
+protected:
     std::map<std::string, std::string> argument_map_;
     std::unordered_map<std::string, std::vector<std::string>>
             sample_information_;
@@ -254,4 +257,4 @@ private:
 }  // namespace dds
 }  // namespace gazebo
 
-#endif  // COMMAND_LINE_PARSER_HPP
+#endif  // PARAMETERS_MANAGER_HPP

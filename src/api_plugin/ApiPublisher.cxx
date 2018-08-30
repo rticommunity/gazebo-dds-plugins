@@ -22,7 +22,7 @@
 #include <rti/request/rtirequest.hpp>
 
 #include "common/DdsUtils.hpp"
-#include "common/ParametersManager.hpp"
+#include "ApiParametersManager.h"
 
 #include "gazebo_msgs/srv/Default_Response.hpp"
 #include "gazebo_msgs/srv/DeleteLight_Request.hpp"
@@ -71,7 +71,7 @@ T2 send_request(
 void delete_model(
         const dds::domain::DomainParticipant &participant,
         const std::string &service_name,
-        gazebo::dds::utils::ParametersManager parameters_manager)
+        gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
     // Check request information
     parameters_manager.validate_basic_sample(service_name, "model_name");
@@ -93,7 +93,7 @@ void delete_model(
 void delete_light(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ParametersManager parameters_manager)
+        gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
     // Check request information
     parameters_manager.validate_basic_sample(service_name, "light_name");
@@ -115,7 +115,7 @@ void delete_light(
 void get_light_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ParametersManager parameters_manager)
+        gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
     // Check request information
     parameters_manager.validate_basic_sample(service_name, "light_name");
@@ -151,7 +151,7 @@ void get_world_properties(
 void get_joint_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ParametersManager parameters_manager)
+        gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
     // Check request information
     parameters_manager.validate_basic_sample(service_name, "joint_name");
@@ -173,7 +173,7 @@ void get_joint_properties(
 void get_link_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ParametersManager parameters_manager)
+        gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
     // Check request information
     parameters_manager.validate_basic_sample(service_name, "link_name");
@@ -195,7 +195,7 @@ void get_link_properties(
 void get_link_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ParametersManager parameters_manager)
+        gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
     // Check request information
     parameters_manager.validate_basic_sample(
@@ -219,7 +219,7 @@ void get_link_state(
 void get_model_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ParametersManager parameters_manager)
+        gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
     // Check request information
     parameters_manager.validate_basic_sample(
@@ -242,7 +242,7 @@ void get_model_properties(
 void get_model_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ParametersManager parameters_manager)
+        gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
     // Check request information
     parameters_manager.validate_basic_sample(
@@ -266,7 +266,7 @@ void get_model_state(
 void set_light_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ParametersManager parameters_manager)
+        gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
     // Check request information
     parameters_manager.validate_set_light_properties_sample();
@@ -301,7 +301,7 @@ void set_light_properties(
 void set_link_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ParametersManager parameters_manager)
+        gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -337,7 +337,7 @@ void set_link_properties(
 void set_joint_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ParametersManager parameters_manager)
+        gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -393,7 +393,7 @@ void set_joint_properties(
 void set_model_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ParametersManager parameters_manager)
+        gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -444,7 +444,7 @@ void set_model_state(
 void set_link_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ParametersManager parameters_manager)
+        gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -516,7 +516,7 @@ int main(int argc, char *argv[])
             std::function<void(
                     const dds::domain::DomainParticipant &,
                     const std::string &,
-                    const gazebo::dds::utils::ParametersManager &)>>
+                    const gazebo::dds::utils::ApiParametersManager &)>>
             service_map;
 
     std::unordered_map<
@@ -622,7 +622,7 @@ int main(int argc, char *argv[])
     empty_service_map["unpause_physics"] = std::bind(
             &send_empty_request, std::placeholders::_1, std::placeholders::_2);
 
-    gazebo::dds::utils::ParametersManager parameters_manager(argc, argv);
+    gazebo::dds::utils::ApiParametersManager parameters_manager(argc, argv);
 
     if (parameters_manager.has_flag("-h")) {
         std::cout << "Usage: apipublisher [options]" << std::endl

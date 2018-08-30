@@ -6,9 +6,6 @@ find_library(RayPlugin
 add_library(DdsLaserPlugin MODULE 
     LaserScan.cxx 
     LaserScan.h
-    $<TARGET_OBJECTS:TimeTypeLibrary>
-    $<TARGET_OBJECTS:HeaderTypeLibrary>
-    $<TARGET_OBJECTS:LaserScanTypeLibrary>
 )
 
 target_link_libraries(DdsLaserPlugin 
@@ -16,15 +13,14 @@ target_link_libraries(DdsLaserPlugin
     ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS} 
     ${RayPlugin}
+    rosddstypes
 )
 
 target_include_directories(DdsLaserPlugin PRIVATE 
     ${CONNEXTDDS_INCLUDE_DIRS} 
     ${GAZEBO_INCLUDE_DIRS} 
-    ${SDF_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_BINARY_DIR}
+    ${SDF_INCLUDE_DIRS} 
     "${CMAKE_SOURCE_DIR}/src"
-    "${CMAKE_BINARY_DIR}/src/common"
 )
 
 target_compile_definitions(DdsLaserPlugin PRIVATE 

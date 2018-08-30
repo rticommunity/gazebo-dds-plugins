@@ -211,9 +211,9 @@
         <door_wait_time>10</door_wait_time>
         <topic>elevator</topic>
         <topic_name>elevator</topic_name>
-        <domain_id>0</domain_id>
-        <!-- <qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</qos_profile_file> -->
-        <!-- <qos_profile>ExampleLibrary::TransientLocalProfile</qos_profile> -->
+        <dds_domain_id>0</dds_domain_id>
+        <!-- <dds_qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file> -->
+        <!-- <dds_qos_profile>ExampleLibrary::TransientLocalProfile</dds_qos_profile> -->
       </plugin>
     </model>
 

@@ -15,7 +15,8 @@
  * limitations under the License.
  */
 
-#include "common/GazeboDdsUtils.cxx"
+#include "common/GazeboUtils.hpp"
+#include "common/DdsUtils.hpp"
 #include "common/Properties.h"
 #include "common/DataReaderListener.hpp"
 #include "Elevator.h"
@@ -94,6 +95,7 @@ void Elevator::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
                     std::bind(&Elevator::on_msg, this, std::placeholders::_1)),
             ::dds::core::status::StatusMask::data_available());
 
+    gzmsg << std::endl;
     gzmsg << "Starting elevator plugin" << std::endl;
     gzmsg << "* Subscriptions:" << std::endl;
     gzmsg << "  - " << topic_name << " [std_msgs/msg/Int32]" << std::endl;

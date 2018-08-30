@@ -19,8 +19,9 @@
 #include <dds/core/ddscore.hpp>
 #include <dds/domain/find.hpp>
 #include <dds/pub/ddspub.hpp>
-#include <dds/sub/ddssub.hpp>
 
+#include "common/CommandLineParser.hpp"
+#include "common/DdsUtils.hpp"
 #include "geometry_msgs/msg/Twist.hpp"
 
 void publisher_main(
@@ -46,35 +47,70 @@ void publisher_main(
     sample.linear().x(linear_x);
     sample.angular().z(angular_z);
 
-    rti::util::sleep(dds::core::Duration::from_millisecs(200));
+    // Wait until it has a publication matched
+    gazebo::dds::utils::wait_for_publication_matched(
+            writer, dds::core::Duration(4));
 
     // Write sample
     std::cout << "Sending data..." << std::endl;
     writer.write(sample);
+
+    writer.wait_for_acknowledgments(dds::core::Duration(4));
 }
 
 int main(int argc, char *argv[])
 {
-    if (argc < 5) {
-        std::cerr << "Missing arguments." << std::endl
-                  << "Template: diffdrivepublisher <domain id> <topic name> "
-                     "<linear velocity in axis x> <angular velocity in axis z>"
+    int ret_code = 0;
+
+    gazebo::dds::utils::CommandLineParser cmd_parser(argc, argv);
+
+    if (cmd_parser.has_flag("-h")) {
+        std::cout << "Usage: diffdrivepublisher [options]" << std::endl
+                  << "Generic options:" << std::endl
+                  << "\t-h                      - Prints this page and exits"
+                  << std::endl
+                  << "\t-d <domain id>          - Sets the domainId (default 0)"
+                  << std::endl
+                  << "\t-t <topic name>         - Sets the topic name"
+                  << std::endl
+                  << "\t-s <sample information> - Sets information of the "
+                     "sample (default 0, 0)"
                   << std::endl;
-        return -1;
+        return 0;
     }
+
+    // Handle signals (e.g., CTRL+C)
+    gazebo::dds::utils::setup_signal_handler();
 
     try {
+        // Check arguments
+        int domain_id = 0;
+        if (cmd_parser.has_flag("-d")) {
+            domain_id = atoi(cmd_parser.get_value("-d").c_str());
+        }
+
+        float linear_x = 0.0;
+        float angular_z = 0.0;
+        if (cmd_parser.has_flag("-s")) {
+            std::vector<std::string> sample_information
+                    = cmd_parser.get_values("-s");
+            linear_x = atof(sample_information[0].c_str());
+            angular_z = atof(sample_information[1].c_str());
+        }
+
         publisher_main(
-                atoi(argv[1]),
-                std::string(argv[2]),
-                atof(argv[3]),
-                atof(argv[4]));
+                domain_id,
+                std::string(cmd_parser.get_value("-t")),
+                linear_x,
+                angular_z);
+
     } catch (const std::exception &ex) {
-        // This will catch DDS exceptions
-        std::cerr << "Exception in publisher_main(): " << ex.what()
-                  << std::endl;
-        return -1;
+        // This will catch DDS and CommandLineParser exceptions
+        std::cerr << ex.what() << std::endl;
+        ret_code = -1;
     }
 
-    return 0;
+    dds::domain::DomainParticipant::finalize_participant_factory();
+
+    return ret_code;
 }

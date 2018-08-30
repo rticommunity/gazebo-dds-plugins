@@ -26,7 +26,8 @@
  *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "common/GazeboDdsUtils.cxx"
+#include "common/GazeboUtils.hpp"
+#include "common/DdsUtils.hpp"
 #include "common/Properties.h"
 #include "DiffDrive.h"
 
@@ -90,12 +91,12 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     // Obtain joints from loaded world
     std::string joint_name;
     utils::get_world_parameter<std::string>(
-            sdf, joint_name, "leftJoint", "left_joint");
+            sdf, joint_name, "left_joint", "left_joint");
 
     joints_[LEFT] = parent_->GetJoint(joint_name);
 
     utils::get_world_parameter<std::string>(
-            sdf, joint_name, "rightJoint", "right_joint");
+            sdf, joint_name, "right_joint", "right_joint");
 
     joints_[RIGHT] = parent_->GetJoint(joint_name);
 
@@ -193,6 +194,7 @@ void DiffDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     this->update_connection_ = event::Events::ConnectWorldUpdateBegin(
             boost::bind(&DiffDrive::update_model, this));
 
+    gzmsg << std::endl;
     gzmsg << "Starting differential drive plugin" << std::endl;
     gzmsg << "* Publications:" << std::endl;
     gzmsg << "  - " << topic_name_odometry << " [nav_msgs/msg/Odometry]"

@@ -17,7 +17,7 @@
 
 #include <gazebo/sensors/MultiCameraSensor.hh>
 
-#include "common/GazeboDdsUtils.cxx"
+#include "common/GazeboUtils.hpp"
 #include "StereoCamera.h"
 
 namespace gazebo { namespace dds {
@@ -55,6 +55,7 @@ void StereoCamera::Load(sensors::SensorPtr sensor, sdf::ElementPtr sdf)
 
     parent_sensor_->SetActive(true);
 
+    gzmsg << std::endl;
     gzmsg << "Starting stereo camera plugin" << std::endl;
     gzmsg << "* Publications:" << std::endl;
     gzmsg << "  - " << camera_left_.topic_name_camera_info_

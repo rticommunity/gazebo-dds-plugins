@@ -26,7 +26,8 @@
  *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "common/GazeboDdsUtils.cxx"
+#include "common/GazeboUtils.hpp"
+#include "common/DdsUtils.hpp"
 #include "common/Properties.h"
 #include "SkidSteerDrive.h"
 
@@ -207,6 +208,7 @@ void SkidSteerDrive::Load(physics::ModelPtr parent, sdf::ElementPtr sdf)
     update_connection_ = event::Events::ConnectWorldUpdateBegin(
             boost::bind(&SkidSteerDrive::update_model, this));
 
+    gzmsg << std::endl;
     gzmsg << "Starting skid steer drive plugin" << std::endl;
     gzmsg << "* Publications:" << std::endl;
     gzmsg << "  - " << topic_name_odometry << " [nav_msgs/msg/Odometry]"

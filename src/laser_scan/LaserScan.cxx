@@ -16,7 +16,8 @@
  */
 
 #include "common/Properties.h"
-#include "common/GazeboDdsUtils.cxx"
+#include "common/GazeboUtils.hpp"
+#include "common/DdsUtils.hpp"
 #include "LaserScan.h"
 
 namespace gazebo { namespace dds {
@@ -94,6 +95,7 @@ void LaserScan::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     this->laser_scan_sub_ = this->gazebo_node_->Subscribe(
             this->sensor_->Topic(), &LaserScan::on_scan, this);
 
+    gzmsg << std::endl;
     gzmsg << "Starting laser plugin"<< std::endl;
     gzmsg << "* Publications:" << std::endl;
     gzmsg << "  - " << topic_name << " [sensor_msgs/msg/LaserScan]" 

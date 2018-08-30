@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#include "common/GazeboDdsUtils.cxx"
+#include "common/GazeboUtils.hpp"
 #include "Camera.h"
 
 namespace gazebo { namespace dds {
@@ -48,6 +48,7 @@ void Camera::Load(sensors::SensorPtr parent, sdf::ElementPtr sdf)
     GazeboCameraUtils::load_sdf(parent, sdf, baseline);
     GazeboCameraUtils::init_samples();
 
+    gzmsg << std::endl;
     gzmsg << "Starting camera plugin" << std::endl;
     gzmsg << "* Publications:" << std::endl;
     gzmsg << "  - " << topic_name_camera_info_

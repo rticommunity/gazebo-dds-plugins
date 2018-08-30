@@ -303,6 +303,9 @@ void set_link_properties(
         std::string service_name,
         gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
+    // Check request information
+    parameters_manager.validate_set_link_properties_sample();
+
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
 
@@ -339,6 +342,9 @@ void set_joint_properties(
         std::string service_name,
         gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
+    // Check request information
+    parameters_manager.validate_set_joint_properties_sample();
+
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
 
@@ -395,6 +401,9 @@ void set_model_state(
         std::string service_name,
         gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
+    // Check request information
+    parameters_manager.validate_set_model_state_sample();
+
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
 
@@ -446,6 +455,9 @@ void set_link_state(
         std::string service_name,
         gazebo::dds::utils::ApiParametersManager parameters_manager)
 {
+    // Check request information
+    parameters_manager.validate_set_link_state_sample();
+
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
 

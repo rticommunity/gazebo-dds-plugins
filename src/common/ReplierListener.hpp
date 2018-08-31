@@ -61,10 +61,10 @@ public:
 
         requests_ = replier.receive_requests(MAX_WAIT);
         while (requests_.length() > 0) {
-            for (const auto& request : requests_) {
-                if (request.info().valid()) {
-                    T2 reply = on_request_(request.data());
-                    replier.send_reply(reply, request.info());
+            for (unsigned int i=0 ; i< requests_.length(); i++) {
+                if (requests_[i].info().valid()) {
+                    T2 reply = on_request_(requests_[i].data());
+                    replier.send_reply(reply, requests_[i].info());
                 }
             }
             requests_ = replier.receive_requests(MAX_WAIT);

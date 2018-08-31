@@ -134,99 +134,86 @@ public:
     }
 
     /**
-     * @brief Validate the information of a basic sample. This sample contains 
-     * element_name and frame_name(optional).
+     * @brief Validate that the request information has all the variable that
+     * it needs
+     *
+     * @param variable list list of variable that it will be checked
+     * @return the missing arguments
      */
-    void validate_basic_sample(
-            std::string service_name,
-            std::string entity_name,
-            std::string frame_name = "")
+    std::string check_missing_arguments(
+            const std::vector<std::string> &variable_list)
     {
-        std::string exception;
-        std::string arguments_expected(
-                entity_name + ": <" + entity_name + "> ");
+        std::string missing_arguments = "";
 
-        // Check if frame_name is requested
-        bool frame_flag = false;
-        if(!frame_name.empty()){
-            frame_flag = true;
-        }
-
-        // Check request information
-        if (sample_information_[entity_name].empty()
-            || (frame_flag && sample_information_[frame_name].empty())) {
-            exception
-                = "\nERROR: Missing  arguments to call service: \nMissing "
-                    "arguments:";
-
-            if (sample_information_[entity_name].empty())
-                exception += " " + entity_name + ",";
-
-            if (frame_flag && sample_information_[frame_name].empty()){
-                exception += " " + frame_name + ",";
-                arguments_expected += frame_name + ": <" + frame_name + ">";
+        for (unsigned int i = 0; i < variable_list.size(); i++) {
+            if (sample_information_.find(variable_list[i])
+                == sample_information_.end()) {
+                missing_arguments += " " + variable_list[i] + ",";
             }
-
-            exception += "\n\nExcepted: "
-                        "apipublisher -d <domain_id> -s " + service_name + 
-                        " -i " 
-                        "\"" + arguments_expected + "\"";
-
-            throw std::runtime_error(exception);
         }
+
+        // Remove last cell ","
+        if (!missing_arguments.empty())
+            missing_arguments.pop_back();
+
+        return missing_arguments;
     }
 
     /**
-     * @brief Validate the request information of the set_light_properties
-     * service
+     * @brief Validate that the multi-value variables of the sample request
+     *  has the correct number of elements
+     *
+     * @param variable_list list of variable that it will be checked
+     * @param number_value_list list of number of elements that it will be use to check it
+     * @return the multivalue arguments with a wrong number of elements
      */
-    void validate_set_light_properties_sample()
+    std::string check_multivalue_arguments(
+            const std::vector<std::string> &variable_list,
+            const std::vector<int> &number_value_list)
     {
-        std::string exception;
-        // Check request information
-        if (sample_information_["light_name"].empty() ||
-            sample_information_["diffuse"].empty() || 
-            sample_information_["attenuation_constant"].empty() || 
-            sample_information_["attenuation_linear"].empty() ||
-            sample_information_["attenuation_quadratic"].empty()) {
+        std::string multivalue_arguments = "";
 
-            exception
-                    = "\nERROR: Missing  arguments to call service: \nMissing "
-                      "arguments:";
-            
-            if (sample_information_["light_name"].empty())
-                exception+= " light_name,";
-            
-            if (sample_information_["diffuse"].empty())
-                exception+= " diffuse,";
-
-            if (sample_information_["attenuation_constant"].empty())
-                exception+= " attenuation_constant,";
-
-            if (sample_information_["attenuation_linear"].empty())
-                exception+= " attenuation_linear,";
-
-            if (sample_information_["attenuation_quadratic"].empty())
-                exception+= " attenuation_quadratic";
-
-            exception += "\n\nExcepted: apipublisher -d <domain_id> -s "
-                "set_light_properties -i \"light_name: <light_name> diffuse: "
-                "<diffuse> attenuation_constant: <attenuation_constant> "
-                "attenuation_linear: <attenuation_linear> "
-                "attenuation_quadratic: <attenuation_quadratic>\"";
-            throw std::runtime_error(exception);
+        for (unsigned int i = 0; i < variable_list.size(); i++) {
+            if (sample_information_[variable_list[i]].size()
+                != number_value_list[i]) {
+                multivalue_arguments = " " + variable_list[i] + " (needs "
+                        + std::to_string(number_value_list[i]) + " values),";
+            }
         }
-        else if (sample_information_["diffuse"].size() != 4){
-            exception = "\nERROR: Missing values to call service: \nMissing "
-                "values : diffuse (need 4 values) ";
 
-            exception += "\n\nExcepted: apipublisher -d <domain_id> -s "
-                "set_light_properties -i \"light_name: <light_name> diffuse: "
-                "<diffuse: 4> attenuation_constant: <attenuation_constant> "
-                "attenuation_linear: <attenuation_linear> "
-                "attenuation_quadratic: <attenuation_quadratic>\"";
-            throw std::runtime_error(exception);
+        // Remove last cell ","
+        if (!multivalue_arguments.empty())
+            multivalue_arguments.pop_back();
+
+        return multivalue_arguments;
+    }
+
+    /**
+     * @brief Validate that the multi-value variables of the sample request
+     *  has the correct number of elements
+     *
+     * @param variable_list list of variable that it will be checked
+     * @param number_value number of elements that it will be use to check it
+     * @return the multivalue arguments with a wrong number of elements
+     */
+    std::string check_multivalue_arguments(
+            const std::vector<std::string> &variable_list,
+            int number_value)
+    {
+        std::string multivalue_arguments = "";
+
+        for (unsigned int i = 0; i < variable_list.size(); i++) {
+            if (sample_information_[variable_list[i]].size() != number_value) {
+                multivalue_arguments = " " + variable_list[i] + " (needs "
+                        + std::to_string(number_value) + " values),";
+            }
         }
+
+        // Remove last cell ","
+        if (!multivalue_arguments.empty())
+            multivalue_arguments.pop_back();
+
+        return multivalue_arguments;
     }
  
 private:

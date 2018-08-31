@@ -78,41 +78,6 @@ public:
      * @brief Validate the request information of the set_link_state service
      */
     void validate_set_link_state_sample();
-
-private:
-    /**
-     * @brief Validate that the request information has all the variable that
-     * it needs
-     *
-     * @param variable list list of variable that it will be checked
-     * @return the missing arguments
-     */
-    std::string check_missing_arguments(
-            const std::vector<std::string> &variable_list);
-
-    /**
-     * @brief Validate that the multi-value variables of the sample request
-     *  has the correct number of elements
-     *
-     * @param variable_list list of variable that it will be checked
-     * @param number_value_list list of number of elements that it will be use to check it
-     * @return the multivalue arguments with a wrong number of elements
-     */
-    std::string check_multivalue_arguments(
-            const std::vector<std::string> &variable_list,
-            const std::vector<int> &number_value_list);
-
-    /**
-     * @brief Validate that the multi-value variables of the sample request
-     *  has the correct number of elements
-     *
-     * @param variable_list list of variable that it will be checked
-     * @param number_value number of elements that it will be use to check it
-     * @return the multivalue arguments with a wrong number of elements
-     */
-    std::string check_multivalue_arguments(
-            const std::vector<std::string> &variable_list,
-            int number_value);
 };
 
 }  // namespace utils

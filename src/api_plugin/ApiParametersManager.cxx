@@ -286,65 +286,6 @@ void ApiParametersManager::validate_set_link_state_sample()
     }
 }
 
-std::string ApiParametersManager::check_missing_arguments(
-        const std::vector<std::string> & variable_list)
-{
-    std::string missing_arguments = "";
-
-    for (unsigned int i = 0; i < variable_list.size(); i++) {
-        if (sample_information_.find(variable_list[i])
-            == sample_information_.end()) {
-            missing_arguments += " " + variable_list[i] + ",";
-        }
-    }
-
-    // Remove last cell ","
-    if (!missing_arguments.empty())
-        missing_arguments.pop_back();
-
-    return missing_arguments;
-}
-
-std::string ApiParametersManager::check_multivalue_arguments(
-        const std::vector<std::string> &variable_list,
-        const std::vector<int> &number_value_list)
-{
-    std::string multivalue_arguments = "";
-
-    for (unsigned int i = 0; i < variable_list.size(); i++) {
-        if (sample_information_[variable_list[i]].size() != number_value_list[i]) {
-            multivalue_arguments = " " + variable_list[i] + " (needs "
-                    + std::to_string(number_value_list[i]) + " values),";
-        }
-    }
-
-    // Remove last cell ","
-    if (!multivalue_arguments.empty())
-        multivalue_arguments.pop_back();
-
-    return multivalue_arguments;
-}
-
-std::string ApiParametersManager::check_multivalue_arguments(
-        const std::vector<std::string> &variable_list,
-        int number_value)
-{
-    std::string multivalue_arguments = "";
-
-    for (unsigned int i = 0; i < variable_list.size(); i++) {
-        if (sample_information_[variable_list[i]].size() != number_value) {
-            multivalue_arguments = " " + variable_list[i] + " (needs "
-                    + std::to_string(number_value) + " values),";
-        }
-    }
-
-    // Remove last cell ","
-    if (!multivalue_arguments.empty())
-        multivalue_arguments.pop_back();
-
-    return multivalue_arguments;
-}
-
 }  // namespace utils
 }  // namespace dds
 }  // namespace gazebo

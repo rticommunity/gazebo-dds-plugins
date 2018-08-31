@@ -131,7 +131,11 @@ void get_light_properties(
             gazebo_msgs::srv::GetLightProperties_Response>(
             participant, service_name, request);
 
-    std::cout << reply << std::endl;
+    if (reply.success()) {
+        std::cout << reply << std::endl;
+    } else {
+        std::cout << reply.status_message() << std::endl;
+    }
 }
 
 void get_world_properties(
@@ -167,7 +171,11 @@ void get_joint_properties(
             gazebo_msgs::srv::GetJointProperties_Response>(
             participant, service_name, request);
 
-    std::cout << reply << std::endl;
+    if (reply.success()) {
+        std::cout << reply << std::endl;
+    } else {
+        std::cout << reply.status_message() << std::endl;
+    }
 }
 
 void get_link_properties(
@@ -189,7 +197,11 @@ void get_link_properties(
             gazebo_msgs::srv::GetLinkProperties_Response>(
             participant, service_name, request);
 
-    std::cout << reply << std::endl;
+    if (reply.success()) {
+        std::cout << reply << std::endl;
+    } else {
+        std::cout << reply.status_message() << std::endl;
+    }
 }
 
 void get_link_state(
@@ -213,7 +225,11 @@ void get_link_state(
             gazebo_msgs::srv::GetLinkState_Response>(
             participant, service_name, request);
 
-    std::cout << reply << std::endl;
+    if (reply.success()) {
+        std::cout << reply << std::endl;
+    } else {
+        std::cout << reply.status_message() << std::endl;
+    }
 }
 
 void get_model_properties(
@@ -235,8 +251,12 @@ void get_model_properties(
             gazebo_msgs::srv::GetModelProperties_Request,
             gazebo_msgs::srv::GetModelProperties_Response>(
             participant, service_name, request);
-
-    std::cout << reply << std::endl;
+    
+    if (reply.success()) {
+        std::cout << reply << std::endl;
+    } else {
+        std::cout << reply.status_message() << std::endl;
+    }
 }
 
 void get_model_state(
@@ -260,7 +280,11 @@ void get_model_state(
             gazebo_msgs::srv::GetModelState_Response>(
             participant, service_name, request);
 
-    std::cout << reply << std::endl;
+    if (reply.success()) {
+        std::cout << reply << std::endl;
+    } else {
+        std::cout << reply.status_message() << std::endl;
+    }
 }
 
 void set_light_properties(

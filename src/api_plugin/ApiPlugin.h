@@ -22,8 +22,6 @@
 
 #include <dds/core/ddscore.hpp>
 #include <dds/dds.hpp>
-#include <dds/pub/ddspub.hpp>
-#include <dds/sub/ddssub.hpp>
 #include <rti/request/rtirequest.hpp>
 
 #include "gazebo_msgs/srv/Default_Response.hpp"
@@ -465,7 +463,7 @@ private:
     gazebo::transport::PublisherPtr gazebo_pub_;
     gazebo::transport::PublisherPtr light_modify_pub_;
     gazebo::transport::NodePtr gazebo_node_;
-    gazebo::msgs::Light light_sample;
+    gazebo::msgs::Light light_sample_;
     common::Time current_time_;
     physics::WorldPtr world_;
 };

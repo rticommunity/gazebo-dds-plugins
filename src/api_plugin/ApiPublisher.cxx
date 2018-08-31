@@ -14,13 +14,6 @@
  * limitations under the License.
  */
 
-#include <unordered_map>
-
-#include <dds/core/ddscore.hpp>
-#include <dds/domain/find.hpp>
-#include <dds/pub/ddspub.hpp>
-#include <rti/request/rtirequest.hpp>
-
 #include "common/DdsUtils.hpp"
 #include "ApiParametersManager.h"
 
@@ -82,6 +75,7 @@ void delete_model(
     gazebo_msgs::srv::DeleteModel_Request request(
             sample_information["model_name"][0]);
 
+    // Send request
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::DeleteModel_Request,
             gazebo_msgs::srv::Default_Response>(
@@ -104,6 +98,7 @@ void delete_light(
     gazebo_msgs::srv::DeleteLight_Request request(
             sample_information["light_name"][0]);
 
+    // Send request
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::DeleteLight_Request,
             gazebo_msgs::srv::Default_Response>(
@@ -126,6 +121,7 @@ void get_light_properties(
     gazebo_msgs::srv::GetLightProperties_Request request(
             sample_information["light_name"][0]);
 
+    // Send request
     gazebo_msgs::srv::GetLightProperties_Response reply = send_request<
             gazebo_msgs::srv::GetLightProperties_Request,
             gazebo_msgs::srv::GetLightProperties_Response>(
@@ -144,6 +140,7 @@ void get_world_properties(
 {
     std_msgs::msg::Empty request;
 
+    // Send request
     gazebo_msgs::srv::GetWorldProperties_Response reply = send_request<
             std_msgs::msg::Empty,
             gazebo_msgs::srv::GetWorldProperties_Response>(
@@ -166,6 +163,7 @@ void get_joint_properties(
     gazebo_msgs::srv::GetJointProperties_Request request(
             sample_information["joint_name"][0]);
 
+    // Send request
     gazebo_msgs::srv::GetJointProperties_Response reply = send_request<
             gazebo_msgs::srv::GetJointProperties_Request,
             gazebo_msgs::srv::GetJointProperties_Response>(
@@ -192,6 +190,7 @@ void get_link_properties(
     gazebo_msgs::srv::GetLinkProperties_Request request(
             sample_information["link_name"][0]);
 
+    // Send request
     gazebo_msgs::srv::GetLinkProperties_Response reply = send_request<
             gazebo_msgs::srv::GetLinkProperties_Request,
             gazebo_msgs::srv::GetLinkProperties_Response>(
@@ -220,6 +219,7 @@ void get_link_state(
             sample_information["link_name"][0],
             sample_information["reference_frame"][0]);
 
+    // Send request
     gazebo_msgs::srv::GetLinkState_Response reply = send_request<
             gazebo_msgs::srv::GetLinkState_Request,
             gazebo_msgs::srv::GetLinkState_Response>(
@@ -247,6 +247,7 @@ void get_model_properties(
     gazebo_msgs::srv::GetModelProperties_Request request(
             sample_information["model_name"][0]);
 
+    // Send request
     gazebo_msgs::srv::GetModelProperties_Response reply = send_request<
             gazebo_msgs::srv::GetModelProperties_Request,
             gazebo_msgs::srv::GetModelProperties_Response>(
@@ -275,6 +276,7 @@ void get_model_state(
             sample_information["model_name"][0],
             sample_information["relative_entity_name"][0]);
 
+    // Send request
     gazebo_msgs::srv::GetModelState_Response reply = send_request<
             gazebo_msgs::srv::GetModelState_Request,
             gazebo_msgs::srv::GetModelState_Response>(
@@ -314,6 +316,7 @@ void set_light_properties(
     request.attenuation_quadratic(
             stof(sample_information["attenuation_quadratic"][0]));
 
+    // Send request
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::SetLightProperties_Request,
             gazebo_msgs::srv::Default_Response>(
@@ -353,6 +356,7 @@ void set_link_properties(
     request.iyz(stof(sample_information["iyz"][0]));
     request.izz(stof(sample_information["izz"][0]));
 
+    // Send request
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::SetLinkProperties_Request,
             gazebo_msgs::srv::Default_Response>(
@@ -412,6 +416,7 @@ void set_joint_properties(
                 = stof(sample_information["vel"][i]);
     }
 
+    // Send request
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::SetJointProperties_Request,
             gazebo_msgs::srv::Default_Response>(
@@ -466,6 +471,7 @@ void set_model_state(
     request.model_state().reference_frame(
             sample_information["reference_frame"][0]);
 
+    // Send request
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::SetModelState_Request,
             gazebo_msgs::srv::Default_Response>(
@@ -520,6 +526,7 @@ void set_link_state(
     request.link_state().reference_frame(
             sample_information["reference_frame"][0]);
 
+    // Send request
     gazebo_msgs::srv::Default_Response reply = send_request<
             gazebo_msgs::srv::SetLinkState_Request,
             gazebo_msgs::srv::Default_Response>(
@@ -534,6 +541,7 @@ void send_empty_request(
 {
     std_msgs::msg::Empty request;
 
+    // Send request
     gazebo_msgs::srv::Default_Response reply = send_request<
             std_msgs::msg::Empty,
             gazebo_msgs::srv::Default_Response>(

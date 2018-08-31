@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
+#ifndef REPLIER_LISTENER_H
+#define REPLIER_LISTENER_H
+
 #include <dds/core/ddscore.hpp>
 #include <dds/pub/ddspub.hpp>
 
 #include <rti/request/ReplierListener.hpp>
-
-#ifndef REPLIER_LISTENER_H
-#define REPLIER_LISTENER_H
 
 namespace gazebo { namespace dds {
 

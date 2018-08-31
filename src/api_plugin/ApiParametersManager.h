@@ -17,11 +17,6 @@
 #ifndef API_PARAMETERS_MANAGER_H
 #define API_PARAMETERS_MANAGER_H
 
-#include <iostream>
-#include <map>
-#include <string>
-#include <unordered_map>
-
 #include "common/ParametersManager.hpp"
 
 namespace gazebo { namespace dds { namespace utils {

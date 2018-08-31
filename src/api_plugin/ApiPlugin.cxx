@@ -136,7 +136,7 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
     light_modify_pub_
             = gazebo_node_->Advertise<gazebo::msgs::Light>("~/light/modify");
 
-    // Obtain the qos profile information from loaded world
+    // Obtain the QoS profile information from loaded world
     std::string qos_profile_file;
     utils::get_world_parameter<std::string>(
             sdf, qos_profile_file, QOS_PROFILE_FILE_PROPERTY_NAME.c_str(), "");
@@ -332,8 +332,9 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
 
     unpause_physics_replier_.listener(&unpause_physics_listener_);
 
+    // Show list of services
     gzmsg << std::endl;
-    gzmsg << "Starting Api plugin" << std::endl;
+    gzmsg << "Starting ApiPlugin" << std::endl;
     gzmsg << "* Services:" << std::endl;
     gzmsg << "  - delete_model "
           << " [gazebo_msgs/srv/DeleteModel_Request]/[gazebo_msgs/srv/"
@@ -344,13 +345,59 @@ void ApiPlugin::Load(physics::WorldPtr parent, sdf::ElementPtr sdf)
              "Default_Response]"
           << std::endl;
     gzmsg << "  - get_light_properties "
-          << " [gazebo_msgs/srv/GetLightProperties_Request]/[gazebo_msgs/srv/"
-             "GetLightProperties_Response]"
+          << " [gazebo_msgs/srv/GetLightProperties]"
           << std::endl;
     gzmsg << "  - get_world_properties "
-          << " [std_msgs::msg::Empty]/[gazebo_msgs/srv/"
+          << " [std_msgs/msg/Empty]/[gazebo_msgs/srv/"
              "GetWorldProperties_Response]"
           << std::endl;
+    gzmsg << "  - get_joint_properties "
+          << " [gazebo_msgs/srv/GetJointProperties]"
+          << std::endl;
+    gzmsg << "  - get_link_properties "
+          << " [gazebo_msgs/srv/GetLinkProperties]"
+          << std::endl;
+    gzmsg << "  - get_link_state "
+          << " [gazebo_msgs/srv/GetLinkState]"
+          << std::endl;
+    gzmsg << "  - get_model_properties "
+        << " [gazebo_msgs/srv/GetModelProperties]"
+        << std::endl;
+    gzmsg << "  - get_model_state "
+        << " [gazebo_msgs/srv/GetModelState]"
+        << std::endl;
+    gzmsg << "  - set_light_properties "
+        << " [gazebo_msgs/srv/SetLightProperties_Request]/[gazebo_msgs/srv/"
+           "Default_Response]"
+        << std::endl;
+    gzmsg << "  - set_link_properties "
+        << " [gazebo_msgs/srv/SetLinkProperties_Request]/[gazebo_msgs/srv/"
+           "Default_Response]"
+        << std::endl;
+    gzmsg << "  - set_joint_properties "
+        << " [gazebo_msgs/srv/SetJointProperties_Request]/[gazebo_msgs/srv/"
+           "Default_Response]"
+        << std::endl;
+    gzmsg << "  - set_model_state "
+        << " [gazebo_msgs/srv/SetModelState_Request]/[gazebo_msgs/srv/"
+           "Default_Response]"
+        << std::endl;
+    gzmsg << "  - set_link_state "
+        << " [gazebo_msgs/srv/SetLinkState_Request]/[gazebo_msgs/srv/"
+           "Default_Response]"
+        << std::endl;
+    gzmsg << "  - reset_simulation "
+        << " [std_msgs/msg/Empty]/[gazebo_msgs/srv/Default_Response]"
+        << std::endl;
+    gzmsg << "  - reset_world "
+        << " [std_msgs/msg/Empty]/[gazebo_msgs/srv/Default_Response]"
+        << std::endl;
+    gzmsg << "  - pause_physics "
+        << " [std_msgs/msg/Empty]/[gazebo_msgs/srv/Default_Response]"
+        << std::endl;
+    gzmsg << "  - unpause_physics "
+        << " [std_msgs/msg/Empty]/[gazebo_msgs/srv/Default_Response]"
+        << std::endl;
 }
 
 gazebo_msgs::srv::Default_Response
@@ -414,19 +461,19 @@ gazebo_msgs::srv::GetLightProperties_Response ApiPlugin::get_light_properties(
                 "GetLightProperties: light not found");
     } else {
         // Fill the sample
-        light->FillMsg(light_sample);
+        light->FillMsg(light_sample_);
 
-        light_properties_reply_.diffuse().r(light_sample.diffuse().r());
-        light_properties_reply_.diffuse().g(light_sample.diffuse().g());
-        light_properties_reply_.diffuse().b(light_sample.diffuse().b());
-        light_properties_reply_.diffuse().a(light_sample.diffuse().a());
+        light_properties_reply_.diffuse().r(light_sample_.diffuse().r());
+        light_properties_reply_.diffuse().g(light_sample_.diffuse().g());
+        light_properties_reply_.diffuse().b(light_sample_.diffuse().b());
+        light_properties_reply_.diffuse().a(light_sample_.diffuse().a());
 
         light_properties_reply_.attenuation_constant(
-                light_sample.attenuation_constant());
+                light_sample_.attenuation_constant());
         light_properties_reply_.attenuation_linear(
-                light_sample.attenuation_linear());
+                light_sample_.attenuation_linear());
         light_properties_reply_.attenuation_quadratic(
-                light_sample.attenuation_quadratic());
+                light_sample_.attenuation_quadratic());
 
         light_properties_reply_.success(true);
         light_properties_reply_.status_message(
@@ -626,9 +673,10 @@ gazebo_msgs::srv::GetModelProperties_Response ApiPlugin::get_model_properties(
                     gazebo::physics::Collision *geom
                             = dynamic_cast<gazebo::physics::Collision *>(
                                     body->GetChild(i).get());
-                    if (geom)
+                    if (geom) {
                         model_properties_reply_.geom_names()[i]
                                 = geom->GetName();
+                    }
                 }
             }
 
@@ -745,18 +793,18 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_light_properties(
         default_reply_.status_message("setLightProperties: light not found");
     } else {
         // Fill the sample
-        phy_light->FillMsg(light_sample);
+        phy_light->FillMsg(light_sample_);
 
-        light_sample.mutable_diffuse()->set_r(request.diffuse().r());
-        light_sample.mutable_diffuse()->set_g(request.diffuse().g());
-        light_sample.mutable_diffuse()->set_b(request.diffuse().b());
-        light_sample.mutable_diffuse()->set_a(request.diffuse().a());
+        light_sample_.mutable_diffuse()->set_r(request.diffuse().r());
+        light_sample_.mutable_diffuse()->set_g(request.diffuse().g());
+        light_sample_.mutable_diffuse()->set_b(request.diffuse().b());
+        light_sample_.mutable_diffuse()->set_a(request.diffuse().a());
 
-        light_sample.set_attenuation_constant(request.attenuation_constant());
-        light_sample.set_attenuation_linear(request.attenuation_linear());
-        light_sample.set_attenuation_quadratic(request.attenuation_quadratic());
+        light_sample_.set_attenuation_constant(request.attenuation_constant());
+        light_sample_.set_attenuation_linear(request.attenuation_linear());
+        light_sample_.set_attenuation_quadratic(request.attenuation_quadratic());
 
-        light_modify_pub_->Publish(light_sample, true);
+        light_modify_pub_->Publish(light_sample_, true);
 
         default_reply_.success(true);
         default_reply_.status_message("setLightProperties: properties set");
@@ -804,6 +852,7 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_link_properties(
 gazebo_msgs::srv::Default_Response ApiPlugin::set_joint_properties(
         gazebo_msgs::srv::SetJointProperties_Request request)
 {
+    // Obtain the joint
     gazebo::physics::JointPtr joint
             = utils::get_joint(world_, request.joint_name());
 
@@ -814,6 +863,8 @@ gazebo_msgs::srv::Default_Response ApiPlugin::set_joint_properties(
         for (unsigned int i = 0;
              i < request.ode_joint_config().damping().size();
              i++) {
+            
+            // Update the information of the joint
             joint->SetDamping(i, request.ode_joint_config().damping()[i]);
             joint->SetParam(
                     "hi_stop", i, request.ode_joint_config().hiStop()[i]);
@@ -1116,6 +1167,7 @@ void ApiPlugin::get_entity_pose(
 
 void ApiPlugin::get_joint_type(gazebo::physics::JointPtr joint)
 {
+    // Convert joint type 
     if (joint->GetMsgType() == msgs::Joint::REVOLUTE) {
         joint_properties_reply_.type(gazebo_msgs::srv::Type::REVOLUTE);
     } else if (joint->GetMsgType() == msgs::Joint::PRISMATIC) {

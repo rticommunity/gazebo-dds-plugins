@@ -24,7 +24,6 @@ target_compile_definitions(DdsApiPlugin PRIVATE
 
 add_executable (apipublisher
     ApiPublisher.cxx 
-    ApiParametersManager.cxx
 )
 
 target_link_libraries(apipublisher 

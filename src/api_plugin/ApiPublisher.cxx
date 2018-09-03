@@ -15,7 +15,7 @@
  */
 
 #include "common/DdsUtils.hpp"
-#include "ApiParametersManager.h"
+#include "common/ParametersManager.hpp"
 
 #include "gazebo_msgs/srv/Default_Response.hpp"
 #include "gazebo_msgs/srv/DeleteLight_Request.hpp"
@@ -64,10 +64,15 @@ T2 send_request(
 void delete_model(
         const dds::domain::DomainParticipant &participant,
         const std::string &service_name,
-        gazebo::dds::utils::ApiParametersManager parameters_manager)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
     // Check request information
-    parameters_manager.validate_basic_sample(service_name, "model_name");
+    parameters_manager.validate_sample(
+        { "model_name" },
+        "\nERROR: Missing  arguments to call service: \nMissing "
+        "arguments:",
+        "\n\nExcepted: apipublisher -d <domain_id> -s "
+        "delete_model -i \"model_name: <model_name>\"");
 
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -87,10 +92,15 @@ void delete_model(
 void delete_light(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ApiParametersManager parameters_manager)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
     // Check request information
-    parameters_manager.validate_basic_sample(service_name, "light_name");
+    parameters_manager.validate_sample(
+            { "light_name" },
+            "\nERROR: Missing  arguments to call service: \nMissing "
+            "arguments:",
+            "\n\nExcepted: apipublisher -d <domain_id> -s "
+            "delete_light -i \"light_name: <light_name>\"");
 
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -110,10 +120,15 @@ void delete_light(
 void get_light_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ApiParametersManager parameters_manager)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
     // Check request information
-    parameters_manager.validate_basic_sample(service_name, "light_name");
+    parameters_manager.validate_sample(
+        { "light_name" },
+        "\nERROR: Missing  arguments to call service: \nMissing "
+        "arguments:",
+        "\n\nExcepted: apipublisher -d <domain_id> -s "
+        "get_light_properties -i \"light_name: <light_name>\"");
 
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -152,10 +167,15 @@ void get_world_properties(
 void get_joint_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ApiParametersManager parameters_manager)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
     // Check request information
-    parameters_manager.validate_basic_sample(service_name, "joint_name");
+    parameters_manager.validate_sample(
+            { "joint_name" },
+            "\nERROR: Missing  arguments to call service: \nMissing "
+            "arguments:",
+            "\n\nExcepted: apipublisher -d <domain_id> -s "
+            "get_joint_properties -i \"joint_name: <joint_name>\"");
 
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -179,10 +199,15 @@ void get_joint_properties(
 void get_link_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ApiParametersManager parameters_manager)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
     // Check request information
-    parameters_manager.validate_basic_sample(service_name, "link_name");
+    parameters_manager.validate_sample(
+        { "link_name" },
+        "\nERROR: Missing  arguments to call service: \nMissing "
+        "arguments:",
+        "\n\nExcepted: apipublisher -d <domain_id> -s "
+        "get_link_properties -i \"link_name: <link_name>\"");
 
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -206,11 +231,16 @@ void get_link_properties(
 void get_link_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ApiParametersManager parameters_manager)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
     // Check request information
-    parameters_manager.validate_basic_sample(
-            service_name, "link_name", "reference_frame");
+    parameters_manager.validate_sample(
+            { "link_name", "reference_frame" },
+            "\nERROR: Missing  arguments to call service: \nMissing "
+            "arguments:",
+            "\n\nExcepted: apipublisher -d <domain_id> -s "
+            "get_link_state -i \"link_name: <link_name> "
+            "reference_frame: <reference_frame>\"");
 
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -235,11 +265,15 @@ void get_link_state(
 void get_model_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ApiParametersManager parameters_manager)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
     // Check request information
-    parameters_manager.validate_basic_sample(
-            service_name, "model_name");
+    parameters_manager.validate_sample(
+        { "model_name" },
+        "\nERROR: Missing  arguments to call service: \nMissing "
+        "arguments:",
+        "\n\nExcepted: apipublisher -d <domain_id> -s "
+        "get_model_properties -i \"model_name: <model_name>\"");
 
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -263,11 +297,16 @@ void get_model_properties(
 void get_model_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ApiParametersManager parameters_manager)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
     // Check request information
-    parameters_manager.validate_basic_sample(
-            service_name, "model_name", "relative_entity_name");
+    parameters_manager.validate_sample(
+            { "model_name", "relative_entity_name" },
+            "\nERROR: Missing  arguments to call service: \nMissing "
+            "arguments:",
+            "\n\nExcepted: apipublisher -d <domain_id> -s "
+            "get_model_state -i \"model_name: <model_name> "
+            "relative_entity_name: <relative_entity_name>\"");
 
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -292,10 +331,24 @@ void get_model_state(
 void set_light_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ApiParametersManager parameters_manager)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
     // Check request information
-    parameters_manager.validate_set_light_properties_sample();
+    parameters_manager.validate_complex_sample(
+            { "light_name",
+              "diffuse",
+              "attenuation_constant",
+              "attenuation_linear",
+              "attenuation_quadratic" },
+            "\nERROR: Missing  arguments to call service: \nMissing arguments:",
+            { "diffuse" },
+            4,
+            "\nERROR: Missing values to call service: \nMissing values:",
+            "\n\nExcepted: apipublisher -d <domain_id> -s "
+            "set_light_properties -i \"light_name: <light_name> diffuse: "
+            "<r> <g> <b> <a> attenuation_constant: <attenuation_constant> "
+            "attenuation_linear: <attenuation_linear> "
+            "attenuation_quadratic: <attenuation_quadratic>\"");
 
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -328,10 +381,29 @@ void set_light_properties(
 void set_link_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ApiParametersManager parameters_manager)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
     // Check request information
-    parameters_manager.validate_set_link_properties_sample();
+    parameters_manager.validate_complex_sample(
+            { "link_name",
+              "com_position",
+              "gravity_mode",
+              "mass",
+              "ixx",
+              "ixy",
+              "ixz",
+              "iyy",
+              "iyz",
+              "izz" },
+            "\nERROR: Missing  arguments to call service: \nMissing arguments:",
+            { "com_position" },
+            3,
+            "\nERROR: Missing values to call service: \nMissing values:",
+            "\n\nExcepted: apipublisher -d <domain_id> -s "
+            "set_link_properties -i \"link_name: <link_name> com_position: "
+            "<x> <y> <z> gravity_mode: <gravity_mode> "
+            "mass: <mass> ixx: <ixx> ixy: <ixy> ixz: <ixz> iyy: <iyy> "
+            "iyz: <iyz> izz: <izz>\"");
 
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -368,10 +440,32 @@ void set_link_properties(
 void set_joint_properties(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ApiParametersManager parameters_manager)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
     // Check request information
-    parameters_manager.validate_set_joint_properties_sample();
+    parameters_manager.validate_sample(
+            { "joint_name",
+              "damping",
+              "hiStop",
+              "loStop",
+              "erp",
+              "cfm",
+              "stop_erp",
+              "stop_cfm",
+              "fudge_factor",
+              "fmax",
+              "vel" },
+            "\nERROR: Missing  arguments to call service: \nMissing arguments:",
+            "\n\nExcepted: apipublisher -d <domain_id> -s "
+            "set_joint_properties -i \"joint_name: <joint_name> damping: "
+            "<value_axi1> <value_axi2> hiStop: <value_axi1> <value_axi2> "
+            "loStop: <value_axi1> <value_axi2> erp: <value_axi1> <value_axi2> "
+            "cfm: <value_axi1> <value_axi2> stop_erp: <value_axi1> <value_axi2>"
+            " stop_cfm: <value_axi1> <value_axi2> "
+            "fudge_factor: <value_axi1> <value_axi2> fmax: <value_axi1> "
+            "<value_axi2> vel: <value_axi1> <value_axi2>\""
+            "\n\nNote: The second value of every variable is only needed in "
+            "Universal joints. Universal joints require two axis.");
 
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -428,10 +522,28 @@ void set_joint_properties(
 void set_model_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ApiParametersManager parameters_manager)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
     // Check request information
-    parameters_manager.validate_set_model_state_sample();
+    parameters_manager.validate_complex_sample(
+            { "model_name",
+              "pose_position",
+              "pose_orientation",
+              "twist_linear",
+              "twist_angular",
+              "reference_frame" },
+            "\nERROR: Missing  arguments to call service: \nMissing arguments:",
+            { "pose_position",
+              "pose_orientation",
+              "twist_linear",
+              "twist_angular" },
+            3,
+            "\nERROR: Missing values to call service: \nMissing values:",
+            "\n\nExcepted: apipublisher -d <domain_id> -s "
+            "set_model_state -i \"model_name: <model_name> pose_position: "
+            "<x> <y> <z> pose_orientation: <x> <y> <z> "
+            "twist_linear: <x> <y> <z> twist_angular: <x> <y> <z> "
+            " reference_frame:<reference_frame>\"");
 
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -483,10 +595,28 @@ void set_model_state(
 void set_link_state(
         const dds::domain::DomainParticipant &participant,
         std::string service_name,
-        gazebo::dds::utils::ApiParametersManager parameters_manager)
+        gazebo::dds::utils::ParametersManager parameters_manager)
 {
     // Check request information
-    parameters_manager.validate_set_link_state_sample();
+    parameters_manager.validate_complex_sample(
+            { "link_name",
+              "pose_position",
+              "pose_orientation",
+              "twist_linear",
+              "twist_angular",
+              "reference_frame" },
+            "\nERROR: Missing  arguments to call service: \nMissing arguments:",
+            { "pose_position",
+              "pose_orientation",
+              "twist_linear",
+              "twist_angular" },
+            3,
+            "\nERROR: Missing values to call service: \nMissing values:",
+            "\n\nExcepted: apipublisher -d <domain_id> -s "
+            "set_link_state -i \"link_name: <link_name> pose_position: "
+            "<x> <y> <z> pose_orientation: <x> <y> <z> "
+            "twist_linear: <x> <y> <z> twist_angular: <x> <y> <z> "
+            " reference_frame:<reference_frame>\"");
 
     std::unordered_map<std::string, std::vector<std::string>> sample_information
             = parameters_manager.get_sample_information();
@@ -560,7 +690,7 @@ int main(int argc, char *argv[])
             std::function<void(
                     const dds::domain::DomainParticipant &,
                     const std::string &,
-                    const gazebo::dds::utils::ApiParametersManager &)>>
+                    const gazebo::dds::utils::ParametersManager &)>>
             service_map;
 
     std::unordered_map<
@@ -666,7 +796,7 @@ int main(int argc, char *argv[])
     empty_service_map["unpause_physics"] = std::bind(
             &send_empty_request, std::placeholders::_1, std::placeholders::_2);
 
-    gazebo::dds::utils::ApiParametersManager parameters_manager(argc, argv);
+    gazebo::dds::utils::ParametersManager parameters_manager(argc, argv);
 
     if (parameters_manager.has_flag("-h")) {
         std::cout << "Usage: apipublisher [options]" << std::endl

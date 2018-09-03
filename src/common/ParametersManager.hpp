@@ -134,6 +134,82 @@ public:
     }
 
     /**
+     * @brief Validate that the sample information has all the variable that
+     * it needs
+     *
+     * @param arguments list of variable that it will be checked
+     * @param error message of error 
+     * @param expected message of expected 
+     */
+    void validate_sample(
+            std::vector<std::string> arguments,
+            std::string error,
+            std::string expected)
+    {
+        std::string exception;
+
+        // Check missing arguments
+        std::string missing_arguments
+                = check_missing_arguments( arguments );
+
+        // Check request information
+        if (!missing_arguments.empty()) {
+            exception
+                    = error
+                    + missing_arguments;
+        } 
+
+        if (!exception.empty()) {
+            exception += expected;
+            throw std::runtime_error(exception);
+        }
+    }
+
+    /**
+     * @brief Validate that the sample information has all the variable that
+     * it needs. In addition, it checks the number of value of the multivalue
+     * arguments
+     *
+     * @param arguments list of variable that it will be checked
+     * @param error message of missing arguments
+     * @param multi_value_arguments list of variable that have multivalue
+     * @param multivalue error message of multivalues arguments with wrong number
+     * of values
+     * @param number_values correct number of value for multivalue arguments
+     * @param expected message of expected
+     */
+    void validate_complex_sample( std::vector<std::string> arguments,
+            std::string missing_error,
+            std::vector<std::string> multi_value_arguments,
+            int number_values,
+            std::string multivalue_error,
+            std::string expected)
+    {
+        std::string exception;
+
+        // Check missing arguments
+        std::string missing_arguments = check_missing_arguments(arguments);
+
+        // Check request information
+        if (!missing_arguments.empty()) {
+            exception = missing_error + missing_arguments;
+        } else {
+            // Check multivalue arguments
+            std::string multivalue_arguments = check_multivalue_arguments(
+                    multi_value_arguments, number_values);
+
+            if (!multivalue_arguments.empty()) {
+                exception = multivalue_error + multivalue_arguments;
+            }
+        }
+
+        if (!exception.empty()) {
+            exception += expected;
+            throw std::runtime_error(exception);
+        }
+    }
+
+    /**
      * @brief Validate that the request information has all the variable that
      * it needs
      *

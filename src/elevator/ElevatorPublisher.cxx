@@ -83,11 +83,18 @@ int main(int argc, char *argv[])
 
         int floor = 0;
         if (parameters_manager.has_flag("-s")) {
-            floor = atoi(parameters_manager.get_flag_value("-s").c_str());
+            parameters_manager.process_sample_information("-s");
+
+            std::unordered_map<std::string, std::vector<std::string>>
+                    sample_information
+                    = parameters_manager.get_sample_information();
+            floor = atoi(sample_information["floor"][0].c_str());
         }
 
         publisher_main(
-                domain_id, std::string(parameters_manager.get_flag_value("-t")), floor);
+                domain_id,
+                std::string(parameters_manager.get_flag_value("-t")),
+                floor);
 
     } catch (const std::exception &ex) {
         // This will catch DDS and CommandLineParser exceptions

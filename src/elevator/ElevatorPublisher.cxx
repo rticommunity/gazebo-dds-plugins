@@ -88,6 +88,20 @@ int main(int argc, char *argv[])
             std::unordered_map<std::string, std::vector<std::string>>
                     sample_information
                     = parameters_manager.get_sample_information();
+
+            // Initialize parameters configuration
+            gazebo::dds::utils::ParametersConfiguration parameters;
+            parameters.arguments({ "floor" });
+            parameters.missing_error(
+                    "\nERROR: Missing  arguments to call publisher: \nMissing "
+                    "arguments:");
+            parameters.expected(
+                    "\n\nExcepted: elevatorpublisher -d <domain id> -t <topic "
+                    "name> -s \"floor: <next floor>\"");
+
+            // Check request information
+            parameters_manager.validate_sample(parameters);
+
             floor = atoi(sample_information["floor"][0].c_str());
         }
 

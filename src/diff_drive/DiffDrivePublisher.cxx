@@ -98,6 +98,21 @@ int main(int argc, char *argv[])
             std::unordered_map<std::string, std::vector<std::string>>
                     sample_information
                     = parameters_manager.get_sample_information();
+
+            // Initialize parameters configuration
+            gazebo::dds::utils::ParametersConfiguration parameters;
+            parameters.arguments({ "linear_velocity", "angular_velocity" });
+            parameters.missing_error(
+                    "\nERROR: Missing  arguments to call publisher: \nMissing "
+                    "arguments:");
+            parameters.expected(
+                    "\n\nExcepted: diffdrivepublisher -d <domain id> -t <topic "
+                    "name> -s \"linear_velocity: <axis x> angular_velocity: "
+                    "<axis z>\"");
+
+            // Check request information
+            parameters_manager.validate_sample(parameters);
+
             linear_x = atof(sample_information["linear_velocity"][0].c_str());
             angular_z = atof(sample_information["angular_velocity"][0].c_str());
         }

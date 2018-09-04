@@ -18,14 +18,18 @@
 #define PARAMETERS_MANAGER_HPP
 
 #include <iostream>
-#include <map>
-#include <string>
-#include <vector>
-#include <sstream>
 #include <iterator>
+#include <map>
+#include <sstream>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
-namespace gazebo { namespace dds { namespace utils {
+#include "ParametersConfiguration.hpp"
+
+namespace gazebo {
+namespace dds {
+namespace utils {
 
 class ParametersManager {
 public:
@@ -107,10 +111,10 @@ public:
      *
      * @return map that contains all the values of the key
      */
-    std::unordered_map<std::string, std::vector<std::string>>
-            & get_sample_information(std::string key_value = "")
+    std::unordered_map<std::string, std::vector<std::string>> &
+            get_sample_information(std::string key_value = "")
     {
-        if(!key_value.empty() && sample_information_.empty())
+        if (!key_value.empty() && sample_information_.empty())
             process_sample_information(key_value);
 
         return sample_information_;
@@ -137,30 +141,23 @@ public:
      * @brief Validate that the sample information has all the variable that
      * it needs
      *
-     * @param arguments list of variable that it will be checked
-     * @param error message of error 
-     * @param expected message of expected 
+     * @param parameters the configuration of the validation
      */
-    void validate_sample(
-            std::vector<std::string> arguments,
-            std::string error,
-            std::string expected)
+    void validate_sample(ParametersConfiguration &parameters)
     {
         std::string exception;
 
         // Check missing arguments
         std::string missing_arguments
-                = check_missing_arguments( arguments );
+                = check_missing_arguments(parameters.arguments());
 
         // Check request information
         if (!missing_arguments.empty()) {
-            exception
-                    = error
-                    + missing_arguments;
-        } 
+            exception = parameters.missing_error() + missing_arguments;
+        }
 
         if (!exception.empty()) {
-            exception += expected;
+            exception += parameters.expected();
             throw std::runtime_error(exception);
         }
     }
@@ -170,41 +167,33 @@ public:
      * it needs. In addition, it checks the number of value of the multivalue
      * arguments
      *
-     * @param arguments list of variable that it will be checked
-     * @param error message of missing arguments
-     * @param multi_value_arguments list of variable that have multivalue
-     * @param multivalue error message of multivalues arguments with wrong number
-     * of values
-     * @param number_values correct number of value for multivalue arguments
-     * @param expected message of expected
+     * @param parameters the configuration of the validation
      */
-    void validate_complex_sample( std::vector<std::string> arguments,
-            std::string missing_error,
-            std::vector<std::string> multi_value_arguments,
-            int number_values,
-            std::string multivalue_error,
-            std::string expected)
+    void validate_complex_sample(ParametersConfiguration &parameters)
     {
         std::string exception;
 
         // Check missing arguments
-        std::string missing_arguments = check_missing_arguments(arguments);
+        std::string missing_arguments
+                = check_missing_arguments(parameters.arguments());
 
         // Check request information
         if (!missing_arguments.empty()) {
-            exception = missing_error + missing_arguments;
+            exception = parameters.missing_error() + missing_arguments;
         } else {
             // Check multivalue arguments
-            std::string multivalue_arguments = check_multivalue_arguments(
-                    multi_value_arguments, number_values);
+            std::string wrong_format_arguments = check_multivalue_arguments(
+                    parameters.multivalue_arguments(),
+                    parameters.number_values());
 
-            if (!multivalue_arguments.empty()) {
-                exception = multivalue_error + multivalue_arguments;
+            if (!wrong_format_arguments.empty()) {
+                exception = parameters.multivalue_error()
+                        + wrong_format_arguments;
             }
         }
 
         if (!exception.empty()) {
-            exception += expected;
+            exception += parameters.expected();
             throw std::runtime_error(exception);
         }
     }
@@ -240,7 +229,8 @@ public:
      *  has the correct number of elements
      *
      * @param variable_list list of variable that it will be checked
-     * @param number_value_list list of number of elements that it will be use to check it
+     * @param number_value_list list of number of elements that it will be use
+     * to check it
      * @return the multivalue arguments with a wrong number of elements
      */
     std::string check_multivalue_arguments(
@@ -252,7 +242,7 @@ public:
         for (unsigned int i = 0; i < variable_list.size(); i++) {
             if (sample_information_[variable_list[i]].size()
                 != number_value_list[i]) {
-                multivalue_arguments = " " + variable_list[i] + " (needs "
+                multivalue_arguments += " " + variable_list[i] + " (needs "
                         + std::to_string(number_value_list[i]) + " values),";
             }
         }
@@ -280,7 +270,7 @@ public:
 
         for (unsigned int i = 0; i < variable_list.size(); i++) {
             if (sample_information_[variable_list[i]].size() != number_value) {
-                multivalue_arguments = " " + variable_list[i] + " (needs "
+                multivalue_arguments += " " + variable_list[i] + " (needs "
                         + std::to_string(number_value) + " values),";
             }
         }
@@ -291,7 +281,7 @@ public:
 
         return multivalue_arguments;
     }
- 
+
 private:
     /**
      * @brief Process the raw data to format them correctly

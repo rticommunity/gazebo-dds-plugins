@@ -29,7 +29,7 @@ $ gazebo dds-gazebo-plugins/resources/worlds/DifferentialDrive.world --verbose
 The plugin contains an example publisher to send information to the robot. 
 You need to run this publisher to move it.
 ```
-$ dds-gazebo-plugins/build/src/diff_drive/diffdrivepublisher -d <domain id> -t <topic name> -s "(<linear velocity in axis x> <angular velocity in axis z>)"
+$ dds-gazebo-plugins/build/src/diff_drive/diffdrivepublisher -d <domain id> -t <topic name> -s "linear_velocity: <axis x> angular_velocity: <axis z>"
 ```
 
 You can check the help of the publisher with the flag `-h` for more information.

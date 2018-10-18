@@ -15,12 +15,13 @@
  */
 
 #include <cstdlib>
+#include <unordered_map>
 
 #include <dds/core/ddscore.hpp>
 #include <dds/domain/find.hpp>
 #include <dds/pub/ddspub.hpp>
 
-#include "common/CommandLineParser.hpp"
+#include "common/ParametersManager.hpp"
 #include "common/DdsUtils.hpp"
 #include "geometry_msgs/msg/Twist.hpp"
 
@@ -62,9 +63,9 @@ int main(int argc, char *argv[])
 {
     int ret_code = 0;
 
-    gazebo::dds::utils::CommandLineParser cmd_parser(argc, argv);
+    gazebo::dds::utils::ParametersManager parameters_manager(argc, argv);
 
-    if (cmd_parser.has_flag("-h")) {
+    if (parameters_manager.has_flag("-h")) {
         std::cout << "Usage: diffdrivepublisher [options]" << std::endl
                   << "Generic options:" << std::endl
                   << "\t-h                      - Prints this page and exits"
@@ -85,22 +86,40 @@ int main(int argc, char *argv[])
     try {
         // Check arguments
         int domain_id = 0;
-        if (cmd_parser.has_flag("-d")) {
-            domain_id = atoi(cmd_parser.get_value("-d").c_str());
+        if (parameters_manager.has_flag("-d")) {
+            domain_id = atoi(parameters_manager.get_flag_value("-d").c_str());
         }
 
         float linear_x = 0.0;
         float angular_z = 0.0;
-        if (cmd_parser.has_flag("-s")) {
-            std::vector<std::string> sample_information
-                    = cmd_parser.get_values("-s");
-            linear_x = atof(sample_information[0].c_str());
-            angular_z = atof(sample_information[1].c_str());
+        if (parameters_manager.has_flag("-s")) {
+            parameters_manager.process_sample_information("-s");
+
+            std::unordered_map<std::string, std::vector<std::string>>
+                    sample_information
+                    = parameters_manager.get_sample_information();
+
+            // Initialize parameters configuration
+            gazebo::dds::utils::ParametersConfiguration parameters;
+            parameters.arguments({ "linear_velocity", "angular_velocity" });
+            parameters.missing_error(
+                    "\nERROR: Missing  arguments to call publisher: \nMissing "
+                    "arguments:");
+            parameters.expected(
+                    "\n\nExcepted: diffdrivepublisher -d <domain id> -t <topic "
+                    "name> -s \"linear_velocity: <axis x> angular_velocity: "
+                    "<axis z>\"");
+
+            // Check request information
+            parameters_manager.validate_sample(parameters);
+
+            linear_x = atof(sample_information["linear_velocity"][0].c_str());
+            angular_z = atof(sample_information["angular_velocity"][0].c_str());
         }
 
         publisher_main(
                 domain_id,
-                std::string(cmd_parser.get_value("-t")),
+                std::string(parameters_manager.get_flag_value("-t")),
                 linear_x,
                 angular_z);
 

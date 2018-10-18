@@ -25,8 +25,8 @@
 namespace gazebo { namespace dds { namespace utils {
 
 /**
- * @brief Obtain a specific parameter from the world 
- * 
+ * @brief Obtain a specific parameter from the world
+ *
  * @param sdf object that contains the information of the world
  * @param tag_variable variable that will contain the value of the parameter
  * @param element_name name of the parameter from the world
@@ -35,9 +35,9 @@ namespace gazebo { namespace dds { namespace utils {
 template <typename T>
 void get_world_parameter(
         sdf::ElementPtr sdf,
-        T & tag_variable,
-        const char * element_name,
-        const T & element_default)
+        T &tag_variable,
+        const char *element_name,
+        const T &element_default)
 {
     if (sdf->HasElement(element_name)) {
         tag_variable = sdf->Get<T>(element_name);
@@ -50,8 +50,8 @@ void get_world_parameter(
 
 /**
  * @brief Obtain the current time of the simulation
- * 
- * @param world world pointer that will be used to obtain the time.
+ *
+ * @param world pointer that will be used to obtain the time
  * @return the current time of the simulation
  */
 common::Time get_sim_time(physics::WorldPtr world)
@@ -61,6 +61,95 @@ common::Time get_sim_time(physics::WorldPtr world)
 #else
     return world->GetSimTime();
 #endif
+}
+
+/**
+ * @brief Obtain the name of the world
+ *
+ * @param world world that will return its name 
+ * @return the name of the world
+ */
+std::string
+        get_world_name(physics::WorldPtr world)
+{
+#if GAZEBO_MAJOR_VERSION >= 8
+    return world->Name();
+#else
+    return world->GetName();
+#endif
+}
+
+/**
+ * @brief Obtain model by name
+ *
+ * @param world pointer that will be used to obtain the model
+ * @param model_name name of the model
+ * @return the specified model
+ */
+gazebo::physics::ModelPtr
+        get_model(physics::WorldPtr world, std::string model_name)
+{
+#if GAZEBO_MAJOR_VERSION >= 8
+    return world->ModelByName(model_name);
+#else
+    return world->GetModel(model_name);
+#endif
+}
+
+/**
+ * @brief Obtain light by name
+ *
+ * @param world pointer that will be used to obtain the light
+ * @param light_name name of the light
+ * @return the specified light
+ */
+gazebo::physics::LightPtr
+        get_light(physics::WorldPtr world, std::string light_name)
+{
+#if GAZEBO_MAJOR_VERSION >= 8
+    return world->LightByName(light_name);
+#else
+    return world->Light(light_name);
+#endif
+}
+
+/**
+ * @brief Obtain entity by name
+ *
+ * @param world pointer that will be used to obtain the entity
+ * @param entity_name name of the entity
+ * @return the specified entity
+ */
+gazebo::physics::EntityPtr
+        get_entity(physics::WorldPtr world, std::string entity_name)
+{
+#if GAZEBO_MAJOR_VERSION >= 8
+    return world->EntityByName(entity_name);
+#else
+    return world->GetEntity(entity_name);
+#endif
+}
+
+/**
+ * @brief Obtain joint by name
+ *
+ * @param world pointer that will be used to obtain the joint
+ * @param joint_name name of the joint
+ * @return the specified joint
+ */
+gazebo::physics::JointPtr
+        get_joint(physics::WorldPtr world, std::string joint_name)
+{
+    gazebo::physics::JointPtr joint;
+#if GAZEBO_MAJOR_VERSION >= 8
+    for (unsigned int i = 0; i < world->ModelCount() && !joint; i++)
+        joint = world->ModelByIndex(i)->GetJoint(joint_name);
+#else
+    for (unsigned int i = 0; i < world->GetModelCount() && !joint; i++)
+        joint = world->GetModel(i)->GetJoint(joint_name);
+#endif
+
+    return joint;
 }
 
 }  // namespace utils

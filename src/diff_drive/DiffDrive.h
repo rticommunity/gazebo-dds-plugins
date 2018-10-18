@@ -115,7 +115,7 @@ private:
     double get_joint_position(int index);
 
     /**
-     * @brief Obtain position of the specific joint
+     * @brief Obtain the velocity of the world
      */
     void get_world_velocity();
 

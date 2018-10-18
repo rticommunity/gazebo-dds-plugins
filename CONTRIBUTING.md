@@ -1,4 +1,21 @@
-# Contributing to DDS Gazebo Plugins
+# Contributing to Gazebo DDS Plugins
 
-### Contributor License Agreement (CLA)
-In order to accept your pull request, we need you to sign a Contributor License Agreement (CLA). Complete your CLA here: http://community.rti.com/cla. You only need to do this once, we cross-check your Github username with the list of contributors who have signed the CLA.
+## Contribution Process
+
+If you wish to contribute enhancements or additional plugins, please fork
+the repository and submit a pull request.
+
+## Contributor License Agreement (CLA)
+
+In order to accept your pull request, we need you to sign a Contributor
+License Agreement (CLA). Complete your CLA here: https://community.rti.com/cla.
+You only need to do this once, we cross-check your Github username with the
+list of contributors who have signed the CLA.
+
+## License
+
+The Gazebo DDS Plugins repository is distributed under the terms of the Apache
+Version 2.0. Please refer to the corresponding
+[LICENSE file](https://github.com/rticommunity/gazebo-dds-plugins/blob/master/LICENSE)
+for the full list of terms and conditions for use, reproduction, and
+distribution of this software.

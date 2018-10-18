@@ -318,7 +318,7 @@
       <topic_name_twist>cmd_vel</topic_name_twist>
       <topic_name_odometry>odom</topic_name_odometry>
       <topic_name_joint>joint</topic_name_joint>
-      <!-- <dds_qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file> -->
+      <!-- <dds_qos_profile_file>gazebo-dds-plugins/resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file> -->
       <!-- <dds_qos_profile>ExampleLibrary::TransientLocalProfile</dds_qos_profile> -->
       <right_front_joint>right_front</right_front_joint>
       <right_rear_joint>right_rear</right_rear_joint>

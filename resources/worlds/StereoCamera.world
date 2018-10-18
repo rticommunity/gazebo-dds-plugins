@@ -149,7 +149,7 @@
           <frame_name>camera_link</frame_name>
           <topic_name_image>image_raw</topic_name_image>
           <topic_name_camera_info>camera_info</topic_name_camera_info>
-          <!-- <dds_qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file> -->
+          <!-- <dds_qos_profile_file>gazebo-dds-plugins/resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file> -->
           <!-- <dds_qos_profile>ExampleLibrary::TransientLocalProfile</dds_qos_profile> -->
           <frameName>left_camera_optical_frame</frameName>
           <hack_baseline>0.07</hack_baseline>

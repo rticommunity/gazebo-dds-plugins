@@ -638,7 +638,7 @@
 
     <plugin name='DdsApiPlugin' filename='api_plugin/libDdsApiPlugin.so'>
         <dds_domain_id>0</dds_domain_id>
-        <!-- <dds_qos_profile_file>/home/alopez/workspaces/dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file>
+        <!-- <dds_qos_profile_file>/home/alopez/workspaces/gazebo-dds-plugins/resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file>
         <dds_qos_profile>ExampleLibrary::TransientLocalProfile</dds_qos_profile> -->
     </plugin>
   </world>

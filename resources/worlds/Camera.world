@@ -136,7 +136,7 @@
         <update_rate>0.0</update_rate>
         <frame_name>camera_link</frame_name>
         <dds_domain_id>0</dds_domain_id>
-        <!-- <dds_qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file> -->
+        <!-- <dds_qos_profile_file>gazebo-dds-plugins/resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file> -->
         <!-- <dds_qos_profile>ExampleLibrary::TransientLocalProfile</dds_qos_profile> -->
         <topic_name_image>image_raw</topic_name_image>
         <topic_name_camera_info>camera_info</topic_name_camera_info>

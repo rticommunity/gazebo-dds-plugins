@@ -260,7 +260,7 @@
       <left_joint>left_wheel_hinge</left_joint>
       <right_joint>right_wheel_hinge</right_joint>
       <dds_domain_id>0</dds_domain_id>
-      <!-- <dds_qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file> -->
+      <!-- <dds_qos_profile_file>gazebo-dds-plugins/resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file> -->
       <!-- <dds_qos_profile>ExampleLibrary::TransientLocalProfile</dds_qos_profile> -->
       <wheel_separation>0.39</wheel_separation>
       <wheel_diameter>0.15</wheel_diameter>

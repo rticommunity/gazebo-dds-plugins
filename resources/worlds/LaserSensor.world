@@ -68,7 +68,7 @@
          <plugin name='DdsLaserPlugin' filename='laser_scan/libDdsLaserPlugin.so'>
             <dds_domain_id>0</dds_domain_id>
             <topic_name>laser_scan</topic_name>
-            <!-- <dds_qos_profile_file>dds-gazebo-plugins/resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file> -->
+            <!-- <dds_qos_profile_file>gazebo-dds-plugins/resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file> -->
             <!-- <dds_qos_profile>ExampleLibrary::TransientLocalProfile</dds_qos_profile> -->
          </plugin>
         <always_on>1</always_on>

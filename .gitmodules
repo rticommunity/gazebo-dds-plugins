@@ -1,0 +1,3 @@
+[submodule "resources/idl"]
+	path = resources/idl
+	url = https://github.com/rticommunity/ros-data-types

@@ -4,7 +4,8 @@ This plugin provides access to the information produced by a contact sensor.
 The Bumper Scan plugin publishes the following Topics:
 
 * Publications
-  * [gazebo_msgs/msg/ContactsState] - Sends the state of the contact sensor
+  * **bumper_scan** [`gazebo_msgs::msg::ContactsState`] -- Publishes the state
+    of the contact sensor.
 
 ## How To Run the Bumper Scan Plugin
 

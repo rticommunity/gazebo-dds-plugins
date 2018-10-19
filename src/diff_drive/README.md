@@ -5,11 +5,13 @@ information. The Differential Drive plugin publishes and subscribes to the
 following Topics:
 
 * Publications
-  * [nav_msgs/msg/Odometry] - Sends information provided by the odometry sensor.
-  * [sensor_msgs/msg/JointState] - Sends the state of the joints of the robot
-    Subscriptions
-  * [geometry_msgs/msg/Twist] - Recieves the next velocity and rotation
-    velocity.
+  * **odom** [`nav_msgs::msg::Odometry`] -- Publishes information provided by
+    the odometry sensor.
+  * **joint** [`sensor_msgs::msg::JointState`] -- Publishes the state of the
+    joints of the robot Subscriptions.
+* Subscriptions
+  * **cmd_vel** [`geometry_msgs::msg::Twist`] -- Subscribes to the next
+    velocity and rotation velocity.
 
 ## How To Run the Differential Drive Plugin
 

@@ -4,8 +4,10 @@ This plugin provides access to the information of produced by a camera. The
 Camera Plugin publishes the following Topics:
 
 * Publications
-  * [sensor_msgs/msg/CameraInfo] - Send the information of the camera.
-  * [sensor_msgs/msg/Image] - Sends raw image captured by the camera.
+  * **camera/camera_info** [`sensor_msgs::msg::CameraInfo`] -- Publishes camera
+    information.
+  * **camera/image_raw** [`sensor_msgs::msg::Image`] -- Publishes raw images
+    captured by the camera.
 
 ## How To Run the Camera Plugin
 

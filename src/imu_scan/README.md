@@ -4,7 +4,8 @@ This plugin provides access to the produced by Inertial Measurement Units (IMU).
 The IMU Scan Plugin publishes the following Topics:
 
 * Publications
-  * [sensor_msgs/msg/Imu] - Sends information on the state of the IMU sensor.
+  * **imu_scan** [`sensor_msgs::msg::Imu`] -- Publishes information on the state
+    of the IMU sensor.
 
 ## How To Run the IMU Scan Plugin
 

@@ -4,9 +4,14 @@ It allows us to manage two synchronized cameras and obtain the information they
 produce. The Stereo Camera plugin publishes the following Topics:
 
 * Publications
-  * [sensor_msgs/msg/CameraInfo] - Sends the information provided by the
-    camera.
-  * [sensor_msgs/msg/Image] - Sends raw images captured by the camera.
+  * **camera_left/camera_info** [`sensor_msgs::msg::CameraInfo`] -- Publishes
+    the information provided by the left camera.
+  * **camera_left/image_raw** [`sensor_msgs::msg::Image`] -- Publishes raw
+    images captured by the left camera.
+  * **camera_right/camera_info** [`sensor_msgs::msg::CameraInfo`] -- Publishes
+    the  information provided by the right camera.
+  * **camera_right/image_raw** [`sensor_msgs::msg::Image`] -- Publishes raw
+    images captured by the right camera.
 
 ## How To Run the Stereo Camera Plugin
 
@@ -32,7 +37,7 @@ Once you have set the environment accordingly, execute Gazebo and pass the
 demonstration world as a parameter:
 
 ```bash
-gazebo gazebo-dds-plugins/resources/worlds/Camera.world --verbose
+gazebo gazebo-dds-plugins/resources/worlds/StereoCamera.world --verbose
 ```
 
 You can subscribe to the information published by the plugin using `rtiddsspy`.

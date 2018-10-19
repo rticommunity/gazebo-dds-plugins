@@ -1,9 +1,9 @@
 # API plugin
 
-This plugin provides a number of services that allow DDS applications
+This plugin provides a number of remote procedures that allow DDS applications
 to manage the simulation environment remotely.
 
-The list of services includes:
+The list of remote procedures includes:
 
 * `delete_model` -- Deletes a model.
 * `delete_light` -- Deletes a light.

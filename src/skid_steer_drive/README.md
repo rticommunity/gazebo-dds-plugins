@@ -3,11 +3,14 @@
 It allows us to manage a skid steer drive robot and obtain its information.
 The Skid Steer Drive plugin publishes and subscribes to the following Topics:
 
-* Publications 
-  * [nav_msgs/msg/Odometry] - Sends information provided by the odometry sensor.
-  * [sensor_msgs/msg/JointState] - Sends the state of the joints of the robot.
-    Subscriptions
-  * [geometry_msgs/msg/Twist] - Recieve the next velocity and rotation velocity.
+* Publications
+  * **odom** [`nav_msgs::msg::Odometry`] -- Publishes information provided by
+    the odometry sensor.
+  * **joint** [`sensor_msgs::msg::JointState`] -- Publishes the state of the
+    joints of the robot.
+* Subscriptions
+  * **cmd_vel** [`geometry_msgs::msg::Twist`] -- Subscribes to the next
+    velocity and rotation velocity.
 
 ## How To Run the Skid Steer Drive Plugin
 

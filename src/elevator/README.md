@@ -3,8 +3,8 @@
 It allows us to manage an elevator. It contains the following subscriber:
 
 * Subscriptions
-  * [std_msgs/msg/Int32] - Subscribes for an integer value that indicates the
-    floor the elevator should go next.
+  * **elevator** [`std_msgs::msg::Int32`] -- Subscribes to an integer value that
+    indicates the floor the elevator should go next.
 
 ## How To Run the Elevator Plugin
 

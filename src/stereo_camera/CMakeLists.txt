@@ -21,7 +21,7 @@ target_link_libraries(DdsStereoCameraPlugin
     ${GAZEBO_LIBRARIES}  
     ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS}
-    rosddstypes
+    RosDataTypes
 )
 
 target_include_directories(DdsStereoCameraPlugin PRIVATE 

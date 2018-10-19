@@ -64,13 +64,13 @@ services.
 You can run the API publisher as follows:
 
 ```bash
-gazebo-dds-plugins/build/src/api_plugin/apipublisher \
+gazebo-dds-plugins/build/src/api_plugin/apiPublisher \
     -d <domain id> \
     -t <topic name> \
     -s "<variable1: <value1> <variable2>: <value2>)"
 ```
 
-For more information on how to run the application, run `apipublisher -h`.
+For more information on how to run the application, run `apiPublisher -h`.
 
 Below, we show a few examples on how to use the publisher application.
 
@@ -80,7 +80,7 @@ In this first example, we call the `set_light_properties` service with the new
 information of a light named `sun` using Domain ID 0:
 
 ```bash
-./build/src/api_plugin/apipublisher \
+./build/src/api_plugin/apiPublisher \
     -d 0 \
     -s set_light_properties \
     -i "light_name: sun diffuse: 100 200 100 100 attenuation_constant: 5  attenuation_linear: 0.5 attenuation_quadratic: 0.5"
@@ -92,7 +92,7 @@ In this second example, we call `set_link_properties` service and provide new
 information on the link named `chassis` using Domain ID 0:
 
 ```bash
-./build/src/api_plugin/apipublisher \
+./build/src/api_plugin/apiPublisher \
     -d 0 \
     -s set_link_properties \
     -i "link_name:chassis com_position:0 0 0 gravity_mode:true  mass:4.5 ixx:0.5 ixy:0.6 ixz:0.7 iyy:0.8 iyz:0.2 izz:0.3"

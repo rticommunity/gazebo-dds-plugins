@@ -27,7 +27,7 @@ target_link_libraries(DdsBumperScanPlugin
     ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS}
     ${ContactPlugin}
-    rosddstypes
+    RosDataTypes
 )
 
 target_include_directories(DdsBumperScanPlugin PRIVATE 

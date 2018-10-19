@@ -27,7 +27,7 @@ target_link_libraries(DdsElevatorPlugin
     ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS}
     ${ElevatorPlugin}
-    rosddstypes
+    RosDataTypes
 )
 
 target_include_directories(DdsElevatorPlugin PRIVATE 
@@ -41,22 +41,22 @@ target_compile_definitions(DdsElevatorPlugin PRIVATE
     ${CONNEXTDDS_COMPILE_DEFINITIONS}
 )
 
-add_executable (elevatorpublisher 
+add_executable(elevatorPublisher
     ElevatorPublisher.cxx 
 )
 
-target_link_libraries(elevatorpublisher 
+target_link_libraries(elevatorPublisher
     ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS} 
-    rosddstypes
+    RosDataTypes
 )
 
-target_include_directories(elevatorpublisher PRIVATE 
+target_include_directories(elevatorPublisher PRIVATE
     ${CONNEXTDDS_INCLUDE_DIRS}
     "${CMAKE_SOURCE_DIR}/src"
 )
 
-target_compile_definitions(elevatorpublisher PRIVATE 
+target_compile_definitions(elevatorPublisher PRIVATE
     ${CONNEXTDDS_COMPILE_DEFINITIONS}
 )
 

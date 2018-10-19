@@ -54,13 +54,13 @@ robot; that is, to send instructions in order to move it.
 You can run the publisher application as follows:
 
 ```bash
-gazebo-dds-plugins/build/src/diff_drive/diffdrivepublisher \
+gazebo-dds-plugins/build/src/diff_drive/diffDrivePublisher \
     -d <domain id> \
     -t <topic name> \
     -s "linear_velocity: <axis x> angular_velocity: <axis z>"
 ```
 
-For more information on how to run the application, run `diffdrivepublisher -h`.
+For more information on how to run the application, run `diffDrivePublisher -h`.
 
 ## Using Differential Drive Plugin with Custom Worlds
 

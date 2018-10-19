@@ -46,13 +46,13 @@ different floor:
 You can run the publisher application as follows:
 
 ```bash
-gazebo-dds-plugins/build/src/elevator/elevatorpublisher \
+gazebo-dds-plugins/build/src/elevator/elevatorPublisher \
     -d <domain id> \
     -t <topic name> \
     -s "floor: <next floor>"
 ```
 
-For more information on how to run the application, run `apipublisher -h`.
+For more information on how to run the application, run `elevatorPublisher -h`.
 
 ## Using API Plugin with Custom Worlds
 

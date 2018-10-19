@@ -27,7 +27,7 @@ target_link_libraries(DdsCameraPlugin
     ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS}
     ${CameraPlugin}
-    rosddstypes
+    RosDataTypes
 )
 
 target_include_directories(DdsCameraPlugin PRIVATE 

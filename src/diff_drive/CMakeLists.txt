@@ -21,7 +21,7 @@ target_link_libraries(DdsDiffDrivePlugin
     ${GAZEBO_LIBRARIES}
     ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS}
-    rosddstypes
+    RosDataTypes
 )
 
 target_include_directories(DdsDiffDrivePlugin PRIVATE 
@@ -34,22 +34,22 @@ target_include_directories(DdsDiffDrivePlugin PRIVATE
 target_compile_definitions(DdsDiffDrivePlugin PRIVATE 
     ${CONNEXTDDS_COMPILE_DEFINITIONS})
 
-add_executable (diffdrivepublisher
+add_executable(diffDrivePublisher
     DiffDrivePublisher.cxx 
 )
 
-target_link_libraries(diffdrivepublisher 
+target_link_libraries(diffDrivePublisher
     ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS}    
-    rosddstypes
+    RosDataTypes
 )
 
-target_include_directories(diffdrivepublisher PRIVATE 
+target_include_directories(diffDrivePublisher PRIVATE
     ${CONNEXTDDS_INCLUDE_DIRS}
     "${CMAKE_SOURCE_DIR}/src"
 )
 
-target_compile_definitions(diffdrivepublisher PRIVATE 
+target_compile_definitions(diffDrivePublisher PRIVATE
     ${CONNEXTDDS_COMPILE_DEFINITIONS}
 )
 

@@ -27,7 +27,7 @@ target_link_libraries(DdsLaserPlugin
     ${CONNEXTDDS_CPP2_API_LIBRARIES_RELEASE_SHARED}
     ${CONNEXTDDS_EXTERNAL_LIBS} 
     ${RayPlugin}
-    rosddstypes
+    RosDataTypes
 )
 
 target_include_directories(DdsLaserPlugin PRIVATE 

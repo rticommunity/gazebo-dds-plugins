@@ -29,14 +29,23 @@ In particular, the project provides the following plugins:
 
 ## Cloning Gazebo DDS Plugins Repository
 
-Gazebo DDS Plugins depends on a separate repository that provides the IDL
-definition of a number of well-known data types for robotic systems.
+Gazebo DDS Plugins depends on
+[ROS Data Types](https://github.com/rticommunity/gazebo-dds-plugins), a
+separate repository that provides the IDL definition of a number of well-known
+data types for robotic systems.
 
-Therefore, to clone the Gazebo DDS Plugins you will need to run `git clone` as
-follows, cloning the repository providing the types as well:
+To clone the Gazebo DDS Plugins repository you will need to run `git clone` as
+follows, which will clone both the repository and its submodule dependencies:
 
 ```bash
 git clone --recurse-submodule https://github.com/rticommunity/gazebo-dds-plugins.git
+```
+
+If you forget to clone the repository with `--recurse-submodule`, simply run the
+following command to pull all the dependencies:
+
+```bash
+git submodule update --init --recursive
 ```
 
 ## Building Gazebo DDS Plugins
@@ -75,6 +84,18 @@ cd gazebo-dds-plugins
 mkdir build; cd build
 cmake -DCONNEXTDDS_DIR=/path/to/rti_connext_dds-x.y.z \
       -DCONNEXTDDS_ARCH=<arch_name> ..
+```
+
+If you run into the following error as part of your `cmake` invocation, simply
+run `git submodule update --init --recursive` to download the `resources/idl`
+submodule as indicated above.
+
+```bash
+CMake Error at CMakeLists.txt:28 (add_subdirectory):
+  The source directory
+    /path/to/gazebo-dds-plugins/resources/idl
+  does not contain a CMakeLists.txt file.
+-- Configuring incomplete, errors occurred!
 ```
 
 ### Building Plugins

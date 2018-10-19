@@ -1,36 +1,62 @@
-# Bumper scan plugin
-It allows us to obtain the information of a contact sensor. It contains the 
-following publisher:
-* Publications 
-    * [gazebo_msgs/msg/ContactsState] - Send the state of the contact sensor
+# Bumper Scan Plugin
 
-## How to run
-You will only need one terminal to run this plugin. 
+This plugin provides access to the information produced by a contact sensor.
+The Bumper Scan plugin publishes the following Topics:
 
-In case we have not added the path where libraries are located to the 
-envionment variable GAZEBO_PLUGIN_PATH, we have to add it via the 
-following command:
+* Publications
+  * [gazebo_msgs/msg/ContactsState] - Sends the state of the contact sensor
 
-```
-$ export GAZEBO_PLUGIN_PATH=$HOME/dds-gazebo-plugins/build/src/:$GAZEBO_PLUGIN_PATH
-```
-Once the environment variable is set, we can execute Gazebo with its specific 
-world.
+## How To Run the Bumper Scan Plugin
 
-```
-$ gazebo dds-gazebo-plugins/resources/worlds/BumperSensor.world --verbose
+To launch the plugin you will need to make sure Gazebo knows where it is
+located. You can either set the `GAZEBO_PLUGIN_PATH` environment variable to
+the plugin directory:
+
+```bash
+export GAZEBO_PLUGIN_PATH=/path/to/gazebo-dds-plugins/build/src/:$GAZEBO_PLUGIN_PATH
 ```
 
-## Using plugin with custom worlds
+Or alternatively, add the full path as part of the plugin definition in the
+`.world` file:
 
-You need to add to your custom world inside the bumper sensor that you want to 
-manage with the following sdf information:
+```xml
+<plugin name='box_bumper_controller'
+        filename='/path/to/libDdsBumperScanPlugin.so'>
+    <!-- ... -->
+</plugin>
 ```
-<plugin name="box_bumper_controller" filename="bumper_scan/libDdsBumperScanPlugin.so">
+
+Once you have set the environment accordingly, execute Gazebo and pass the
+demonstration world as a parameter:
+
+```bash
+gazebo ./resources/worlds/BumperSensor.world --verbose
+```
+
+You can subscribe to the information published by the plugin using `rtiddsspy`.
+
+## Using Bumper Scan Plugin With Custom Worlds
+
+To run the Bumper Scan Plugin with a custom world, add the following sdf
+information within the `world` tag:
+
+```xml
+<plugin name="box_bumper_controller"
+        filename="bumper_scan/libDdsBumperScanPlugin.so">
     <topic_name>bumper_topic</topic_name>
     <dds_domain_id>0</dds_domain_id>
 </plugin>
 ```
 
-In addition, you can add the tag `dds_qos_profile_file` and `dds_qos_profile` 
-inside the plugin tag to use a specific QoS and not the default QoS
+In addition, you may specify a `dds_qos_profile_file` and `dds_qos_profile`
+within the plugin tag to use a specific QoS profile instead of the default one.
+
+```xml
+<plugin name='box_bumper_controller'
+        filename='bumper_scan/libDdsBumperScanPlugin.so'>
+    <!-- ... -->
+    <dds_qos_profile_file>resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file>
+    <dds_qos_profile>ExampleLibrary::TransientLocalProfile</dds_qos_profile>
+    <!-- ... -->
+</plugin>
+```

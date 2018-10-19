@@ -1,84 +1,122 @@
-# Api plugin
-It contains a bunch of services that allows us to manage the environment of the simulation. The services are:
-*   `delete_model` - Delete a model for its name
-*   `delete_light` - Delete a light for its name
-*   `get_light_properties` - Obtain the properties of a specified light
-*   `get_world_properties` - Obtain the properties of the world
-*   `get_joint_properties` - Obtain the properties of a specified joint
-*   `get_link_properties` - Obtain the properties of a specified link
-*   `get_link_state` - Obtain the current state of a specified link
-*   `get_model_properties` - Obtain the properties of a specified model
-*   `get_model_state` - Obtain the current state of a specified model
-*   `set_light_properties` - Update the properties of a specified light
-*   `set_link_properties` - Update the properties of a specified link
-*   `set_joint_properties` - Update the properties of a specified joint
-*   `set_model_state` - Update the current state of a specified model
-*   `set_link_state` - Update the current state of a specified link
-*   `reset_simulation` - Reset the simulation to its initial state
-*   `reset_world` - Reset the world to its initial state
-*   `pause_physics` - Pause the physics of the simulation
-*   `unpause_physics` - Unpause the physics of the simulation
+# API plugin
 
-## How to run
-You will need two terminals to run this plugin. 
+This plugin provides a number of services that allow DDS applications
+to manage the simulation environment remotely.
 
-**First terminal**
+The list of services includes:
 
-We will use a complex world to use that plugin. For that reason, you need to 
-add a few path to the environment variable GAZEBO_PLUGIN_PATH. We have to add 
-it via the following commands:
+* `delete_model` -- Deletes a model.
+* `delete_light` -- Deletes a light.
+* `get_light_properties` -- Provides the properties of a light.
+* `get_world_properties` -- Provides the properties of a world.
+* `get_joint_properties` -- Provides the properties of a joint.
+* `get_link_properties` -- Provides the properties of a link.
+* `get_link_state` -- Provides the current state of a link.
+* `get_model_properties` -- Provides the properties of a model.
+* `get_model_state` - Provides the current state of a model.
+* `set_light_properties` - Updates the properties of a light.
+* `set_link_properties` - Updates the properties of a link.
+* `set_joint_properties` - Updates the properties of a joint.
+* `set_model_state` - Updates the current state of a model.
+* `set_link_state` - Update the current state of a link.
+* `reset_simulation` - Resets the simulation to its initial state.
+* `reset_world` - Resets the world to its initial state.
+* `pause_physics` - Pauses the physics of the simulation.
+* `unpause_physics` - Unpauses the physics of the simulation.
 
-```
-$ export GAZEBO_PLUGIN_PATH=/usr/lib/<gazebo folder>/plugins:$GAZEBO_PLUGIN_PATH
-$ export GAZEBO_PLUGIN_PATH=$HOME/dds-gazebo-plugins/build/src/:$GAZEBO_PLUGIN_PATH
-```
+## How To Run the API Plugin
 
-Once the environment variable is set, we can execute Gazebo with its specific 
-world.
+To run the API plugin, you will need to use two terminals: one terminal to
+launch Gazebo along with the plugin, and another terminal to send service
+requests.
 
-```
-$ gazebo dds-gazebo-plugins/resources/worlds/Demonstration.world --verbose
-```
+### First Terminal
 
-**Second terminal**
+To launch the plugin you will need to make sure Gazebo knows where it is
+located. You can either set the `GAZEBO_PLUGIN_PATH` environment variable to
+the plugin directory:
 
-The plugin contains an example publisher to send request to the services.
-```
-$ dds-gazebo-plugins/build/src/api_plugin/apipublisher -d <domain id> -t 
-<topic name> -s "<variable1: <value1> <variable2>: <value2>)"
+```bash
+export GAZEBO_PLUGIN_PATH=/path/to/gazebo-dds-plugins/build/src/:$GAZEBO_PLUGIN_PATH
 ```
 
-You can check the help of the publisher with the flag `-h` for more information
+Or alternatively, add the full path as part of the plugin definition in the
+`.world` file:
 
-In addition, we can see a few example of how to use the publisher here:
-
-In this first example, we call the service `set_light_properties` with the new 
-information of the light named sun and using the domain id 0
-
-```
-./build/src/api_plugin/apipublisher -d 0 -s set_light_properties -i 
-"light_name: sun diffuse: 100 200 100 100 attenuation_constant: 5 
-attenuation_linear: 0.5  attenuation_quadratic: 0.5"
+```xml
+<plugin name='DdsApiPlugin' filename='/path/to/libDdsApiPlugin.so'>
+    <!-- ... -->
+</plugin>
 ```
 
-In this second example, we call the service `set_link_properties` with the new 
-information of the link named chassis and using the domain id 0
+Once you have set the environment accordingly, execute Gazebo and pass the
+demonstration world as a parameter:
 
-```
-./build/src/api_plugin/apipublisher -d 0 -s set_link_properties -i 
-"link_name:chassis com_position:0 0 0 gravity_mode:true  mass:4.5 ixx:0.5 
-ixy:0.6 ixz:0.7 iyy:0.8 iyz:0.2 izz:0.3"
+```bash
+gazebo ./resources/worlds/Demonstration.world --verbose
 ```
 
-## Using plugin with custom worlds
+### Second Terminal
 
-You need to add to your custom world inside the tag `world` the following 
-sdf information:
+The example includes a publisher application you can use to send request to the
+services.
+
+You can run the API publisher as follows:
+
+```bash
+gazebo-dds-plugins/build/src/api_plugin/apipublisher \
+    -d <domain id> \
+    -t <topic name> \
+    -s "<variable1: <value1> <variable2>: <value2>)"
 ```
+
+For more information on how to run the application, run `apipublisher -h`.
+
+Below, we show a few examples on how to use the publisher application.
+
+#### Example #1
+
+In this first example, we call the `set_light_properties` service with the new
+information of a light named `sun` using Domain ID 0:
+
+```bash
+./build/src/api_plugin/apipublisher \
+    -d 0 \
+    -s set_light_properties \
+    -i "light_name: sun diffuse: 100 200 100 100 attenuation_constant: 5  attenuation_linear: 0.5 attenuation_quadratic: 0.5"
+```
+
+#### Example 2
+
+In this second example, we call `set_link_properties` service and provide new
+information on the link named `chassis` using Domain ID 0:
+
+```bash
+./build/src/api_plugin/apipublisher \
+    -d 0 \
+    -s set_link_properties \
+    -i "link_name:chassis com_position:0 0 0 gravity_mode:true  mass:4.5 ixx:0.5 ixy:0.6 ixz:0.7 iyy:0.8 iyz:0.2 izz:0.3"
+```
+
+## Using API Plugin with Custom Worlds
+
+To run the API Plugin with a custom world, add the following sdf
+information within the `world` tag:
+
+```xml
 <plugin name='DdsApiPlugin' filename='api_plugin/libDdsApiPlugin.so'>
     <dds_domain_id>0</dds_domain_id>
 </plugin>
 ```
 
-In addition, you can add the tag `dds_qos_profile_file` and `dds_qos_profile` 
-inside the plugin tag to use a specific QoS and not the default QoS
+In addition, you may specify a `dds_qos_profile_file` and `dds_qos_profile`
+within the plugin tag to use a specific QoS profile instead of the default one.
+
+```xml
+<plugin name='DdsApiPlugin' filename='api_plugin/libDdsApiPlugin.so'>
+    <!-- ... -->
+    <dds_qos_profile_file>resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file>
+    <dds_qos_profile>ExampleLibrary::TransientLocalProfile</dds_qos_profile>
+    <!-- ... -->
+</plugin>
+```

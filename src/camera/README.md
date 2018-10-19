@@ -1,31 +1,46 @@
-# Camera plugin
-It allows us to obtain the information of a camera. It contains the following 
-publishers:
-* Publications 
-    * [sensor_msgs/msg/CameraInfo] - Send the information of the camera 
-    * [sensor_msgs/msg/Image] - Send raw image captured by the camera
+# Camera Plugin
 
-## How to run
-You will only need one terminal to run this plugin. 
+This plugin provides access to the information of produced by a camera. The
+Camera Plugin publishes the following Topics:
 
-In case we have not added the path where libraries are located to the 
-envionment variable GAZEBO_PLUGIN_PATH, we have to add it via the following 
-command:
+* Publications
+  * [sensor_msgs/msg/CameraInfo] - Send the information of the camera.
+  * [sensor_msgs/msg/Image] - Sends raw image captured by the camera.
 
-```
-$ export GAZEBO_PLUGIN_PATH=$HOME/dds-gazebo-plugins/build/src/:$GAZEBO_PLUGIN_PATH
-```
-Once the environment variable is set, we can execute Gazebo with its specific world.
+## How To Run the Camera Plugin
 
-```
-$ gazebo dds-gazebo-plugins/resources/worlds/Camera.world --verbose
+To launch the plugin you will need to make sure Gazebo knows where it is
+located. You can either set the `GAZEBO_PLUGIN_PATH` environment variable to
+the plugin directory:
+
+```bash
+export GAZEBO_PLUGIN_PATH=/path/to/gazebo-dds-plugins/build/src/:$GAZEBO_PLUGIN_PATH
 ```
 
-## Using plugin with custom worlds
+Or alternatively, add the full path as part of the plugin definition in the
+`.world` file:
 
-You need to add to your custom world inside the camera sensor that you want 
-to manage with the following sdf information:
+```xml
+<plugin name="camera_controller" filename="/path/to/camera/libDdsCameraPlugin.so">
+    <!-- ... -->
+</plugin>
 ```
+
+Once you have set the environment accordingly, execute Gazebo and pass the
+demonstration world as a parameter:
+
+```bash
+gazebo ./resources/worlds/Camera.world --verbose
+```
+
+You can subscribe to the information published by the plugin using `rtiddsspy`.
+
+## Using Camera Plugin With Custom Worlds
+
+To run the Bumper Scan Plugin with a custom world, add the following sdf
+information within the `world` tag:
+
+```xml
 <plugin name="camera_controller" filename="camera/libDdsCameraPlugin.so">
     <update_rate>0.0</update_rate>
     <frame_name>camera_link</frame_name>
@@ -46,5 +61,14 @@ to manage with the following sdf information:
 </plugin>
 ```
 
-In addition, you can add the tag `dds_qos_profile_file` and `dds_qos_profile` 
-inside the plugin tag to use a specific QoS and not the default QoS
+In addition, you may specify a `dds_qos_profile_file` and `dds_qos_profile`
+within the plugin tag to use a specific QoS profile instead of the default one.
+
+```xml
+<plugin name='camera_controller' filename='camera/libDdsCameraPlugin.so'>
+    <!-- ... -->
+    <dds_qos_profile_file>resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file>
+    <dds_qos_profile>ExampleLibrary::TransientLocalProfile</dds_qos_profile>
+    <!-- ... -->
+</plugin>
+```

@@ -1,31 +1,50 @@
-# Stereo camera plugin
-It allows us to manage two synchronized cameras and obtain its information. 
-It contains the following publishers:
-* Publications 
-    * [sensor_msgs/msg/CameraInfo] - Send the information of the camera 
-    * [sensor_msgs/msg/Image] - Send raw image captured by the camera
+# Stereo Camera Plugin
 
-## How to run
-You will only need one terminal to run this plugin. 
+It allows us to manage two synchronized cameras and obtain the information they
+produce. The Stereo Camera plugin publishes the following Topics:
 
-In case we have not added the path where libraries are located to the 
-envionment variable GAZEBO_PLUGIN_PATH, we have to add it via the following 
-command:
+* Publications
+  * [sensor_msgs/msg/CameraInfo] - Sends the information provided by the
+    camera.
+  * [sensor_msgs/msg/Image] - Sends raw images captured by the camera.
 
-```
-$ export GAZEBO_PLUGIN_PATH=$HOME/dds-gazebo-plugins/build/src/:$GAZEBO_PLUGIN_PATH
-```
-Once the environment variable is set, we can execute Gazebo with its specific world.
+## How To Run the Stereo Camera Plugin
 
-```
-$ gazebo dds-gazebo-plugins/resources/worlds/Camera.world --verbose
-```
-## Using plugin with custom worlds
+To launch the plugin you will need to make sure Gazebo knows where it is
+located. You can either set the `GAZEBO_PLUGIN_PATH` environment variable to
+the plugin directory:
 
-You need to add to your custom world inside the stereo camera sensor that 
-you want to manage with the following sdf information:
+```bash
+export GAZEBO_PLUGIN_PATH=/path/to/gazebo-dds-plugins/build/src/:$GAZEBO_PLUGIN_PATH
 ```
- <plugin name="stereo_camera_controller" filename="stereo_camera/libDdsStereoCameraPlugin.so">
+
+Or alternatively, add the full path as part of the plugin definition in the
+`.world` file:
+
+```xml
+ <plugin name="stereo_camera_controller"
+         filename="/path/to/stereo_camera/libDdsStereoCameraPlugin.so">
+    <!-- ... -->
+</plugin>
+```
+
+Once you have set the environment accordingly, execute Gazebo and pass the
+demonstration world as a parameter:
+
+```bash
+gazebo gazebo-dds-plugins/resources/worlds/Camera.world --verbose
+```
+
+You can subscribe to the information published by the plugin using `rtiddsspy`.
+
+## Using Stereo Camera Plugin With Custom Worlds
+
+To run the Stereo Camera Plugin with a custom world, add the following sdf
+information within the `world` tag:
+
+```xml
+ <plugin name="stereo_camera_controller"
+         filename="stereo_camera/libDdsStereoCameraPlugin.so">
     <update_rate>0.0</update_rate>
     <dds_domain_id>0</dds_domain_id>
     <frame_name>camera_link</frame_name>
@@ -46,5 +65,15 @@ you want to manage with the following sdf information:
 </plugin>
 ```
 
-In addition, you can add the tag `dds_qos_profile_file` and `dds_qos_profile` 
-inside the plugin tag to use a specific QoS and not the default QoS
+In addition, you may specify a `dds_qos_profile_file` and `dds_qos_profile`
+within the plugin tag to use a specific QoS profile instead of the default one.
+
+```xml
+ <plugin name="stereo_camera_controller"
+         filename="stereo_camera/libDdsStereoCameraPlugin.so">
+    <!-- ... -->
+    <dds_qos_profile_file>resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file>
+    <dds_qos_profile>ExampleLibrary::TransientLocalProfile</dds_qos_profile>
+    <!-- ... -->
+</plugin>
+```

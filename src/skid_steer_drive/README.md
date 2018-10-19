@@ -1,46 +1,72 @@
-# Skid steer drive plugin
-It allows us to manage a skid steer drive robot and obtain its information. 
-It contains some publishers and one subscriber:
+# Skid Steer Drive Plugin
+
+It allows us to manage a skid steer drive robot and obtain its information.
+The Skid Steer Drive plugin publishes and subscribes to the following Topics:
+
 * Publications 
-    * [nav_msgs/msg/Odometry] - Send the information of the odometry sensor
-    * [sensor_msgs/msg/JointState] - Send the state of the joints of the robot
-* Subscriptions
-    * [geometry_msgs/msg/Twist] - Recieve the next velocity and rotation velocity
+  * [nav_msgs/msg/Odometry] - Sends information provided by the odometry sensor.
+  * [sensor_msgs/msg/JointState] - Sends the state of the joints of the robot.
+    Subscriptions
+  * [geometry_msgs/msg/Twist] - Recieve the next velocity and rotation velocity.
 
-## How to run
-You will need two terminals to run this plugin. 
+## How To Run the Skid Steer Drive Plugin
 
-**First terminal**
+To run the plugin, you will need to use two terminals: one terminal to launch
+Gazebo along with plugin, and another terminal to run a Skid Steer Drive
+publisher.
 
-In case we have not added the path where libraries are located to the 
-envionment variable GAZEBO_PLUGIN_PATH, we have to add it via the following 
-command:
+### First Terminal
 
-```
-$ export GAZEBO_PLUGIN_PATH=$HOME/dds-gazebo-plugins/build/src/:$GAZEBO_PLUGIN_PATH
-```
-Once the environment variable is set, we can execute Gazebo with its specific world.
+To launch the plugin you will need to make sure Gazebo knows where it is
+located. You can either set the `GAZEBO_PLUGIN_PATH` environment variable to
+the plugin directory:
 
-```
-$ gazebo dds-gazebo-plugins/resources/worlds/SkidSteerDrive.world --verbose
-```
-**Second terminal**
-
-The plugin contains an example publisher to send information to the robot. 
-You need to run this publisher to move it. You will use the same publisher 
-that you use with the differential drive
-```
-$ dds-gazebo-plugins/build/src/diff_drive/diffdrivepublisher -d <domain id> -t <topic name> -s "(<linear velocity in axis x> <angular velocity in axis z>)"
+```bash
+export GAZEBO_PLUGIN_PATH=/path/to/gazebo-dds-plugins/build/src/:$GAZEBO_PLUGIN_PATH
 ```
 
-You can check the help of the publisher with the flag `-h` for more information.
+Or alternatively, add the full path as part of the plugin definition in the
+`.world` file:
 
-## Using plugin with custom worlds
-
-You need to add to your custom world inside the skid steer drive model that 
-you want to manage with the following sdf information:
+```xml
+<plugin name="SkidSteerDrivePlugin"
+        filename="/path/to/skid_steer_drive/libDdsSkidSteerDrivePlugin.so">
+    <!-- ... -->
+</plugin>
 ```
-<plugin name="SkidSteerDrivePlugin" filename="skid_steer_drive/libDdsSkidSteerDrivePlugin.so">
+
+Once you have set the environment accordingly, execute Gazebo and pass the
+demonstration world as a parameter:
+
+```bash
+gazebo ./resources/worlds/SkidSteerDrive.world --verbose
+```
+
+### Second Terminal
+
+This plugin uses the publisher application included in the Differential Drive
+plugin to to send requests to the robot; that is, to send instructions in order
+to move it.
+
+You can run the publisher application as follows:
+
+```bash
+gazebo-dds-plugins/build/src/diff_drive/diffdrivepublisher \
+    -d <domain id> \
+    -t <topic name> \
+    -s "(<linear velocity in axis x> <angular velocity in axis z>)"
+```
+
+For more information on how to run the application, run `diffdrivepublisher -h`.
+
+## Using Skid Steer Drive with Custom Worlds
+
+To run the Skid Steer Drive Plugin with a custom world, add the following sdf
+information within the `world` tag:
+
+```xml
+<plugin name="SkidSteerDrivePlugin"
+        filename="skid_steer_drive/libDdsSkidSteerDrivePlugin.so">
     <dds_domain_id>0</dds_domain_id>
     <topic_name_twist>cmd_vel</topic_name_twist>
     <topic_name_odometry>odom</topic_name_odometry>
@@ -59,5 +85,11 @@ you want to manage with the following sdf information:
 </plugin>
 ```
 
-In addition, you can add the tag `dds_qos_profile_file` and `dds_qos_profile` 
-inside the plugin tag to use a specific QoS and not the default QoS
+In addition, you may specify a `dds_qos_profile_file` and `dds_qos_profile`
+within the plugin tag to use a specific QoS profile instead of the default one.
+
+```xml
+<plugin name="SkidSteerDrivePlugin"
+        filename="skid_steer_drive/libDdsSkidSteerDrivePlugin.so">
+    <!-- ... -->
+</plugin>

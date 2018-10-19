@@ -1,30 +1,45 @@
-# Imu scan plugin
-It allows us to obtain the information of an inertial measurement unit (imu) 
-sensor. It contains the following publisher:
-* Publications 
-    * [sensor_msgs/msg/Imu] - Send the information of the imu sensor
+# IMU Scan Plugin
 
-## How to run
-You will only need one terminal to run this plugin. 
+This plugin provides access to the produced by Inertial Measurement Units (IMU).
+The IMU Scan Plugin publishes the following Topics:
 
-In case we have not added the path where libraries are located to the 
-envionment variable GAZEBO_PLUGIN_PATH, we have to add it via the following 
-command:
+* Publications
+  * [sensor_msgs/msg/Imu] - Sends information on the state of the IMU sensor.
 
-```
-$ export GAZEBO_PLUGIN_PATH=$HOME/dds-gazebo-plugins/build/src/:$GAZEBO_PLUGIN_PATH
-```
-Once the environment variable is set, we can execute Gazebo with its specific world.
+## How To Run the IMU Scan Plugin
 
-```
-$ gazebo dds-gazebo-plugins/resources/worlds/ImuSensor.world --verbose
+To launch the plugin you will need to make sure Gazebo knows where it is
+located. You can either set the `GAZEBO_PLUGIN_PATH` environment variable to
+the plugin directory:
+
+```bash
+export GAZEBO_PLUGIN_PATH=/path/to/gazebo-dds-plugins/build/src/:$GAZEBO_PLUGIN_PATH
 ```
 
-## Using plugin with custom worlds
+Or alternatively, add the full path as part of the plugin definition in the
+`.world` file:
 
-You need to add to your custom world inside the imu sensor that you want to 
-manage with the following sdf information:
+```xml
+<plugin name="imu_plugin" filename="/path/to/imu_scan/libDdsImuPlugin.so">
+    <!-- ... -->
+</plugin>
 ```
+
+Once you have set the environment accordingly, execute Gazebo and pass the
+demonstration world as a parameter:
+
+```bash
+gazebo ./resources/worlds/ImuSensor.world --verbose
+```
+
+You can subscribe to the information published by the plugin using `rtiddsspy`.
+
+## Using IMU Scan Plugin With Custom Worlds
+
+To run the IMU Scan Plugin with a custom world, add the following sdf
+information within the `world` tag:
+
+```xml
 <plugin name="imu_plugin" filename="imu_scan/libDdsImuPlugin.so">
     <dds_domain_id>0</dds_domain_id>
     <topic_name>imu_scan</topic_name>
@@ -33,5 +48,13 @@ manage with the following sdf information:
 </plugin>
 ```
 
-In addition, you can add the tag `dds_qos_profile_file` and `dds_qos_profile` 
-inside the plugin tag to use a specific QoS and not the default QoS
+In addition, you may specify a `dds_qos_profile_file` and `dds_qos_profile`
+within the plugin tag to use a specific QoS profile instead of the default one.
+
+```xml
+<plugin name='imu_plugin' filename='imu_scan/libDdsImuPlugin.so'>
+    <!-- ... -->
+    <dds_qos_profile_file>resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file>
+    <dds_qos_profile>ExampleLibrary::TransientLocalProfile</dds_qos_profile>
+</plugin>
+```

@@ -1,46 +1,73 @@
-# Differential drive plugin
-It allows us to manage a differential drive robot and obtain its information. 
-It contains some publishers and one subscriber:
-* Publications 
-    * [nav_msgs/msg/Odometry] - Send the information of the odometry sensor
-    * [sensor_msgs/msg/JointState] - Send the state of the joints of the robot
-* Subscriptions
-    * [geometry_msgs/msg/Twist] - Recieve the next velocity and rotation velocity
+# Differential Drive Plugin
 
-## How to run
-You will need two terminals to run this plugin. 
+This plugin allows us to manage a differential drive robot and obtain its
+information. The Differential Drive plugin publishes and subscribes to the
+following Topics:
 
-**First terminal**
+* Publications
+  * [nav_msgs/msg/Odometry] - Sends information provided by the odometry sensor.
+  * [sensor_msgs/msg/JointState] - Sends the state of the joints of the robot
+    Subscriptions
+  * [geometry_msgs/msg/Twist] - Recieves the next velocity and rotation
+    velocity.
 
-In case we have not added the path where libraries are located to the 
-envionment variable GAZEBO_PLUGIN_PATH, we have to add it via the following 
-command:
+## How To Run the Differential Drive Plugin
 
-```
-$ export GAZEBO_PLUGIN_PATH=$HOME/dds-gazebo-plugins/build/src/:$GAZEBO_PLUGIN_PATH
-```
-Once the environment variable is set, we can execute Gazebo with its specific world.
+To run the plugin, you will need to use two terminals: one terminal to launch
+Gazebo along with plugin, and another terminal to run a Differential Drive
+publisher.
 
-```
-$ gazebo dds-gazebo-plugins/resources/worlds/DifferentialDrive.world --verbose
-```
-**Second terminal**
+### First Terminal
 
-The plugin contains an example publisher to send information to the robot. 
-You need to run this publisher to move it.
-```
-$ dds-gazebo-plugins/build/src/diff_drive/diffdrivepublisher -d <domain id> -t <topic name> -s "linear_velocity: <axis x> angular_velocity: <axis z>"
+To launch the plugin you will need to make sure Gazebo knows where it is
+located. You can either set the `GAZEBO_PLUGIN_PATH` environment variable to
+the plugin directory:
+
+```bash
+export GAZEBO_PLUGIN_PATH=/path/to/gazebo-dds-plugins/build/src/:$GAZEBO_PLUGIN_PATH
 ```
 
-You can check the help of the publisher with the flag `-h` for more information.
+Or alternatively, add the full path as part of the plugin definition in the
+`.world` file:
 
-## Using plugin with custom worlds
-
-You need to add to your custom world inside the differential drive model that 
-you want to manage with the following sdf information:
-```
+```xml
 <plugin name='differential_drive_controller'
-              filename='diff_drive/libDdsDiffDrivePlugin.so'>
+        filename='/path/to/diff_drive/libDdsDiffDrivePlugin.so'>
+    <!-- ... -->
+</plugin>
+```
+
+Once you have set the environment accordingly, execute Gazebo and pass the
+demonstration world as a parameter:
+
+```bash
+gazebo ./resources/worlds/DifferentialDrive.world --verbose
+```
+
+### Second Terminal
+
+The plugin contains an example publisher application to send requests to the
+robot; that is, to send instructions in order to move it.
+
+You can run the publisher application as follows:
+
+```bash
+gazebo-dds-plugins/build/src/diff_drive/diffdrivepublisher \
+    -d <domain id> \
+    -t <topic name> \
+    -s "linear_velocity: <axis x> angular_velocity: <axis z>"
+```
+
+For more information on how to run the application, run `diffdrivepublisher -h`.
+
+## Using Differential Drive Plugin with Custom Worlds
+
+To run the Differential Drive Plugin with a custom world, add the following sdf
+information within the `world` tag:
+
+```xml
+<plugin name='differential_drive_controller'
+        filename='diff_drive/libDdsDiffDrivePlugin.so'>
     <update_rate>2</update_rate>
     <left_joint>left_wheel_hinge</left_joint>
     <right_joint>right_wheel_hinge</right_joint>
@@ -58,5 +85,15 @@ you want to manage with the following sdf information:
 </plugin>
 ```
 
-In addition, you can add the tag `dds_qos_profile_file` and `dds_qos_profile` 
-inside the plugin tag to use a specific QoS and not the default QoS
+In addition, you may specify a `dds_qos_profile_file` and `dds_qos_profile`
+within the plugin tag to use a specific QoS profile instead of the default one.
+
+```xml
+<plugin name='differential_drive_controller'
+        filename='diff_drive/libDdsDiffDrivePlugin.so'>
+    <!-- ... -->
+    <dds_qos_profile_file>resources/xml/ExampleQosProfiles.xml</dds_qos_profile_file>
+    <dds_qos_profile>ExampleLibrary::TransientLocalProfile</dds_qos_profile>
+    <!-- ... -->
+</plugin>
+```

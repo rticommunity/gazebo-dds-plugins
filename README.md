@@ -30,7 +30,7 @@ In particular, the project provides the following plugins:
 ## Cloning Gazebo DDS Plugins Repository
 
 Gazebo DDS Plugins depends on
-[ROS Data Types](https://github.com/rticommunity/gazebo-dds-plugins), a
+[ROS Data Types](https://github.com/rticommunity/ros-data-types), a
 separate repository that provides the IDL definition of a number of well-known
 data types for robotic systems.
 

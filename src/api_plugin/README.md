@@ -1,4 +1,4 @@
-# API plugin
+# API Plugin
 
 This plugin provides a number of remote procedures that allow DDS applications
 to manage the simulation environment remotely.

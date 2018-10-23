@@ -1,7 +1,7 @@
 # Laser Scan Plugin
 
-It allows us to acess the information produced by a laser sensor. The Laser
-Scan plugni publishes the following Topics:
+It allows us to access the information produced by a laser sensor. The Laser
+Scan plugin publishes the following Topics:
 
 * Publications
   * **laser_scan** [`sensor_msgs::msg::LaserScanMsg`] -- Publishes the
